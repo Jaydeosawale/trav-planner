@@ -1,0 +1,68 @@
+"""
+Standard API Response Models.
+"""
+
+from __future__ import annotations
+
+from datetime import datetime
+from typing import Any, Generic, TypeVar
+
+from pydantic import BaseModel, Field
+
+T = TypeVar("T")
+
+
+class ApiResponse(BaseModel, Generic[T]):
+    """
+    Standard response returned by every API.
+    """
+
+    success: bool = True
+
+    message: str = "Success"
+
+    data: T | None = None
+
+    timestamp: datetime = Field(
+        default_factory=datetime.utcnow,
+    )
+
+
+class PaginatedResponse(BaseModel, Generic[T]):
+    """
+    Standard paginated response.
+    """
+
+    success: bool = True
+
+    message: str = "Success"
+
+    data: list[T]
+
+    total: int
+
+    page: int
+
+    size: int
+
+    pages: int
+
+    timestamp: datetime = Field(
+        default_factory=datetime.utcnow,
+    )
+
+
+class ErrorResponse(BaseModel):
+    """
+    Standard error response.
+    """
+
+    success: bool = False
+
+    message: str
+
+    error: str
+
+    timestamp: datetime = Field(
+        default_factory=datetime.utcnow,
+    )

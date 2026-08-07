@@ -2,6 +2,16 @@
 SQLAlchemy Declarative Base.
 
 Every database model should inherit from Base.
+
+Example:
+
+class Banner(
+    Base,
+    UUIDMixin,
+    TimestampMixin,
+    SoftDeleteMixin,
+):
+    ...
 """
 
 from __future__ import annotations
@@ -9,11 +19,23 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import uuid4
 
-from sqlalchemy import DateTime, MetaData, String, func
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy import (
+    Boolean,
+    DateTime,
+    MetaData,
+    String,
+    func,
+)
+from sqlalchemy.orm import (
+    DeclarativeBase,
+    Mapped,
+    mapped_column,
+)
 
+# ==========================================================
+# Alembic Naming Convention
+# ==========================================================
 
-# Naming convention for Alembic migrations
 NAMING_CONVENTION = {
     "ix": "ix_%(column_0_label)s",
     "uq": "uq_%(table_name)s_%(column_0_name)s",
@@ -22,21 +44,46 @@ NAMING_CONVENTION = {
     "pk": "pk_%(table_name)s",
 }
 
-
 metadata = MetaData(
     naming_convention=NAMING_CONVENTION,
 )
 
 
+# ==========================================================
+# Declarative Base
+# ==========================================================
+
 class Base(DeclarativeBase):
-    """Base class for all database models."""
+    """
+    Base class for all SQLAlchemy models.
+    """
 
     metadata = metadata
 
 
+# ==========================================================
+# UUID Primary Key
+# ==========================================================
+
+class UUIDMixin:
+    """
+    Adds UUID primary key.
+    """
+
+    id: Mapped[str] = mapped_column(
+        String(36),
+        primary_key=True,
+        default=lambda: str(uuid4()),
+    )
+
+
+# ==========================================================
+# Timestamp Columns
+# ==========================================================
+
 class TimestampMixin:
     """
-    Adds created_at and updated_at columns.
+    Automatically manages timestamps.
     """
 
     created_at: Mapped[datetime] = mapped_column(
@@ -53,13 +100,24 @@ class TimestampMixin:
     )
 
 
-class UUIDMixin:
+# ==========================================================
+# Soft Delete
+# ==========================================================
+
+class SoftDeleteMixin:
     """
-    Adds UUID primary key.
+    Soft delete support.
+
+    Records are never physically deleted.
     """
 
-    id: Mapped[str] = mapped_column(
-        String(36),
-        primary_key=True,
-        default=lambda: str(uuid4()),
+    is_deleted: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        nullable=False,
+    )
+
+    deleted_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
     )

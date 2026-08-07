@@ -39,3 +39,4 @@ pydantic-settings==2.14.2
 greenlet==3.2.4
 
 typing_extensions==4.15.0
+python-slugify==8.0.4

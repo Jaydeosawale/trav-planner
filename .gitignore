@@ -18,4 +18,4 @@ app/.flutter-plugins-dependencies
 .vscode/
 
 # Misc
-*.log
+*.loggit add .

@@ -1,27 +1,18 @@
+from __future__ import annotations
+
 from functools import lru_cache
-from app.core.environment import CURRENT_ENVIRONMENT
 
 from pydantic import Field, computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-
-# ---------------------------------------------------------
-# Active Environment
-# ---------------------------------------------------------
-
+from app.core.environment import CURRENT_ENVIRONMENT
 
 
 class Settings(BaseSettings):
     """
     Global application settings.
 
-    This is the single source of truth for every configuration
-    used across the backend.
-
-    Supported environments:
-    - development
-    - staging
-    - production
+    Single source of truth for the entire backend.
     """
 
     model_config = SettingsConfigDict(
@@ -37,12 +28,11 @@ class Settings(BaseSettings):
 
     APP_NAME: str = "Trav Planner API"
 
-    APP_VERSION: str = "1.0.0"
-
     APP_DESCRIPTION: str = (
         "Enterprise AI Multi-Agent Travel Planner Backend"
     )
 
+    APP_VERSION: str = "1.0.0"
 
     ENVIRONMENT: str = CURRENT_ENVIRONMENT.value
 
@@ -66,11 +56,13 @@ class Settings(BaseSettings):
 
     POSTGRES_PORT: int = 5432
 
-    POSTGRES_DB: str = "trav_planner"
+    POSTGRES_DB: str = "travplanner"
 
-    POSTGRES_USER: str = "postgres"
+    POSTGRES_USER: str = "travplanner_user"
 
-    POSTGRES_PASSWORD: str = "postgres"
+    POSTGRES_PASSWORD: str = ""
+
+    DATABASE_URL: str | None = None
 
     # ==========================================================
     # Redis
@@ -101,7 +93,7 @@ class Settings(BaseSettings):
     AI_PLATFORM_URL: str = "http://localhost:9000"
 
     # ==========================================================
-    # API Configuration
+    # API
     # ==========================================================
 
     API_TIMEOUT: int = 60
@@ -115,7 +107,7 @@ class Settings(BaseSettings):
     LOG_FILE: str = "logs/app.log"
 
     # ==========================================================
-    # File Upload
+    # Uploads
     # ==========================================================
 
     MAX_UPLOAD_SIZE_MB: int = 50
@@ -126,12 +118,13 @@ class Settings(BaseSettings):
     # CORS
     # ==========================================================
 
-    ALLOWED_ORIGINS: list[str] = [
-        "http://localhost:3000",
-        "http://localhost:5173",
-        "http://localhost:8080",
-        "http://localhost:8000",
-    ]
+    ALLOWED_ORIGINS: str = (
+        "http://localhost:3000,"
+        "http://localhost:5173,"
+        "http://localhost:8080,"
+        "http://localhost:8000,"
+        "http://127.0.0.1:8000"
+    )
 
     # ==========================================================
     # Computed Properties
@@ -139,7 +132,27 @@ class Settings(BaseSettings):
 
     @computed_field
     @property
-    def DATABASE_URL(self) -> str:
+    def allowed_origins(self) -> list[str]:
+        """
+        Returns allowed origins as a list.
+        """
+        return [
+            origin.strip()
+            for origin in self.ALLOWED_ORIGINS.split(",")
+            if origin.strip()
+        ]
+
+    @computed_field
+    @property
+    def database_url(self) -> str:
+        """
+        Returns DATABASE_URL from environment if supplied.
+        Otherwise builds it from POSTGRES_* variables.
+        """
+
+        if self.DATABASE_URL:
+            return self.DATABASE_URL
+
         return (
             "postgresql+asyncpg://"
             f"{self.POSTGRES_USER}:"
@@ -151,7 +164,11 @@ class Settings(BaseSettings):
 
     @computed_field
     @property
-    def REDIS_URL(self) -> str:
+    def redis_url(self) -> str:
+        """
+        Redis connection URL.
+        """
+
         if self.REDIS_PASSWORD:
             return (
                 f"redis://:{self.REDIS_PASSWORD}@"
@@ -167,24 +184,24 @@ class Settings(BaseSettings):
 
     @computed_field
     @property
-    def IS_PRODUCTION(self) -> bool:
+    def is_production(self) -> bool:
         return self.ENVIRONMENT == "production"
 
     @computed_field
     @property
-    def IS_STAGING(self) -> bool:
+    def is_staging(self) -> bool:
         return self.ENVIRONMENT == "staging"
 
     @computed_field
     @property
-    def IS_DEVELOPMENT(self) -> bool:
+    def is_development(self) -> bool:
         return self.ENVIRONMENT == "development"
 
 
 @lru_cache
 def get_settings() -> Settings:
     """
-    Cached settings instance.
+    Return cached settings instance.
     """
     return Settings()
 

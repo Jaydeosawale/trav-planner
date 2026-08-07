@@ -1,0 +1,61 @@
+2026-08-07 10:36:25.421 | INFO     | app.core.lifespan:lifespan:28 - ============================================================
+2026-08-07 10:36:25.422 | INFO     | app.core.lifespan:lifespan:29 - Starting Trav Planner API
+2026-08-07 10:36:25.422 | INFO     | app.core.lifespan:lifespan:30 - ============================================================
+2026-08-07 10:40:43.700 | INFO     | app.core.lifespan:lifespan:47 - ============================================================
+2026-08-07 10:40:43.705 | INFO     | app.core.lifespan:lifespan:48 - Stopping Trav Planner API
+2026-08-07 10:40:44.361 | INFO     | app.core.lifespan:lifespan:28 - ============================================================
+2026-08-07 10:40:44.361 | INFO     | app.core.lifespan:lifespan:29 - Starting Trav Planner API
+2026-08-07 10:40:44.361 | INFO     | app.core.lifespan:lifespan:30 - ============================================================
+2026-08-07 10:40:56.415 | INFO     | app.core.lifespan:lifespan:47 - ============================================================
+2026-08-07 10:40:57.274 | INFO     | app.core.lifespan:lifespan:28 - ============================================================
+2026-08-07 10:40:57.275 | INFO     | app.core.lifespan:lifespan:29 - Starting Trav Planner API
+2026-08-07 10:40:57.275 | INFO     | app.core.lifespan:lifespan:30 - ============================================================
+2026-08-07 10:41:09.250 | INFO     | app.core.lifespan:lifespan:47 - ============================================================
+2026-08-07 10:41:09.792 | INFO     | app.core.lifespan:lifespan:28 - ============================================================
+2026-08-07 10:41:09.792 | INFO     | app.core.lifespan:lifespan:29 - Starting Trav Planner API
+2026-08-07 10:41:09.793 | INFO     | app.core.lifespan:lifespan:30 - ============================================================
+2026-08-07 10:41:30.608 | INFO     | app.core.lifespan:lifespan:47 - ============================================================
+2026-08-07 10:41:30.609 | INFO     | app.core.lifespan:lifespan:48 - Stopping Trav Planner API
+2026-08-07 10:41:31.362 | INFO     | app.core.lifespan:lifespan:28 - ============================================================
+2026-08-07 10:41:31.362 | INFO     | app.core.lifespan:lifespan:29 - Starting Trav Planner API
+2026-08-07 10:41:31.363 | INFO     | app.core.lifespan:lifespan:30 - ============================================================
+2026-08-07 10:41:45.679 | INFO     | app.core.lifespan:lifespan:47 - ============================================================
+2026-08-07 10:41:45.683 | INFO     | app.core.lifespan:lifespan:48 - Stopping Trav Planner API
+2026-08-07 10:41:46.227 | INFO     | app.core.lifespan:lifespan:28 - ============================================================
+2026-08-07 10:41:46.227 | INFO     | app.core.lifespan:lifespan:29 - Starting Trav Planner API
+2026-08-07 10:41:46.227 | INFO     | app.core.lifespan:lifespan:30 - ============================================================
+2026-08-07 10:42:13.166 | INFO     | app.middleware.logging:dispatch:29 - GET /docs -> 200 (1.89 ms)
+2026-08-07 10:42:13.478 | INFO     | app.middleware.logging:dispatch:29 - GET /api/v1/openapi.json -> 200 (12.96 ms)
+2026-08-07 10:43:46.772 | INFO     | app.core.lifespan:lifespan:47 - ============================================================
+2026-08-07 10:43:46.775 | INFO     | app.core.lifespan:lifespan:48 - Stopping Trav Planner API
+2026-08-07 10:43:46.775 | INFO     | app.core.lifespan:lifespan:49 - ============================================================
+2026-08-07 10:43:47.429 | INFO     | app.core.lifespan:lifespan:28 - ============================================================
+2026-08-07 10:43:47.430 | INFO     | app.core.lifespan:lifespan:29 - Starting Trav Planner API
+2026-08-07 10:43:47.430 | INFO     | app.core.lifespan:lifespan:30 - ============================================================
+2026-08-07 10:43:51.514 | INFO     | app.middleware.logging:dispatch:29 - GET /api/v1/health/ -> 200 (9.74 ms)
+2026-08-07 10:44:59.472 | INFO     | app.middleware.logging:dispatch:29 - GET /api/v1/health/ -> 200 (2.35 ms)
+2026-08-07 10:45:01.211 | INFO     | app.middleware.logging:dispatch:29 - GET /api/v1/health/ -> 200 (0.95 ms)
+2026-08-07 10:46:57.785 | INFO     | app.core.lifespan:lifespan:47 - ============================================================
+2026-08-07 10:46:58.392 | INFO     | app.core.lifespan:lifespan:28 - ============================================================
+2026-08-07 10:46:58.393 | INFO     | app.core.lifespan:lifespan:29 - Starting Trav Planner API
+2026-08-07 10:46:58.393 | INFO     | app.core.lifespan:lifespan:30 - ============================================================
+2026-08-07 10:48:06.816 | INFO     | app.core.lifespan:lifespan:47 - ============================================================
+2026-08-07 10:48:07.422 | INFO     | app.core.lifespan:lifespan:28 - ============================================================
+2026-08-07 10:48:07.423 | INFO     | app.core.lifespan:lifespan:29 - Starting Trav Planner API
+2026-08-07 10:48:07.423 | INFO     | app.core.lifespan:lifespan:30 - ============================================================
+2026-08-07 10:48:27.010 | INFO     | app.core.lifespan:lifespan:28 - ============================================================
+2026-08-07 10:48:27.010 | INFO     | app.core.lifespan:lifespan:29 - Starting Trav Planner API
+2026-08-07 10:48:27.010 | INFO     | app.core.lifespan:lifespan:30 - ============================================================
+2026-08-07 10:49:18.946 | INFO     | app.core.lifespan:lifespan:47 - ============================================================
+2026-08-07 10:49:19.610 | INFO     | app.core.lifespan:lifespan:28 - ============================================================
+2026-08-07 10:49:19.611 | INFO     | app.core.lifespan:lifespan:29 - Starting Trav Planner API
+2026-08-07 10:49:19.611 | INFO     | app.core.lifespan:lifespan:30 - ============================================================
+2026-08-07 10:49:20.134 | INFO     | app.core.lifespan:lifespan:28 - ============================================================
+2026-08-07 10:49:20.134 | INFO     | app.core.lifespan:lifespan:29 - Starting Trav Planner API
+2026-08-07 10:49:20.134 | INFO     | app.core.lifespan:lifespan:30 - ============================================================
+2026-08-07 10:49:34.061 | INFO     | app.middleware.logging:dispatch:29 - GET /docs -> 200 (1.18 ms)
+2026-08-07 10:49:34.404 | INFO     | app.middleware.logging:dispatch:29 - GET /api/v1/openapi.json -> 200 (33.10 ms)
+2026-08-07 10:49:38.662 | INFO     | app.middleware.logging:dispatch:29 - GET /api/v1/health/ -> 200 (3.99 ms)
+2026-08-07 11:04:40.929 | INFO     | app.core.lifespan:lifespan:47 - ============================================================
+2026-08-07 11:04:40.941 | INFO     | app.core.lifespan:lifespan:48 - Stopping Trav Planner API
+2026-08-07 11:04:40.942 | INFO     | app.core.lifespan:lifespan:49 - ============================================================

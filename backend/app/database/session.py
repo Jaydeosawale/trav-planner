@@ -19,10 +19,11 @@ from app.core.settings import settings
 # ------------------------------------------------------------------
 
 engine = create_async_engine(
-    settings.DATABASE_URL,
+    settings.database_url,
     echo=settings.DEBUG,
     future=True,
     pool_pre_ping=True,
+    pool_recycle=3600,
     pool_size=20,
     max_overflow=10,
 )
@@ -58,3 +59,9 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
             yield session
         finally:
             await session.close()
+
+    async def close_engine() -> None:
+     """
+     Gracefully dispose database connections.
+     """
+    await engine.dispose()        
