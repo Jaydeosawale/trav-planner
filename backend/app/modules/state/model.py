@@ -41,11 +41,6 @@ class State(
     __table_args__ = (
         UniqueConstraint(
             "country_id",
-            "name",
-            name="uq_states_country_name",
-        ),
-        UniqueConstraint(
-            "country_id",
             "code",
             name="uq_states_country_code",
         ),
@@ -69,7 +64,7 @@ class State(
     cities: Mapped[list["City"]] = relationship(
     "City",
     back_populates="state",
-    cascade="all, delete-orphan",
+    
 )
 
     # ==========================================================
