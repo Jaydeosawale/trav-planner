@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_text_styles.dart';
+import '../../core/theme/app_text_theme.dart';
 
 class SectionHeader extends StatelessWidget {
   final String title;
@@ -18,7 +18,7 @@ class SectionHeader extends StatelessWidget {
       children: [
         Text(
           title,
-          style: AppTextStyles.heading,
+          style: AppTextTheme.textTheme.titleLarge,
         ),
         const Spacer(),
         TextButton(

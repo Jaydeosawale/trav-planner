@@ -10,6 +10,5 @@ router = APIRouter()
 
 router.include_router(
     country_router,
-    prefix="/countries",
-    tags=["Countries"],
+     tags=["Countries"],
 )

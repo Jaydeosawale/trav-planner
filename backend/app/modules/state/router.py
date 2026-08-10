@@ -19,6 +19,7 @@ from app.modules.state.schema import (
 
 from app.modules.state.service import StateService
 
+
 router = APIRouter()
 
 service = StateService()
@@ -29,7 +30,7 @@ service = StateService()
 # ==========================================================
 
 @router.get(
-    "",
+    "/",
     response_model=ApiResponse[list[StateListResponse]],
 )
 async def get_states(
@@ -113,7 +114,7 @@ async def get_state(
 # ==========================================================
 
 @router.post(
-    "",
+    "/",
     response_model=ApiResponse[StateResponse],
 )
 async def create_state(

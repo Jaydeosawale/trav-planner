@@ -26,7 +26,7 @@ service = CountryService()
 # ==========================================================
 
 @router.get(
-    "",
+    "/",
     response_model=ApiResponse[list[CountryListResponse]],
 )
 async def get_countries(

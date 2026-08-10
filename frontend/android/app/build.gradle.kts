@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.jaydeo.travplanner"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 36
     // Use the installed NDK version
     ndkVersion = flutter.ndkVersion
 
@@ -21,7 +21,7 @@ android {
         applicationId = "com.jaydeo.travplanner"
 
         minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        targetSdk = 36
 
         versionCode = flutter.versionCode
         versionName = flutter.versionName

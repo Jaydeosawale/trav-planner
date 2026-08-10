@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../shared/navigation/adaptive_scaffold.dart';
 import '../widgets/ai_planner_card.dart';
 import '../widgets/category_list.dart';
 import '../widgets/continue_trip_card.dart';
@@ -8,7 +9,6 @@ import '../widgets/hero_banner.dart';
 import '../widgets/popular_destinations.dart';
 import '../widgets/trending_section.dart';
 import '../widgets/weather_card.dart';
-import '../../../../shared/navigation/adaptive_scaffold.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -21,9 +21,7 @@ class HomePage extends StatelessWidget {
           parent: AlwaysScrollableScrollPhysics(),
         ),
         slivers: [
-          const SliverToBoxAdapter(
-  child: SizedBox(height: 350),
-),
+          const HeroBanner(),
 
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(

@@ -1,14 +1,17 @@
 """
-Application lifespan management.
+Application lifespan.
 
-Handles application startup and shutdown.
+Handles startup and shutdown events.
 """
+
+from __future__ import annotations
 
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.core.logging import configure_logging, get_logger
+from app.core.logging import configure_logging
+from app.core.logging import get_logger
 
 logger = get_logger()
 
@@ -16,23 +19,19 @@ logger = get_logger()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
-    Application startup and shutdown lifecycle.
+    Application startup/shutdown lifecycle.
     """
-
-    # ---------------------------------------------------------
-    # Startup
-    # ---------------------------------------------------------
 
     configure_logging()
 
-    logger.info("=" * 60)
-    logger.info("Starting Trav Planner API")
-    logger.info("=" * 60)
+    logger.info("=====================================")
+    logger.info("Trav Planner API Starting...")
+    logger.info("=====================================")
 
     # Future startup tasks
     #
-    # PostgreSQL connection
-    # Redis connection
+    # Database connection
+    # Redis
     # AI Platform
     # Scheduler
     # Cache
@@ -40,10 +39,6 @@ async def lifespan(app: FastAPI):
 
     yield
 
-    # ---------------------------------------------------------
-    # Shutdown
-    # ---------------------------------------------------------
-
-    logger.info("=" * 60)
-    logger.info("Stopping Trav Planner API")
-    logger.info("=" * 60)
+    logger.info("=====================================")
+    logger.info("Trav Planner API Stopped")
+    logger.info("=====================================")

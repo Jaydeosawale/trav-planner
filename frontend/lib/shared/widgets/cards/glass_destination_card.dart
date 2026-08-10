@@ -23,10 +23,7 @@ class GlassDestinationCard extends StatelessWidget {
         child: Stack(
           children: [
             Positioned.fill(
-              child: Image.asset(
-                destination.image,
-                fit: BoxFit.cover,
-              ),
+              child: _buildImage(),
             ),
 
             Positioned.fill(
@@ -57,8 +54,10 @@ class GlassDestinationCard extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(8),
                     color: Colors.white.withValues(alpha: 0.20),
-                    child: const Icon(
-                      Icons.favorite_border,
+                    child: Icon(
+                      destination.isFeatured
+                          ? Icons.favorite
+                          : Icons.favorite_border,
                       color: Colors.white,
                     ),
                   ),
@@ -85,51 +84,82 @@ class GlassDestinationCard extends StatelessWidget {
                       children: [
                         Text(
                           destination.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
                             fontSize: 22,
                           ),
                         ),
+
                         const SizedBox(height: 6),
-                        Text(
-                          destination.country,
-                          style: const TextStyle(
-                            color: Colors.white70,
+
+                        if (destination.country.isNotEmpty)
+                          Text(
+                            destination.country,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Colors.white70,
+                            ),
                           ),
-                        ),
+
+                        if (destination.country.isNotEmpty)
+                          const SizedBox(height: 14),
+
+                        if (destination.shortDescription != null)
+                          Text(
+                            destination.shortDescription!,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 13,
+                            ),
+                          ),
+
                         const SizedBox(height: 14),
+
                         Row(
                           children: [
-                            const Icon(
-                              Icons.star,
-                              color: Colors.amber,
+                            Icon(
+                              destination.isActive
+                                  ? Icons.check_circle
+                                  : Icons.circle_outlined,
+                              color: destination.isActive
+                                  ? Colors.greenAccent
+                                  : Colors.white54,
                               size: 18,
                             ),
-                            const SizedBox(width: 4),
+                            const SizedBox(width: 6),
                             Text(
-                              destination.rating.toString(),
+                              destination.isActive
+                                  ? "Available"
+                                  : "Unavailable",
                               style: const TextStyle(
                                 color: Colors.white,
+                                fontSize: 13,
                               ),
                             ),
                             const Spacer(),
-                            Text(
-                              "₹${destination.price}",
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
+                            if (destination.isFeatured)
+                              const Text(
+                                "Featured",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                ),
                               ),
-                            ),
                           ],
-                        )
+                        ),
                       ],
                     ),
                   ),
                 ),
               ),
-            )
+            ),
           ],
         ),
       ),
@@ -137,6 +167,89 @@ class GlassDestinationCard extends StatelessWidget {
         .animate()
         .fade(duration: 600.ms)
         .slideX(begin: .25)
-        .scale(begin: const Offset(.95, .95));
+        .scale(
+          begin: const Offset(.95, .95),
+        );
+  }
+
+  Widget _buildImage() {
+    // ----------------------------------------------------------
+    // 1. Use image coming from backend if available.
+    // ----------------------------------------------------------
+
+    final image = destination.image;
+
+    if (image != null && image.isNotEmpty) {
+      if (image.startsWith("http://") ||
+          image.startsWith("https://")) {
+        return Image.network(
+          image,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) {
+            return _fallbackImage();
+          },
+        );
+      }
+
+      return Image.asset(
+        image,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) {
+          return _fallbackImage();
+        },
+      );
+    }
+
+    // ----------------------------------------------------------
+    // 2. Temporary local images.
+    // ----------------------------------------------------------
+
+    final localImage = _localImageForDestination();
+
+    return Image.asset(
+      localImage,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) {
+        return _fallbackImage();
+      },
+    );
+  }
+
+  String _localImageForDestination() {
+    final slug = destination.slug.toLowerCase();
+
+    if (slug.contains("goa")) {
+      return "assets/images/destinations/goa_1.jpg";
+    }
+
+    if (slug.contains("jaipur") ||
+        slug.contains("city-palace")) {
+      return "assets/images/destinations/dubai_1.jpg";
+    }
+
+    if (slug.contains("lake-pichola") ||
+        slug.contains("udaipur")) {
+      return "assets/images/destinations/bali_1.jpg";
+    }
+
+    if (slug.contains("taj-mahal") ||
+        slug.contains("agra")) {
+      return "assets/images/destinations/japan_1.jpg";
+    }
+
+    return "assets/images/destinations/switzerland_1.jpg";
+  }
+
+  Widget _fallbackImage() {
+    return Container(
+      color: Colors.grey.shade800,
+      child: const Center(
+        child: Icon(
+          Icons.landscape,
+          color: Colors.white54,
+          size: 48,
+        ),
+      ),
+    );
   }
 }

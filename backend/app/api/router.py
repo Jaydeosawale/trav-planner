@@ -11,6 +11,9 @@ from app.api.v1.category.router import router as category_router
 from app.api.v1.country.router import router as country_router
 from app.api.v1.state.router import router as state_router
 from app.api.v1.city.router import router as city_router
+from app.api.v1.auth.router import router as auth_router
+from app.api.v1.destination.router import router as destination_router
+
 
 api_router = APIRouter()
 
@@ -27,9 +30,9 @@ api_router.include_router(
 )
 
 api_router.include_router(
-     banner_router,
+    banner_router,
     prefix="/banner",
-    tags=["banner"],
+    tags=["Banner"],
 
 )
 
@@ -55,4 +58,16 @@ api_router.include_router(
     city_router,
     prefix="/cities",
     tags=["Cities"],
+)
+
+api_router.include_router(
+    auth_router,
+    prefix="/auth",
+    tags=["Authentication"],
+)
+
+api_router.include_router(
+    destination_router,
+    prefix="/destinations",
+    tags=["Destinations"],
 )

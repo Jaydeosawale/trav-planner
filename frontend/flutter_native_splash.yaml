@@ -1,0 +1,31 @@
+flutter_native_splash:
+
+  # --------------------------------------------------
+  # Base splash
+  # --------------------------------------------------
+
+  color: "#F8FAFF"
+  image: assets/images/branding/travplanner_symbol_1024.png
+
+  android: true
+  ios: true
+
+  # --------------------------------------------------
+  # Android 12+
+  # --------------------------------------------------
+
+  android_12:
+    color: "#F8FAFF"
+    image: assets/images/branding/travplanner_symbol_1024.png
+
+  # --------------------------------------------------
+  # iOS
+  # --------------------------------------------------
+
+  ios_content_mode: center
+
+  # --------------------------------------------------
+  # Startup behavior
+  # --------------------------------------------------
+
+  fullscreen: true

@@ -3,8 +3,7 @@ from __future__ import annotations
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.exceptions.conflict import ConflictException
-from app.common.exceptions.not_found import NotFoundException
-
+from app.common.constants.not_found import NotFoundException
 from app.modules.country.repository import CountryRepository
 
 from app.modules.state.model import State

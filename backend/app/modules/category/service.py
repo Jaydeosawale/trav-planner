@@ -11,7 +11,7 @@ from app.modules.category.schema import (
 )
 from app.services.base import BaseService
 from app.common.exceptions.conflict import ConflictException
-from app.common.exceptions.not_found import NotFoundException
+from app.common.constants.not_found import NotFoundException
 
 
 class CategoryService(BaseService[Category]):

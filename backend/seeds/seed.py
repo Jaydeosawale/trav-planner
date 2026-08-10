@@ -7,7 +7,7 @@ from __future__ import annotations
 import asyncio
 import sys
 
-from sqlalchemy.ext.asyncio import AsyncSession
+
 
 from app.database.session import SessionLocal
 
@@ -15,7 +15,7 @@ from app.database.session import SessionLocal
 from seeds.loaders.country_seeder import CountrySeeder  # noqa: F401
 from seeds.loaders.state_seeder import StateSeeder  # noqa: F401
 from seeds.loaders.city_seeder import CitySeeder  # noqa: F401
-
+from seeds.loaders.destination_seeder import DestinationSeeder  # noqa: F401
 from seeds.utils.registry import SeederRegistry
 
 
@@ -31,7 +31,7 @@ async def run_seeder(
 
     if seeder_cls is None:
         available = ", ".join(
-            SeederRegistry.all().keys()
+            sorted(SeederRegistry.all().keys())
         )
 
         raise ValueError(
@@ -49,7 +49,7 @@ async def run_all(
     Run all registered seeders.
     """
 
-    for seeder_cls in SeederRegistry.all().values():
+    for _, seeder_cls in SeederRegistry.all().items():
         await seeder_cls(db).run()
 
 
@@ -60,14 +60,13 @@ async def main() -> None:
 
     async with SessionLocal() as db:
 
-        if len(sys.argv) == 1:
+        if len(sys.argv) > 1:
+            await run_seeder(
+                db,
+                sys.argv[1].lower(),
+            )
+        else:
             await run_all(db)
-            return
-
-        await run_seeder(
-            db,
-            sys.argv[1].lower(),
-        )
 
 
 if __name__ == "__main__":

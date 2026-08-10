@@ -1,0 +1,62 @@
+[
+  {
+    "city_id": "15e006c2-546b-4264-ba88-4a43297160a1",
+    "name": "Gateway of India",
+    "slug": "gateway-of-india",
+    "short_description": "Mumbai's iconic waterfront monument overlooking the Arabian Sea.",
+    "description": "The Gateway of India is one of Mumbai's most recognizable landmarks and a popular starting point for exploring the city's historic waterfront.",
+    "image_url": null,
+    "latitude": 18.9220,
+    "longitude": 72.8347,
+    "is_featured": true,
+    "is_active": true
+  },
+  {
+    "city_id": "05133104-5360-4343-bdc8-a62d1d1d9f12",
+    "name": "Taj Mahal",
+    "slug": "taj-mahal",
+    "short_description": "The iconic white-marble monument of Agra.",
+    "description": "The Taj Mahal is one of India's most famous landmarks and a major destination for travelers visiting Agra.",
+    "image_url": null,
+    "latitude": 27.1751,
+    "longitude": 78.0421,
+    "is_featured": true,
+    "is_active": true
+  },
+  {
+    "city_id": "053bb830-c916-47d0-9e7e-08af4e1ef5ed",
+    "name": "City Palace",
+    "slug": "city-palace-jaipur",
+    "short_description": "A historic royal palace complex in the heart of Jaipur.",
+    "description": "The City Palace is a major Jaipur attraction showcasing Rajput and Mughal architectural influences.",
+    "image_url": null,
+    "latitude": 26.9258,
+    "longitude": 75.8237,
+    "is_featured": true,
+    "is_active": true
+  },
+  {
+    "city_id": "4394d753-451e-43fd-a8d6-16dea51f3851",
+    "name": "Lake Pichola",
+    "slug": "lake-pichola",
+    "short_description": "A scenic artificial lake surrounded by Udaipur's historic landscape.",
+    "description": "Lake Pichola is one of Udaipur's signature attractions, known for its scenic views, islands and historic palaces.",
+    "image_url": null,
+    "latitude": 24.5726,
+    "longitude": 73.6812,
+    "is_featured": true,
+    "is_active": true
+  },
+  {
+    "city_id": "33f27420-b1c3-4527-a0f0-e3daf9fce9be",
+    "name": "Goa Beaches",
+    "slug": "goa-beaches",
+    "short_description": "Beautiful beaches and coastal experiences around Goa.",
+    "description": "Goa is known for its beaches, coastal scenery, relaxed atmosphere and vibrant tourism experiences.",
+    "image_url": null,
+    "latitude": 15.4909,
+    "longitude": 73.8278,
+    "is_featured": true,
+    "is_active": true
+  }
+]

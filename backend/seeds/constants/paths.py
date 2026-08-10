@@ -45,3 +45,4 @@ class DataPaths:
     LANGUAGES = PROCESSED / "languages.json"
 
     CURRENCIES = PROCESSED / "currencies.json"
+    DESTINATIONS = PROCESSED / "destinations.json"
