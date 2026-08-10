@@ -15,7 +15,8 @@ class MobileBottomNav extends StatefulWidget {
       _MobileBottomNavState();
 }
 
-class _MobileBottomNavState extends State<MobileBottomNav> {
+class _MobileBottomNavState
+    extends State<MobileBottomNav> {
   late int _selectedIndex;
 
   final List<(IconData, String)> _items = const [
@@ -33,9 +34,26 @@ class _MobileBottomNavState extends State<MobileBottomNav> {
   }
 
   @override
+  void didUpdateWidget(
+    covariant MobileBottomNav oldWidget,
+  ) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.currentIndex !=
+        widget.currentIndex) {
+      _selectedIndex = widget.currentIndex;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return SafeArea(
-      minimum: const EdgeInsets.fromLTRB(18, 0, 18, 18),
+      minimum: const EdgeInsets.fromLTRB(
+        18,
+        0,
+        18,
+        18,
+      ),
       child: Container(
         height: 74,
         decoration: BoxDecoration(
@@ -57,11 +75,13 @@ class _MobileBottomNavState extends State<MobileBottomNav> {
             _items.length,
             (index) {
               final item = _items[index];
-              final selected = index == _selectedIndex;
+              final selected =
+                  index == _selectedIndex;
 
               return Expanded(
                 child: InkWell(
-                  borderRadius: BorderRadius.circular(22),
+                  borderRadius:
+                      BorderRadius.circular(22),
                   onTap: () {
                     setState(() {
                       _selectedIndex = index;
@@ -70,8 +90,11 @@ class _MobileBottomNavState extends State<MobileBottomNav> {
                     widget.onTap?.call(index);
                   },
                   child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 250),
-                    margin: const EdgeInsets.symmetric(
+                    duration: const Duration(
+                      milliseconds: 250,
+                    ),
+                    margin:
+                        const EdgeInsets.symmetric(
                       horizontal: 4,
                       vertical: 8,
                     ),
@@ -79,14 +102,19 @@ class _MobileBottomNavState extends State<MobileBottomNav> {
                       color: selected
                           ? const Color(0xFF2563EB)
                           : Colors.transparent,
-                      borderRadius: BorderRadius.circular(22),
+                      borderRadius:
+                          BorderRadius.circular(22),
                     ),
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisAlignment:
+                          MainAxisAlignment.center,
                       children: [
                         AnimatedScale(
-                          duration: const Duration(milliseconds: 250),
-                          scale: selected ? 1.15 : 1,
+                          duration: const Duration(
+                            milliseconds: 250,
+                          ),
+                          scale:
+                              selected ? 1.15 : 1,
                           child: Icon(
                             item.$1,
                             color: selected
@@ -100,7 +128,8 @@ class _MobileBottomNavState extends State<MobileBottomNav> {
                           item.$2,
                           style: TextStyle(
                             fontSize: 11,
-                            fontWeight: FontWeight.w600,
+                            fontWeight:
+                                FontWeight.w600,
                             color: selected
                                 ? Colors.white
                                 : Colors.grey.shade600,

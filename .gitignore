@@ -19,3 +19,6 @@ app/.flutter-plugins-dependencies
 
 # Misc
 *.loggit add .
+# Environment / secrets
+backend/.env.development
+backend/.env.*

@@ -2,11 +2,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/responsive/responsive.dart';
+import '../../features/profile/presentation/pages/profile_page.dart';
 import 'desktop_top_nav.dart';
 import 'mobile_bottom_nav.dart';
 import 'tablet_navigation_rail.dart';
 
-class AdaptiveScaffold extends StatelessWidget {
+class AdaptiveScaffold extends StatefulWidget {
   final Widget body;
   final Widget? floatingActionButton;
   final PreferredSizeWidget? appBar;
@@ -18,48 +19,116 @@ class AdaptiveScaffold extends StatelessWidget {
     this.appBar,
   });
 
+  @override
+  State<AdaptiveScaffold> createState() =>
+      _AdaptiveScaffoldState();
+}
+
+class _AdaptiveScaffoldState
+    extends State<AdaptiveScaffold> {
+  int _selectedIndex = 0;
+
   bool _isDesktop(BuildContext context) {
-    if (kIsWeb) return true;
+    if (kIsWeb) {
+      return true;
+    }
+
     return Responsive.isDesktop(context);
   }
 
   bool _isTablet(BuildContext context) {
-    if (kIsWeb) return false;
+    if (kIsWeb) {
+      return false;
+    }
+
     return Responsive.isTablet(context);
+  }
+
+  void _onNavigationSelected(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  Widget _buildBody() {
+    switch (_selectedIndex) {
+      case 5:
+        // Profile
+        return const ProfilePage();
+
+      case 4:
+        // Saved page is not wired yet.
+        // Keep the current body until SavedPage
+        // is connected.
+        return widget.body;
+
+      case 0:
+      default:
+        return widget.body;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final body = _buildBody();
+
+    // ==========================================================
+    // Desktop / Web
+    // ==========================================================
+
     if (_isDesktop(context)) {
       return Scaffold(
-        appBar: appBar ?? const DesktopTopNav(),
+        appBar: DesktopTopNav(
+          selectedIndex: _selectedIndex,
+          onDestinationSelected:
+              _onNavigationSelected,
+        ),
         body: body,
-        floatingActionButton: floatingActionButton,
+        floatingActionButton:
+            widget.floatingActionButton,
       );
     }
+
+    // ==========================================================
+    // Tablet
+    // ==========================================================
 
     if (_isTablet(context)) {
       return Scaffold(
-        appBar: appBar,
-        floatingActionButton: floatingActionButton,
+        appBar: widget.appBar,
+        floatingActionButton:
+            widget.floatingActionButton,
         body: Row(
-  children: [
-    TabletNavigationRail(
-      selectedIndex: 0,
-      onDestinationSelected: (index) {},
-    ),
-    const VerticalDivider(width: 1),
-    Expanded(child: body),
-  ],
-),
+          children: [
+            TabletNavigationRail(
+              selectedIndex: _selectedIndex,
+              onDestinationSelected:
+                  _onNavigationSelected,
+            ),
+            const VerticalDivider(
+              width: 1,
+            ),
+            Expanded(
+              child: body,
+            ),
+          ],
+        ),
       );
     }
 
+    // ==========================================================
+    // Mobile
+    // ==========================================================
+
     return Scaffold(
-      extendBody: true,
-      appBar: appBar,
-      floatingActionButton: floatingActionButton,
-      bottomNavigationBar: const MobileBottomNav(),
+      extendBody: false,
+      appBar: widget.appBar,
+      floatingActionButton:
+          widget.floatingActionButton,
+      bottomNavigationBar: MobileBottomNav(
+        currentIndex: _selectedIndex,
+        onTap: _onNavigationSelected,
+      ),
       body: body,
     );
   }

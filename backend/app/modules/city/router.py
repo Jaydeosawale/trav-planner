@@ -19,6 +19,7 @@ from app.modules.city.schema import (
 
 from app.modules.city.service import CityService
 
+
 router = APIRouter()
 
 service = CityService()
@@ -29,7 +30,7 @@ service = CityService()
 # ==========================================================
 
 @router.get(
-    "",
+    "/",
     response_model=ApiResponse[list[CityListResponse]],
 )
 async def get_cities(
@@ -136,7 +137,7 @@ async def get_city(
 # ==========================================================
 
 @router.post(
-    "",
+    "/",
     response_model=ApiResponse[CityResponse],
 )
 async def create_city(

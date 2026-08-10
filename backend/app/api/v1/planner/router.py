@@ -3,21 +3,11 @@ Planner API endpoints.
 """
 
 from fastapi import APIRouter
+from app.modules.destination.router import router as planner_router
 
 router = APIRouter()
 
-
-@router.get(
-    "/",
-    summary="Planner API",
+router.include_router(
+   planner_router,
+    tags=["Planner"],
 )
-async def planner_home():
-    """
-    Planner health endpoint.
-    """
-
-    return {
-        "module": "planner",
-        "status": "ready",
-        "message": "Planner module is running",
-    }

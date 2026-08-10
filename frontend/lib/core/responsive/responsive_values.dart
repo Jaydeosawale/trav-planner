@@ -5,16 +5,16 @@ import 'responsive.dart';
 class ResponsiveValues {
   ResponsiveValues._();
 
-  //-------------------------
+  // ==========================================================
   // HERO
-  //-------------------------
+  // ==========================================================
 
   static double heroHeight(BuildContext context) =>
       Responsive.value(
         context: context,
         mobile: 380,
-        tablet: 470,
-        desktop: 560,
+        tablet: 410,
+        desktop: 450,
       );
 
   static double heroTitle(BuildContext context) =>
@@ -22,7 +22,7 @@ class ResponsiveValues {
         context: context,
         mobile: 40,
         tablet: 46,
-        desktop: 54,
+        desktop: 52,
       );
 
   static double heroSubtitle(BuildContext context) =>
@@ -30,19 +30,19 @@ class ResponsiveValues {
         context: context,
         mobile: 17,
         tablet: 18,
-        desktop: 20,
+        desktop: 19,
       );
 
-  //-------------------------
+  // ==========================================================
   // SEARCH BAR
-  //-------------------------
+  // ==========================================================
 
   static double searchBarHeight(BuildContext context) =>
       Responsive.value(
         context: context,
         mobile: 60,
         tablet: 64,
-        desktop: 68,
+        desktop: 64,
       );
 
   static double searchBarMaxWidth(BuildContext context) =>
@@ -50,12 +50,12 @@ class ResponsiveValues {
         context: context,
         mobile: double.infinity,
         tablet: 560,
-        desktop: 700,
+        desktop: 620,
       );
 
-  //-------------------------
+  // ==========================================================
   // DESTINATION CARD
-  //-------------------------
+  // ==========================================================
 
   static double destinationCardWidth(BuildContext context) =>
       Responsive.value(
@@ -81,9 +81,9 @@ class ResponsiveValues {
         desktop: 38,
       );
 
-  //-------------------------
+  // ==========================================================
   // CATEGORY CARD
-  //-------------------------
+  // ==========================================================
 
   static double categoryCardWidth(BuildContext context) =>
       Responsive.value(
@@ -109,9 +109,9 @@ class ResponsiveValues {
         desktop: 38,
       );
 
-  //-------------------------
+  // ==========================================================
   // WEATHER CARD
-  //-------------------------
+  // ==========================================================
 
   static double weatherCardHeight(BuildContext context) =>
       Responsive.value(
@@ -121,9 +121,9 @@ class ResponsiveValues {
         desktop: 210,
       );
 
-  //-------------------------
+  // ==========================================================
   // BUTTONS
-  //-------------------------
+  // ==========================================================
 
   static double buttonHeight(BuildContext context) =>
       Responsive.value(
@@ -133,9 +133,9 @@ class ResponsiveValues {
         desktop: 64,
       );
 
-  //-------------------------
+  // ==========================================================
   // ICONS
-  //-------------------------
+  // ==========================================================
 
   static double icon(BuildContext context) =>
       Responsive.value(
@@ -153,9 +153,9 @@ class ResponsiveValues {
         desktop: 48,
       );
 
-  //-------------------------
+  // ==========================================================
   // SPACING
-  //-------------------------
+  // ==========================================================
 
   static double screenPadding(BuildContext context) =>
       Responsive.value(
@@ -181,9 +181,9 @@ class ResponsiveValues {
         desktop: 26,
       );
 
-  //-------------------------
+  // ==========================================================
   // BORDER RADIUS
-  //-------------------------
+  // ==========================================================
 
   static double radius(BuildContext context) =>
       Responsive.value(
@@ -201,9 +201,9 @@ class ResponsiveValues {
         desktop: 40,
       );
 
-  //-------------------------
+  // ==========================================================
   // TEXT
-  //-------------------------
+  // ==========================================================
 
   static double heading(BuildContext context) =>
       Responsive.value(

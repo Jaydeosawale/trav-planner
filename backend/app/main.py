@@ -1,5 +1,5 @@
 """
-Trav Planner API
+Trav Planner API.
 """
 
 from fastapi import FastAPI
@@ -10,10 +10,10 @@ from app.core.config import api_config
 from app.core.lifespan import lifespan
 from app.core.settings import settings
 
-from app.middleware.request_id import RequestIDMiddleware
-from app.middleware.logging import LoggingMiddleware
 from app.middleware.exception import global_exception_handler
-from app.common.exceptions.handler import register_exception_handlers
+from app.middleware.logging import LoggingMiddleware
+from app.middleware.request_id import RequestIDMiddleware
+
 
 app = FastAPI(
     title=api_config.title,
@@ -25,43 +25,59 @@ app = FastAPI(
     openapi_tags=api_config.openapi_tags,
     lifespan=lifespan,
 )
-register_exception_handlers(app)
+
+
+# ==========================================================
+# Exception Handling
+# ==========================================================
 
 app.add_exception_handler(
     Exception,
     global_exception_handler,
 )
 
+
+# ==========================================================
+# Middleware
+# ==========================================================
+
 app.add_middleware(RequestIDMiddleware)
 
 app.add_middleware(LoggingMiddleware)
 
-# ---------------------------------------------------------
+
+# ==========================================================
 # CORS
-# ---------------------------------------------------------
+# ==========================================================
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allowed_origins,
+    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ---------------------------------------------------------
+
+# ==========================================================
 # API
-# ---------------------------------------------------------
+# ==========================================================
 
 app.include_router(
     api_router,
     prefix=settings.API_PREFIX,
 )
 
-# ---------------------------------------------------------
-# Root
-# ---------------------------------------------------------
 
-@app.get("/", tags=["Root"])
+# ==========================================================
+# Root
+# ==========================================================
+
+@app.get(
+    "/",
+    tags=["Root"],
+)
 async def root():
     return {
         "application": settings.APP_NAME,

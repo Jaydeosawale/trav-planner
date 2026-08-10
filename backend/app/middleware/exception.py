@@ -7,8 +7,9 @@ from __future__ import annotations
 from fastapi import Request
 from fastapi.responses import JSONResponse
 
-from app.common.exceptions.base import AppException
+from app.common.exceptions.app_exception import AppException
 from app.core.logging import get_logger
+
 
 logger = get_logger()
 

@@ -1,20 +1,20 @@
-import 'package:dio/dio.dart';
+import 'environment.dart';
 
-import '../config/api_config.dart';
+class AppConfig {
+  AppConfig._();
 
-class ApiClient {
-  ApiClient._();
+  static const String appName = "Trav Planner";
 
-  static final Dio dio = Dio(
-    BaseOptions(
-      baseUrl: ApiConfig.baseUrl,
-      connectTimeout: const Duration(seconds: 20),
-      receiveTimeout: const Duration(seconds: 20),
-      sendTimeout: const Duration(seconds: 20),
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-      },
-    ),
-  );
+  static const String appVersion = "1.0.0";
+
+  static const Environment environment = AppEnvironment.current;
+
+  static bool get isDevelopment =>
+      environment == Environment.development;
+
+  static bool get isStaging =>
+      environment == Environment.staging;
+
+  static bool get isProduction =>
+      environment == Environment.production;
 }

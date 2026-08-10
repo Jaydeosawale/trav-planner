@@ -1,5 +1,5 @@
 """
-Standard API Response Models.
+Standard API Response Models and Helpers.
 """
 
 from __future__ import annotations
@@ -8,6 +8,7 @@ from datetime import datetime
 from typing import Any, Generic, TypeVar
 
 from pydantic import BaseModel, Field
+
 
 T = TypeVar("T")
 
@@ -65,4 +66,19 @@ class ErrorResponse(BaseModel):
 
     timestamp: datetime = Field(
         default_factory=datetime.utcnow,
+    )
+
+
+def success_response(
+    data: Any = None,
+    message: str = "Success",
+) -> ApiResponse[Any]:
+    """
+    Create a standard successful API response.
+    """
+
+    return ApiResponse(
+        success=True,
+        message=message,
+        data=data,
     )
