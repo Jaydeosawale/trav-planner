@@ -13,14 +13,18 @@ from sqlalchemy.ext.asyncio import (
 )
 
 from app.core.settings import settings
+from app.database.connection import database_connection_options
 
 
 # ------------------------------------------------------------------
 # Async Engine
 # ------------------------------------------------------------------
 
+database_url, connect_args = database_connection_options(settings.database_url)
+
 engine = create_async_engine(
-    settings.database_url,
+    database_url,
+    connect_args=connect_args,
     echo=settings.DEBUG,
     future=True,
     pool_pre_ping=True,

@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 
 from app.core.settings import settings
 from app.database.base import Base
+from app.database.connection import database_connection_options
 
 # ---------------------------------------------------------
 # IMPORTANT
@@ -109,8 +110,10 @@ def run_migrations_online() -> None:
     SQLAlchemy's async engine.
     """
 
+    engine_url, connect_args = database_connection_options(database_url)
     connectable = create_async_engine(
-        database_url,
+        engine_url,
+        connect_args=connect_args,
         poolclass=pool.NullPool,
     )
 

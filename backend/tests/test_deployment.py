@@ -25,3 +25,22 @@ def test_neon_url_keeps_tls_and_uses_asyncpg_parameters():
     assert 'ssl=verify-full' in normalized
     assert 'sslmode=' not in normalized
     assert 'channel_binding=' not in normalized
+
+
+def test_neon_tls_uses_system_trust_and_verifies_hostname():
+    import ssl
+    from app.database.connection import database_connection_options
+    url, args = database_connection_options(
+        "postgresql+asyncpg://user:password@ep-test.neon.tech/neondb?ssl=verify-full"
+    )
+    assert "ssl" not in url.query
+    assert args["ssl"].verify_mode == ssl.CERT_REQUIRED
+    assert args["ssl"].check_hostname
+    assert args["ssl"].cert_store_stats()["x509_ca"] > 0
+
+
+def test_local_database_connection_does_not_force_tls():
+    from app.database.connection import database_connection_options
+    url, args = database_connection_options("postgresql+asyncpg://user:password@localhost/db")
+    assert url.host == "localhost"
+    assert args == {}
