@@ -1,3 +1,5 @@
+import '../../../destinations/presentation/destination_details_page.dart';
+import '../../../destinations/data/place.dart';
 import '../../../../shared/widgets/travel_inspiration_grid.dart';
 import 'package:trav_planner/core/theme/app_colors.dart';
 import 'dart:async';
@@ -596,7 +598,20 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
                 childAspectRatio: isWide ? 3.1 : 4,
               ),
               itemBuilder: (context, index) {
-                return _CityCard(city: result.items[index]);
+                final city = result.items[index];
+                return InkWell(
+                  borderRadius: BorderRadius.circular(18),
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => DestinationDetailsPage(
+                        cityId: city.id,
+                        name: city.name,
+                        center: validCoordinates(city.latitude, city.longitude),
+                      ),
+                    ),
+                  ),
+                  child: _CityCard(city: city),
+                );
               },
             );
           },

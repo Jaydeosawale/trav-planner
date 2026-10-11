@@ -1,3 +1,5 @@
+import '../../../destinations/presentation/destination_details_page.dart';
+import '../../../destinations/data/place.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -478,7 +480,22 @@ class _DestinationCollection extends ConsumerWidget {
                   width: 230,
                   child: InkWell(
                     borderRadius: BorderRadius.circular(20),
-                    onTap: () => onExplore(destination.title),
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => DestinationDetailsPage(
+                          cityId: destination.cityId,
+                          name: destination.title,
+                          description:
+                              destination.description ??
+                              destination.shortDescription,
+                          imageUrl: destination.image,
+                          center: validCoordinates(
+                            destination.latitude,
+                            destination.longitude,
+                          ),
+                        ),
+                      ),
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [

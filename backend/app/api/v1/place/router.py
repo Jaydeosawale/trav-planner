@@ -1,14 +1,12 @@
-"""
-Planner API endpoints.
-"""
+"""Public place catalogue endpoints."""
 
 from fastapi import APIRouter
 
-from app.modules.planner.router import router as planner_router
+from app.modules.place.router import router as place_router
 
 router = APIRouter()
 
 router.include_router(
-    planner_router,
-    tags=["Planner"],
+    place_router,
+    tags=["Places"],
 )
