@@ -60,7 +60,15 @@ class MyTripsPage extends ConsumerWidget {
                           padding: const EdgeInsets.all(28),
                           child: Column(
                             children: [
-                              const Icon(Icons.luggage_outlined, size: 40),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(20),
+                                child: Image.asset(
+                                  'assets/images/destinations/switzerland_1.jpg',
+                                  height: 180,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
                               const SizedBox(height: 16),
                               Text(
                                 'A little adventure awaits.',
@@ -93,9 +101,16 @@ class MyTripsPage extends ConsumerWidget {
                                 child: Card(
                                   child: ListTile(
                                     contentPadding: const EdgeInsets.all(20),
-                                    leading: const Icon(
-                                      Icons.luggage_outlined,
-                                      color: AppColors.accent,
+                                    leading: Container(
+                                      padding: const EdgeInsets.all(14),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.surfaceVariant,
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      child: const Icon(
+                                        Icons.luggage_outlined,
+                                        color: AppColors.primary,
+                                      ),
                                     ),
                                     title: Text(
                                       trip['title']?.toString() ??

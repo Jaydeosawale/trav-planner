@@ -15,16 +15,16 @@ class BrandLogo extends StatelessWidget {
         children: [
           TextSpan(
             text: compact ? 't' : 'trav',
-            style: const TextStyle(color: AppColors.textPrimary),
+            style: const TextStyle(color: AppColors.primary),
           ),
           const TextSpan(
             text: '.',
-            style: TextStyle(color: AppColors.primary),
+            style: TextStyle(color: AppColors.sunset),
           ),
         ],
       ),
       style: TextStyle(
-        fontFamily: 'Manrope',
+        fontFamily: 'Inter',
         fontSize: size,
         height: 1.1,
         fontWeight: FontWeight.w800,

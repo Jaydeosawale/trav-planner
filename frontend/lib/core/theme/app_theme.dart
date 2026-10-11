@@ -4,8 +4,8 @@ import 'app_text_theme.dart';
 
 class AppTheme {
   AppTheme._();
-  static ThemeData get dark {
-    const colors = ColorScheme.dark(
+  static ThemeData get light {
+    const colors = ColorScheme.light(
       primary: AppColors.primary,
       onPrimary: AppColors.onPrimary,
       primaryContainer: AppColors.surfaceVariant,
@@ -42,9 +42,9 @@ class AppTheme {
     );
     return ThemeData(
       useMaterial3: true,
-      brightness: Brightness.dark,
+      brightness: Brightness.light,
       colorScheme: colors,
-      fontFamily: 'DM Sans',
+      fontFamily: 'Inter',
       textTheme: AppTextTheme.textTheme,
       scaffoldBackgroundColor: AppColors.background,
       canvasColor: AppColors.background,
@@ -97,7 +97,11 @@ class AppTheme {
           disabledForegroundColor: AppColors.textSecondary,
           minimumSize: const Size(48, 52),
           shape: rounded,
-          textStyle: const TextStyle(fontFamily: 'DM Sans', fontWeight: FontWeight.w700, fontSize: 16),
+          textStyle: const TextStyle(
+            fontFamily: 'Inter',
+            fontWeight: FontWeight.w700,
+            fontSize: 16,
+          ),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -124,7 +128,10 @@ class AppTheme {
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.surface,
         selectedColor: AppColors.surfaceVariant,
-        labelStyle: const TextStyle(fontFamily: 'DM Sans', color: AppColors.textPrimary),
+        labelStyle: const TextStyle(
+          fontFamily: 'Inter',
+          color: AppColors.textPrimary,
+        ),
         side: const BorderSide(color: AppColors.border),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),
@@ -162,5 +169,5 @@ class AppTheme {
     );
   }
 
-  static ThemeData get light => dark;
+  static ThemeData get dark => light;
 }

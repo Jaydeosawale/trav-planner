@@ -37,6 +37,9 @@ class DesktopTopNav extends StatelessWidget implements PreferredSizeWidget {
                 foregroundColor: selectedIndex == entry.key
                     ? AppColors.primary
                     : AppColors.textSecondary,
+                backgroundColor: selectedIndex == entry.key
+                    ? AppColors.surfaceVariant
+                    : Colors.transparent,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 18,

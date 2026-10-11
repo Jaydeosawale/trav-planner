@@ -17,6 +17,7 @@ class _AISearchPageState extends State<AISearchPage> {
 
   bool _loading = false;
   String? _error;
+  String? _lastMessage;
   AIResponseModel? _response;
 
   @override
@@ -36,6 +37,7 @@ class _AISearchPageState extends State<AISearchPage> {
 
     setState(() {
       _loading = true;
+      _lastMessage = message;
       _error = null;
       _response = null;
     });
@@ -86,7 +88,7 @@ class _AISearchPageState extends State<AISearchPage> {
             Icon(Icons.auto_awesome_rounded, color: AppColors.primary),
             SizedBox(width: 8),
             Text(
-              'Trav Planner AI',
+              'AI Planner',
               style: TextStyle(fontWeight: FontWeight.w800),
             ),
           ],
@@ -101,17 +103,27 @@ class _AISearchPageState extends State<AISearchPage> {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 700),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Icon(
-                  Icons.auto_awesome_rounded,
-                  size: 56,
-                  color: AppColors.primary,
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      colors: [Color(0xFFE0ECFF), Color(0xFFD6F5EF)],
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.auto_awesome_rounded,
+                    size: 40,
+                    color: AppColors.primary,
+                  ),
                 ),
 
                 const SizedBox(height: 20),
 
                 const Text(
-                  'The idea is yours.\nThe plan is on us.',
+                  'Where will curiosity\ntake you?',
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
                 ),
@@ -119,8 +131,7 @@ class _AISearchPageState extends State<AISearchPage> {
                 const SizedBox(height: 10),
 
                 Text(
-                  'Share your dates, budget and interests. Ask trav. AI about '
-                  'places, or trip planning.',
+                  'Tell us your destination, dates and budget. We’ll help you put the journey together.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 15,
@@ -136,7 +147,8 @@ class _AISearchPageState extends State<AISearchPage> {
                   maxLines: 3,
                   textInputAction: TextInputAction.newline,
                   decoration: InputDecoration(
-                    hintText: 'Ask anything about your trip...',
+                    hintText:
+                        'A 5-day trip to Japan in April, with food and quiet places…',
                     filled: true,
                     fillColor: AppColors.surface,
                     border: OutlineInputBorder(
@@ -154,6 +166,11 @@ class _AISearchPageState extends State<AISearchPage> {
                             ),
                           )
                         : IconButton(
+                            tooltip: 'Send message',
+                            style: IconButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: Colors.white,
+                            ),
                             onPressed: _askAI,
                             icon: const Icon(Icons.arrow_upward_rounded),
                           ),
@@ -195,6 +212,24 @@ class _AISearchPageState extends State<AISearchPage> {
 
                 const SizedBox(height: 28),
 
+                if (_lastMessage != null) ...[
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Container(
+                      constraints: const BoxConstraints(maxWidth: 520),
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceVariant,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        _lastMessage!,
+                        style: const TextStyle(height: 1.5),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
                 if (_loading) const _LoadingCard(),
 
                 if (_error != null)
@@ -248,7 +283,7 @@ class _LoadingCard extends StatelessWidget {
           SizedBox(width: 14),
           Expanded(
             child: Text(
-              'Trav Planner AI is thinking...',
+              'Putting your ideas together…',
               style: TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
@@ -323,18 +358,10 @@ class _ResponseCard extends StatelessWidget {
               const SizedBox(width: 10),
               const Expanded(
                 child: Text(
-                  'Trav Planner AI',
+                  'Your AI travel companion',
                   style: TextStyle(fontWeight: FontWeight.w800),
                 ),
               ),
-              if (response.metadata['provider'] != null)
-                Text(
-                  response.metadata['provider'].toString(),
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
             ],
           ),
 
@@ -348,18 +375,6 @@ class _ResponseCard extends StatelessWidget {
               color: AppColors.textPrimary,
             ),
           ),
-
-          if (response.metadata['tools_used'] is List &&
-              (response.metadata['tools_used'] as List).isNotEmpty) ...[
-            const SizedBox(height: 16),
-            Text(
-              'Tools used: ${(response.metadata['tools_used'] as List).join(', ')}',
-              style: const TextStyle(
-                fontSize: 12,
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ],
         ],
       ),
     );

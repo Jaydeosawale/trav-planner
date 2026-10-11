@@ -1,3 +1,4 @@
+import '../../../../shared/widgets/travel_inspiration_grid.dart';
 import 'package:trav_planner/core/theme/app_colors.dart';
 import 'dart:async';
 
@@ -120,6 +121,18 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
 
                           SizedBox(height: isWide ? 24 : 14),
 
+                          if (_section == 0 && _searchQuery.isEmpty) ...[
+                            TravelInspirationGrid(
+                              onSelect: (query) {
+                                setState(() {
+                                  _searchController.text = query;
+                                  _searchQuery = query;
+                                  _section = 2;
+                                });
+                              },
+                            ),
+                            const SizedBox(height: 28),
+                          ],
                           _buildSectionSelector(),
 
                           SizedBox(height: isWide ? 24 : 18),
@@ -171,7 +184,7 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
             borderRadius: BorderRadius.circular(20),
           ),
           child: Text(
-            '$countryCount countries available',
+            '$countryCount ${countryCount == 1 ? 'country' : 'countries'} available',
             style: const TextStyle(
               color: AppColors.primary,
               fontWeight: FontWeight.w700,
@@ -731,7 +744,7 @@ class _CountryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: AppColors.textPrimary,
+      color: AppColors.surface,
       borderRadius: BorderRadius.circular(18),
       child: InkWell(
         onTap: onTap,
@@ -829,7 +842,7 @@ class _StateCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: AppColors.textPrimary,
+      color: AppColors.surface,
       borderRadius: BorderRadius.circular(18),
       child: InkWell(
         onTap: onTap,

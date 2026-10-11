@@ -48,7 +48,7 @@ class GlassDestinationCard extends StatelessWidget {
                           destination.isFeatured
                               ? Icons.favorite
                               : Icons.favorite_border,
-                          color: AppColors.textPrimary,
+                          color: Colors.white,
                         ),
                       ),
                     ),
@@ -74,7 +74,7 @@ class GlassDestinationCard extends StatelessWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
-                                color: AppColors.textPrimary,
+                                color: Colors.white,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 22,
                               ),
@@ -125,7 +125,7 @@ class GlassDestinationCard extends StatelessWidget {
                                       ? "Available"
                                       : "Unavailable",
                                   style: const TextStyle(
-                                    color: AppColors.textPrimary,
+                                    color: Colors.white,
                                     fontSize: 13,
                                   ),
                                 ),
@@ -134,7 +134,7 @@ class GlassDestinationCard extends StatelessWidget {
                                   const Text(
                                     "Featured",
                                     style: TextStyle(
-                                      color: AppColors.textPrimary,
+                                      color: Colors.white,
                                       fontWeight: FontWeight.bold,
                                       fontSize: 13,
                                     ),
@@ -223,7 +223,7 @@ class GlassDestinationCard extends StatelessWidget {
 
   Widget _fallbackImage() {
     return Container(
-      color: AppColors.textPrimary,
+      color: Colors.white,
       child: const Center(
         child: Icon(Icons.landscape, color: AppColors.textSecondary, size: 48),
       ),

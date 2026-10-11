@@ -38,21 +38,34 @@ class MobileBottomNav extends StatelessWidget {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
-                          items[index].$1,
-                          color: selected
-                              ? AppColors.primary
-                              : AppColors.textSecondary,
-                          size: 24,
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 180),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: selected
+                                ? AppColors.surfaceVariant
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Icon(
+                            items[index].$1,
+                            color: selected
+                                ? AppColors.primary
+                                : AppColors.textSecondary,
+                            size: 22,
+                          ),
                         ),
-                        const SizedBox(height: 7),
+                        const SizedBox(height: 4),
                         Text(
                           items[index].$2,
                           maxLines: 1,
                           style: TextStyle(
                             fontSize: 10,
                             color: selected
-                                ? AppColors.textPrimary
+                                ? AppColors.primary
                                 : AppColors.textSecondary,
                             fontWeight: selected
                                 ? FontWeight.w700

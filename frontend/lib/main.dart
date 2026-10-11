@@ -18,9 +18,9 @@ class TravPlannerApp extends StatelessWidget {
     return MaterialApp(
       title: 'Trav Planner',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.dark,
+      theme: AppTheme.light,
       darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.dark,
+      themeMode: ThemeMode.light,
       home: const SplashPage(),
     );
   }

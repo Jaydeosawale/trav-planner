@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/navigation/adaptive_scaffold.dart';
 import '../../../../shared/widgets/brand_logo.dart';
+import '../../../../shared/widgets/travel_inspiration_grid.dart';
+import '../../../trips/presentation/pages/my_trips_page.dart';
 import '../../../ai/presentation/pages/ai_search_page.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../auth/presentation/pages/login_page.dart';
@@ -31,12 +33,16 @@ class HomePage extends ConsumerWidget {
               onRefresh: () async {
                 ref.invalidate(bannersProvider);
                 ref.invalidate(destinationsProvider);
-                try { await ref.read(bannersProvider.future); } catch (_) { /* Provider displays the retry state. */ }
+                try {
+                  await ref.read(bannersProvider.future);
+                } catch (_) {
+                  /* Provider displays the retry state. */
+                }
               },
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: EdgeInsets.symmetric(
-                  horizontal: wide ? 40 : 24,
+                  horizontal: wide ? 40 : 20,
                   vertical: 24,
                 ),
                 child: Center(
@@ -90,20 +96,20 @@ class HomePage extends ConsumerWidget {
                           ),
                           const SizedBox(height: 32),
                         ],
-                        const _Eyebrow('LESS PLANNING. MORE LIVING.'),
-                        const SizedBox(height: 20),
+                        const _Eyebrow('YOUR NEXT GREAT ADVENTURE'),
+                        const SizedBox(height: 12),
                         Text(
                           'Somewhere\nworth going.',
                           style: Theme.of(context).textTheme.displayLarge
-                              ?.copyWith(fontSize: wide ? 58 : 40),
+                              ?.copyWith(fontSize: wide ? 54 : 38),
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'Find a place. Make it your adventure.',
+                          'Beautiful places. Thoughtful plans. All yours.',
                           style: Theme.of(context).textTheme.bodyLarge
                               ?.copyWith(color: AppColors.textSecondary),
                         ),
-                        const SizedBox(height: 28),
+                        const SizedBox(height: 22),
                         ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 650),
                           child: TextField(
@@ -131,13 +137,24 @@ class HomePage extends ConsumerWidget {
                                 child: _FeaturedDestination(),
                               ),
                               const SizedBox(width: 24),
-                              const Expanded(flex: 4, child: _PlannerPanel()),
+                              const Expanded(
+                                flex: 4,
+                                child: Column(
+                                  children: [
+                                    _PlannerPanel(),
+                                    SizedBox(height: 16),
+                                    _TripShortcut(),
+                                  ],
+                                ),
+                              ),
                             ],
                           )
                         else ...[
                           const _FeaturedDestination(),
                           const SizedBox(height: 24),
                           const _PlannerPanel(),
+                          const SizedBox(height: 16),
+                          const _TripShortcut(),
                         ],
                         const SizedBox(height: 20),
                         Wrap(
@@ -167,8 +184,29 @@ class HomePage extends ConsumerWidget {
                           ],
                         ),
                         const SizedBox(height: 24),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'Find your kind of escape',
+                                style: Theme.of(context).textTheme.titleLarge
+                                    ?.copyWith(fontSize: wide ? 22 : 19),
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () => _explore(context),
+                              child: const Text('Explore all'),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        TravelInspirationGrid(
+                          onSelect: (query) => _explore(context, query),
+                        ),
+                        const SizedBox(height: 32),
                         Text(
-                          'More places to discover',
+                          'Fresh discoveries',
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
                         const SizedBox(height: 16),
@@ -224,9 +262,9 @@ class _FeaturedDestination extends ConsumerWidget {
     return Semantics(
       label: banner?.title ?? 'Bali destination inspiration',
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(26),
+        borderRadius: BorderRadius.circular(24),
         child: SizedBox(
-          height: 290,
+          height: MediaQuery.sizeOf(context).width >= 900 ? 410 : 310,
           width: double.infinity,
           child: Stack(
             fit: StackFit.expand,
@@ -260,8 +298,8 @@ class _FeaturedDestination extends ConsumerWidget {
                 child: IconButton.filled(
                   tooltip: 'View saved destinations',
                   style: IconButton.styleFrom(
-                    backgroundColor: AppColors.textPrimary,
-                    foregroundColor: AppColors.background,
+                    backgroundColor: Colors.white,
+                    foregroundColor: AppColors.textPrimary,
                     minimumSize: const Size(48, 48),
                   ),
                   onPressed: () => Navigator.of(
@@ -278,9 +316,9 @@ class _FeaturedDestination extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'A LITTLE WONDER. A LITTLE WANDER.',
+                      'DESTINATION SPOTLIGHT',
                       style: TextStyle(
-                        color: Color(0xFFF6E2B4),
+                        color: Color(0xFFE2E8F0),
                         fontSize: 10,
                         letterSpacing: 1.6,
                         fontWeight: FontWeight.w700,
@@ -302,6 +340,23 @@ class _FeaturedDestination extends ConsumerWidget {
                         height: 1.4,
                       ),
                     ),
+                    const SizedBox(height: 16),
+                    OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        side: const BorderSide(color: Colors.white54),
+                        minimumSize: const Size(48, 44),
+                      ),
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => ExplorePage(
+                            initialQuery: banner == null ? 'Bali' : '',
+                          ),
+                        ),
+                      ),
+                      icon: const Icon(Icons.north_east_rounded, size: 18),
+                      label: const Text('Explore destinations'),
+                    ),
                   ],
                 ),
               ),
@@ -320,24 +375,39 @@ class _PlannerPanel extends StatelessWidget {
     width: double.infinity,
     padding: const EdgeInsets.all(24),
     decoration: BoxDecoration(
-      color: AppColors.surfaceVariant,
-      borderRadius: BorderRadius.circular(26),
+      gradient: const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [Color(0xFFEFF5FF), Color(0xFFE9FAF6)],
+      ),
+      border: Border.all(color: Color(0xFFDDEAF6)),
+      borderRadius: BorderRadius.circular(24),
     ),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _Eyebrow('YOUR PERSONAL TRAVEL PLANNER'),
-        const SizedBox(height: 22),
+        const Row(
+          children: [
+            Icon(
+              Icons.auto_awesome_rounded,
+              color: AppColors.primary,
+              size: 22,
+            ),
+            SizedBox(width: 10),
+            Expanded(child: _Eyebrow('MADE FOR YOUR JOURNEY')),
+          ],
+        ),
+        const SizedBox(height: 16),
         Text(
-          'The idea is yours.\nThe plan is on us.',
+          'A little inspiration.\nA plan that fits you.',
           style: Theme.of(context).textTheme.headlineSmall,
         ),
         const SizedBox(height: 16),
         const Text(
-          'Dates, budget, interests. We bring it together.',
+          'Tell us what you love. Let AI help shape your next escape.',
           style: TextStyle(
             color: AppColors.textSecondary,
-            fontSize: 16,
+            fontSize: 14,
             height: 1.5,
           ),
         ),
@@ -464,5 +534,61 @@ class _ImagePlaceholder extends StatelessWidget {
   Widget build(BuildContext context) => const ColoredBox(
     color: AppColors.surfaceVariant,
     child: Center(child: Icon(Icons.landscape_outlined, size: 40)),
+  );
+}
+
+class _TripShortcut extends StatelessWidget {
+  const _TripShortcut();
+  @override
+  Widget build(BuildContext context) => Material(
+    color: AppColors.surface,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(22),
+      side: const BorderSide(color: AppColors.border),
+    ),
+    child: InkWell(
+      borderRadius: BorderRadius.circular(22),
+      onTap: () => Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (_) => const MyTripsPage())),
+      child: const Padding(
+        padding: EdgeInsets.all(20),
+        child: Row(
+          children: [
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: Color(0xFFFFF3E7),
+                borderRadius: BorderRadius.all(Radius.circular(14)),
+              ),
+              child: Padding(
+                padding: EdgeInsets.all(12),
+                child: Icon(Icons.luggage_outlined, color: AppColors.warning),
+              ),
+            ),
+            SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Your travel notebook',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    'Keep your plans in one place',
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.arrow_forward_rounded, size: 20),
+          ],
+        ),
+      ),
+    ),
   );
 }
