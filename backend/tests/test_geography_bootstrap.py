@@ -52,3 +52,25 @@ def test_anonymous_users_cannot_modify_city_catalogue():
     for method, path in [('post', '/api/v1/cities/'), ('put', '/api/v1/cities/example'), ('delete', '/api/v1/cities/example')]:
         response = getattr(client, method)(path)
         assert response.status_code == 401
+
+
+def test_public_city_search_includes_coordinates_for_maps():
+    from types import SimpleNamespace
+    from unittest.mock import AsyncMock, patch
+    from fastapi.testclient import TestClient
+    from app.main import app
+    from app.database.session import get_db
+    async def fake_db():
+        yield object()
+    app.dependency_overrides[get_db] = fake_db
+    try:
+        with patch('app.modules.city.router.service.search', new_callable=AsyncMock) as search:
+            search.return_value = ([SimpleNamespace(id='city', country_id='country', state_id='state',
+                name='Barcelona', is_active=True, latitude=41.38879, longitude=2.15899)], 1)
+            response = TestClient(app).get('/api/v1/cities/search?search=Barcelona')
+            assert response.status_code == 200
+            city = response.json()['data']['items'][0]
+            assert float(city['latitude']) == 41.38879
+            assert float(city['longitude']) == 2.15899
+    finally:
+        app.dependency_overrides.pop(get_db, None)

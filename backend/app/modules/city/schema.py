@@ -79,6 +79,10 @@ class CityListResponse(BaseModel):
 
     name: str
 
+    latitude: Decimal | None = None
+
+    longitude: Decimal | None = None
+
     is_active: bool
 
 
