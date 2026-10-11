@@ -21,6 +21,7 @@ class TravelPlace {
   final String? description, address, imageUrl;
   final LatLng? point;
   final bool featured;
+  final Uri? source;
 
   const TravelPlace({
     required this.id,
@@ -31,6 +32,7 @@ class TravelPlace {
     this.imageUrl,
     this.point,
     this.featured = false,
+    this.source,
   });
 
   factory TravelPlace.fromJson(Map<String, dynamic> json) => TravelPlace(
@@ -42,5 +44,12 @@ class TravelPlace {
     imageUrl: json['image_url']?.toString(),
     point: validCoordinates(json['latitude'], json['longitude']),
     featured: json['is_featured'] == true,
+    source:
+        json['provider'] == 'wikidata' &&
+            RegExp(
+              r'^Q[1-9][0-9]*$',
+            ).hasMatch(json['external_place_id']?.toString() ?? '')
+        ? Uri.https('www.wikidata.org', '/wiki/${json['external_place_id']}')
+        : null,
   );
 }

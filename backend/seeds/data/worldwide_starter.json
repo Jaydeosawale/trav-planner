@@ -1,0 +1,314 @@
+{
+  "version": 1,
+  "note": "Small starter coverage; city time zones are used as country display defaults, not complete country time-zone lists. Coordinates are sourced from CC0 Wikidata structured records. Photos remain unset until licensed assets are reviewed.",
+  "destinations": [
+    {
+      "country": {
+        "name": "India",
+        "iso2": "IN",
+        "iso3": "IND",
+        "phone_code": "91",
+        "currency_code": "INR",
+        "currency_name": "Indian rupee",
+        "capital": "New Delhi",
+        "continent": "Asia",
+        "timezone": "Asia/Kolkata"
+      },
+      "state": {
+        "name": "Maharashtra",
+        "code": "MH"
+      },
+      "city": {
+        "name": "Mumbai",
+        "wikidata_id": "Q1156",
+        "latitude": 19.075833,
+        "longitude": 72.8775,
+        "source_revision": 2548465796,
+        "source_url": "https://www.wikidata.org/wiki/Q1156",
+        "source_license": "CC0-1.0",
+        "checked_on": "2026-10-11"
+      },
+      "slug": "mumbai",
+      "description": "Explore Mumbai’s waterfront and the Gateway of India.",
+      "places": [
+        {
+          "name": "Gateway of India",
+          "wikidata_id": "Q864862",
+          "latitude": 18.921836,
+          "longitude": 72.834705,
+          "source_revision": 2550117267,
+          "source_url": "https://www.wikidata.org/wiki/Q864862",
+          "source_license": "CC0-1.0",
+          "checked_on": "2026-10-11",
+          "slug": "gateway-of-india",
+          "type": "heritage",
+          "description": "A waterfront monument in Mumbai’s Colaba area."
+        }
+      ]
+    },
+    {
+      "country": {
+        "name": "France",
+        "iso2": "FR",
+        "iso3": "FRA",
+        "phone_code": "33",
+        "currency_code": "EUR",
+        "currency_name": "Euro",
+        "capital": "Paris",
+        "continent": "Europe",
+        "timezone": "Europe/Paris"
+      },
+      "state": {
+        "name": "Île-de-France",
+        "code": "IDF"
+      },
+      "city": {
+        "name": "Paris",
+        "wikidata_id": "Q90",
+        "latitude": 48.856667,
+        "longitude": 2.352222,
+        "source_revision": 2555380840,
+        "source_url": "https://www.wikidata.org/wiki/Q90",
+        "source_license": "CC0-1.0",
+        "checked_on": "2026-10-11"
+      },
+      "slug": "paris",
+      "description": "Discover Paris and its landmark Eiffel Tower.",
+      "places": [
+        {
+          "name": "Eiffel Tower",
+          "wikidata_id": "Q243",
+          "latitude": 48.858296,
+          "longitude": 2.294479,
+          "source_revision": 2545452862,
+          "source_url": "https://www.wikidata.org/wiki/Q243",
+          "source_license": "CC0-1.0",
+          "checked_on": "2026-10-11",
+          "slug": "eiffel-tower",
+          "type": "landmark",
+          "description": "Paris’s landmark tower beside the Champ de Mars."
+        }
+      ]
+    },
+    {
+      "country": {
+        "name": "Japan",
+        "iso2": "JP",
+        "iso3": "JPN",
+        "phone_code": "81",
+        "currency_code": "JPY",
+        "currency_name": "Japanese yen",
+        "capital": "Tokyo",
+        "continent": "Asia",
+        "timezone": "Asia/Tokyo"
+      },
+      "state": {
+        "name": "Tokyo",
+        "code": "13"
+      },
+      "city": {
+        "name": "Tokyo",
+        "wikidata_id": "Q1490",
+        "latitude": 35.689444,
+        "longitude": 139.691667,
+        "source_revision": 2555608340,
+        "source_url": "https://www.wikidata.org/wiki/Q1490",
+        "source_license": "CC0-1.0",
+        "checked_on": "2026-10-11"
+      },
+      "slug": "tokyo",
+      "description": "Explore Tokyo and the historic temple district of Asakusa.",
+      "places": [
+        {
+          "name": "Sensō-ji Temple",
+          "wikidata_id": "Q615183",
+          "latitude": 35.714556,
+          "longitude": 139.796639,
+          "source_revision": 2552774780,
+          "source_url": "https://www.wikidata.org/wiki/Q615183",
+          "source_license": "CC0-1.0",
+          "checked_on": "2026-10-11",
+          "slug": "senso-ji",
+          "type": "heritage",
+          "description": "A Buddhist temple in Tokyo’s Asakusa district."
+        }
+      ]
+    },
+    {
+      "country": {
+        "name": "United States",
+        "iso2": "US",
+        "iso3": "USA",
+        "phone_code": "1",
+        "currency_code": "USD",
+        "currency_name": "US dollar",
+        "capital": "Washington, D.C.",
+        "continent": "North America",
+        "timezone": "America/New_York"
+      },
+      "state": {
+        "name": "New York",
+        "code": "NY"
+      },
+      "city": {
+        "name": "New York City",
+        "wikidata_id": "Q60",
+        "latitude": 40.712778,
+        "longitude": -74.006111,
+        "source_revision": 2555825951,
+        "source_url": "https://www.wikidata.org/wiki/Q60",
+        "source_license": "CC0-1.0",
+        "checked_on": "2026-10-11"
+      },
+      "slug": "new-york-city",
+      "description": "Explore New York City and its harbor landmarks.",
+      "places": [
+        {
+          "name": "Statue of Liberty",
+          "wikidata_id": "Q9202",
+          "latitude": 40.689209,
+          "longitude": -74.044425,
+          "source_revision": 2553889669,
+          "source_url": "https://www.wikidata.org/wiki/Q9202",
+          "source_license": "CC0-1.0",
+          "checked_on": "2026-10-11",
+          "slug": "statue-of-liberty",
+          "type": "landmark",
+          "description": "The landmark statue on Liberty Island in New York Harbor."
+        }
+      ]
+    },
+    {
+      "country": {
+        "name": "Australia",
+        "iso2": "AU",
+        "iso3": "AUS",
+        "phone_code": "61",
+        "currency_code": "AUD",
+        "currency_name": "Australian dollar",
+        "capital": "Canberra",
+        "continent": "Oceania",
+        "timezone": "Australia/Sydney"
+      },
+      "state": {
+        "name": "New South Wales",
+        "code": "NSW"
+      },
+      "city": {
+        "name": "Sydney",
+        "wikidata_id": "Q3130",
+        "latitude": -33.867778,
+        "longitude": 151.21,
+        "source_revision": 2550371039,
+        "source_url": "https://www.wikidata.org/wiki/Q3130",
+        "source_license": "CC0-1.0",
+        "checked_on": "2026-10-11"
+      },
+      "slug": "sydney",
+      "description": "Discover Sydney’s harbor and its landmark Opera House.",
+      "places": [
+        {
+          "name": "Sydney Opera House",
+          "wikidata_id": "Q45178",
+          "latitude": -33.857058,
+          "longitude": 151.214897,
+          "source_revision": 2540580002,
+          "source_url": "https://www.wikidata.org/wiki/Q45178",
+          "source_license": "CC0-1.0",
+          "checked_on": "2026-10-11",
+          "slug": "sydney-opera-house",
+          "type": "culture",
+          "description": "A performing arts venue on Sydney Harbour’s Bennelong Point."
+        }
+      ]
+    },
+    {
+      "country": {
+        "name": "South Africa",
+        "iso2": "ZA",
+        "iso3": "ZAF",
+        "phone_code": "27",
+        "currency_code": "ZAR",
+        "currency_name": "South African rand",
+        "capital": "Pretoria, Cape Town and Bloemfontein",
+        "continent": "Africa",
+        "timezone": "Africa/Johannesburg"
+      },
+      "state": {
+        "name": "Western Cape",
+        "code": "WC"
+      },
+      "city": {
+        "name": "Cape Town",
+        "wikidata_id": "Q5465",
+        "latitude": -33.925278,
+        "longitude": 18.423889,
+        "source_revision": 2541605360,
+        "source_url": "https://www.wikidata.org/wiki/Q5465",
+        "source_license": "CC0-1.0",
+        "checked_on": "2026-10-11"
+      },
+      "slug": "cape-town",
+      "description": "Explore Cape Town and its Table Mountain setting.",
+      "places": [
+        {
+          "name": "Table Mountain",
+          "wikidata_id": "Q213360",
+          "latitude": -33.96216,
+          "longitude": 18.41352,
+          "source_revision": 2553837989,
+          "source_url": "https://www.wikidata.org/wiki/Q213360",
+          "source_license": "CC0-1.0",
+          "checked_on": "2026-10-11",
+          "slug": "table-mountain",
+          "type": "nature",
+          "description": "The flat-topped mountain overlooking Cape Town. This pin marks the mountain, not a trailhead or road entrance."
+        }
+      ]
+    },
+    {
+      "country": {
+        "name": "Brazil",
+        "iso2": "BR",
+        "iso3": "BRA",
+        "phone_code": "55",
+        "currency_code": "BRL",
+        "currency_name": "Brazilian real",
+        "capital": "Brasília",
+        "continent": "South America",
+        "timezone": "America/Sao_Paulo"
+      },
+      "state": {
+        "name": "Rio de Janeiro",
+        "code": "RJ"
+      },
+      "city": {
+        "name": "Rio de Janeiro",
+        "wikidata_id": "Q8678",
+        "latitude": -22.911111,
+        "longitude": -43.205556,
+        "source_revision": 2549887643,
+        "source_url": "https://www.wikidata.org/wiki/Q8678",
+        "source_license": "CC0-1.0",
+        "checked_on": "2026-10-11"
+      },
+      "slug": "rio-de-janeiro",
+      "description": "Discover Rio de Janeiro and the landmark on Corcovado.",
+      "places": [
+        {
+          "name": "Christ the Redeemer",
+          "wikidata_id": "Q79961",
+          "latitude": -22.951916,
+          "longitude": -43.210464,
+          "source_revision": 2553332948,
+          "source_url": "https://www.wikidata.org/wiki/Q79961",
+          "source_license": "CC0-1.0",
+          "checked_on": "2026-10-11",
+          "slug": "christ-the-redeemer",
+          "type": "landmark",
+          "description": "The Christ the Redeemer statue on Corcovado in Rio de Janeiro."
+        }
+      ]
+    }
+  ]
+}

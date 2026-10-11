@@ -337,6 +337,15 @@ class _DestinationDetailsPageState
                   'Map location is being added.',
                   style: TextStyle(color: AppColors.textSecondary),
                 ),
+              if (place.source != null)
+                TextButton.icon(
+                  onPressed: () => launchUrl(
+                    place.source!,
+                    mode: LaunchMode.externalApplication,
+                  ),
+                  icon: const Icon(Icons.open_in_new, size: 16),
+                  label: const Text('Location source · Wikidata'),
+                ),
             ],
           ),
         ),

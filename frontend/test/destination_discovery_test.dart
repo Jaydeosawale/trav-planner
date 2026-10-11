@@ -6,6 +6,27 @@ import 'package:trav_planner/features/destinations/data/places_provider.dart';
 import 'package:trav_planner/features/destinations/presentation/destination_details_page.dart';
 
 void main() {
+  test('only recognized Wikidata IDs produce a location source link', () {
+    final base = {
+      'id': 'tower',
+      'name': 'Eiffel Tower',
+      'provider': 'wikidata',
+    };
+    expect(
+      TravelPlace.fromJson({
+        ...base,
+        'external_place_id': 'Q243',
+      }).source.toString(),
+      'https://www.wikidata.org/wiki/Q243',
+    );
+    expect(
+      TravelPlace.fromJson({
+        ...base,
+        'external_place_id': 'https://example.com',
+      }).source,
+      isNull,
+    );
+  });
   test(
     'coordinates accept decimal strings and reject missing, invalid, nonfinite values',
     () {

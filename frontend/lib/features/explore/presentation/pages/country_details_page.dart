@@ -218,7 +218,7 @@ class CountryDetailsPage extends StatelessWidget {
       ),
       _CountryFact(
         icon: Icons.schedule_rounded,
-        label: 'Timezone',
+        label: 'Example time zone',
         value: country.timezone,
       ),
     ];
