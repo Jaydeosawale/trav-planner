@@ -41,6 +41,7 @@ void main() {
       entry.value,
     );
   }
+  save('assets/images/branding/trav-splash.png', 1152, maskable: true);
   save('web/favicon.png', 48);
   for (final size in [192, 512]) {
     save('web/icons/Icon-$size.png', size);
