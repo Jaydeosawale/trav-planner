@@ -33,6 +33,7 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
   ExploreState? _selectedState;
 
   int _section = 0;
+  int _cityPage = 1;
 
   @override
   void initState() {
@@ -59,6 +60,7 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
 
       setState(() {
         _searchQuery = query;
+        _cityPage = 1;
         _section = 2;
       });
     });
@@ -71,6 +73,7 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
       _section = 1;
       _searchController.clear();
       _searchQuery = '';
+      _cityPage = 1;
     });
   }
 
@@ -81,6 +84,7 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
       _section = 0;
       _searchController.clear();
       _searchQuery = '';
+      _cityPage = 1;
     });
   }
 
@@ -130,6 +134,7 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
                                 setState(() {
                                   _searchController.text = query;
                                   _searchQuery = query;
+                                  _cityPage = 1;
                                   _section = 2;
                                 });
                               },
@@ -263,6 +268,7 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
 
                     setState(() {
                       _searchQuery = '';
+                      _cityPage = 1;
                       _section = 0;
                     });
                   },
@@ -467,6 +473,7 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
                         _section = 2;
                         _searchController.clear();
                         _searchQuery = '';
+                        _cityPage = 1;
                       });
                     },
                   );
@@ -538,6 +545,7 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
         _section = 1;
         _searchController.clear();
         _searchQuery = '';
+        _cityPage = 1;
       });
     }
 
@@ -581,6 +589,7 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
       countryId: _selectedCountry?.id,
       stateId: _selectedState?.id,
       size: 20,
+      page: _cityPage,
     );
 
     final cities = ref.watch(exploreCitiesProvider(request));
@@ -618,32 +627,68 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
               );
             }
 
-            return GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: result.items.length,
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: isWide ? 3 : 1,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: isWide ? 3.1 : 4,
-              ),
-              itemBuilder: (context, index) {
-                final city = result.items[index];
-                return InkWell(
-                  borderRadius: BorderRadius.circular(18),
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => DestinationDetailsPage(
-                        cityId: city.id,
-                        name: city.name,
-                        center: validCoordinates(city.latitude, city.longitude),
-                      ),
-                    ),
+            return Column(
+              children: [
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: result.items.length,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: isWide ? 3 : 1,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    childAspectRatio: isWide ? 3.1 : 4,
                   ),
-                  child: _CityCard(city: city),
-                );
-              },
+                  itemBuilder: (context, index) {
+                    final city = result.items[index];
+                    return InkWell(
+                      borderRadius: BorderRadius.circular(18),
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => DestinationDetailsPage(
+                            cityId: city.id,
+                            name: city.name,
+                            center: validCoordinates(
+                              city.latitude,
+                              city.longitude,
+                            ),
+                          ),
+                        ),
+                      ),
+                      child: _CityCard(city: city),
+                    );
+                  },
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  '${result.total} cities · Page ${result.page} of ${result.pages}',
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    OutlinedButton.icon(
+                      onPressed: _cityPage > 1
+                          ? () => setState(() => _cityPage--)
+                          : null,
+                      icon: const Icon(Icons.chevron_left),
+                      label: const Text('Previous'),
+                    ),
+                    const SizedBox(width: 12),
+                    FilledButton.icon(
+                      onPressed: _cityPage < result.pages
+                          ? () => setState(() => _cityPage++)
+                          : null,
+                      icon: const Icon(Icons.chevron_right),
+                      label: const Text('Next'),
+                    ),
+                  ],
+                ),
+              ],
             );
           },
         ),
