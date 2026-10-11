@@ -3,6 +3,7 @@ import '../../../destinations/data/place.dart';
 import '../../../../shared/widgets/travel_inspiration_grid.dart';
 import 'package:trav_planner/core/theme/app_colors.dart';
 import 'dart:async';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -145,6 +146,36 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
                           if (_section == 1) _buildStatesSection(isWide),
 
                           if (_section == 2) _buildCitiesSection(isWide),
+                          const SizedBox(height: 24),
+                          Wrap(
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              const Text(
+                                'Geography by ',
+                                style: TextStyle(fontSize: 12),
+                              ),
+                              TextButton(
+                                onPressed: () => launchUrl(
+                                  Uri.parse('https://www.geonames.org/'),
+                                ),
+                                child: const Text(
+                                  'GeoNames',
+                                  style: TextStyle(fontSize: 12),
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () => launchUrl(
+                                  Uri.parse(
+                                    'https://creativecommons.org/licenses/by/4.0/',
+                                  ),
+                                ),
+                                child: const Text(
+                                  'CC BY 4.0 · adapted for Trav',
+                                  style: TextStyle(fontSize: 12),
+                                ),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ),

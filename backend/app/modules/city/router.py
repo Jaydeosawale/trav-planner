@@ -15,6 +15,7 @@ from app.common.responses.api_response import (
 )
 
 from app.database.session import get_db
+from app.dependencies.admin import get_current_admin
 
 from app.modules.city.schema import (
     CityBase,
@@ -208,6 +209,7 @@ async def get_city(
 
 @router.post(
     "/",
+    dependencies=[Depends(get_current_admin)],
     response_model=ApiResponse[CityResponse],
 )
 async def create_city(
@@ -231,6 +233,7 @@ async def create_city(
 
 @router.put(
     "/{city_id}",
+    dependencies=[Depends(get_current_admin)],
     response_model=ApiResponse[CityResponse],
 )
 async def update_city(
@@ -256,6 +259,7 @@ async def update_city(
 
 @router.delete(
     "/{city_id}",
+    dependencies=[Depends(get_current_admin)],
     response_model=ApiResponse[None],
 )
 async def delete_city(

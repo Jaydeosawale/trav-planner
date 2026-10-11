@@ -151,6 +151,7 @@ class CityRepository(BaseRepository[City]):
 
         filters = [
             City.is_deleted.is_(False),
+            City.is_active.is_(True),
         ]
 
         # ------------------------------------------------------
