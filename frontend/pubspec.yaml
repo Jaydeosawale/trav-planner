@@ -89,7 +89,6 @@ flutter:
     - assets/images/destinations/
     - assets/images/hero/
     - assets/lottie/
-    - assets/icons/
     - assets/images/branding/
   fonts:
     - family: Manrope
