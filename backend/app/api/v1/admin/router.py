@@ -3,6 +3,7 @@ from fastapi import Depends
 
 from app.dependencies.admin import get_current_admin
 from app.modules.auth.model import User
+from app.modules.auth.schema import UserResponse
 from app.api.v1.admin.ai_billing.router import (
     router as admin_ai_billing_router,
 )
@@ -30,12 +31,7 @@ async def get_admin_me(
 ):
     return {
         "success": True,
-        "data": {
-            "id": str(current_admin.id),
-            "email": current_admin.email,
-            "full_name": current_admin.full_name,
-            "role": current_admin.role,
-        },
+        "data": UserResponse.model_validate(current_admin),
     }
 
 

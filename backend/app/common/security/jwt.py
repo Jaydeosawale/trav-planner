@@ -20,6 +20,7 @@ from app.core.settings import settings
 
 def create_access_token(
     user_id: str,
+    auth_version: int = 0,
 ) -> str:
     """
     Create a short-lived JWT access token.
@@ -33,6 +34,7 @@ def create_access_token(
 
     payload = {
         "sub": user_id,
+        "ver": auth_version,
         "type": "access",
         "iat": now,
         "exp": expire,
@@ -51,6 +53,7 @@ def create_access_token(
 
 def create_refresh_token(
     user_id: str,
+    auth_version: int = 0,
 ) -> str:
     """
     Create a long-lived JWT refresh token.
@@ -64,6 +67,7 @@ def create_refresh_token(
 
     payload = {
         "sub": user_id,
+        "ver": auth_version,
         "type": "refresh",
         "iat": now,
         "exp": expire,

@@ -18,6 +18,8 @@ from app.modules.auth.schema import TokenResponse
 from app.modules.auth.schema import UserResponse
 from app.modules.auth.service import AuthService
 from app.modules.auth.schema import RefreshTokenRequest
+from app.modules.auth.schema import PasswordResetRequest, PasswordResetConfirm
+from app.modules.auth.recovery import recovery_available, request_recovery, confirm_recovery
 
 
 router = APIRouter()
@@ -124,4 +126,22 @@ async def refresh_token(
     return success_response(
         data=TokenResponse.model_validate(result),
         message="Access token refreshed successfully",
-    )    
+    )
+
+
+
+@router.get('/recovery-status')
+async def recovery_status():
+    return success_response(data={'available': recovery_available()})
+
+
+@router.post('/forgot-password')
+async def forgot_password(payload: PasswordResetRequest, db: AsyncSession = Depends(get_db)):
+    await request_recovery(db, payload.email)
+    return success_response(message='If an active account exists, a recovery link has been sent. Check your inbox and spam folder.')
+
+
+@router.post('/reset-password')
+async def reset_password(payload: PasswordResetConfirm, db: AsyncSession = Depends(get_db)):
+    await confirm_recovery(db, payload.token, payload.password)
+    return success_response(message='Your password has been changed. Please sign in again.')

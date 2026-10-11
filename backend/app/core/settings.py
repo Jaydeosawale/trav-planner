@@ -87,6 +87,17 @@ class Settings(BaseSettings):
 
     REFRESH_TOKEN_EXPIRE_DAYS: int = 30
 
+    # Password recovery. Credentials belong in private deployment settings.
+    RECOVERY_MAIL_URL: str = ""
+    RECOVERY_MAIL_SECRET: str = ""
+    SMTP_HOST: str = ""
+    SMTP_PORT: int = 465
+    SMTP_USERNAME: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_FROM_EMAIL: str = ""
+    FRONTEND_URL: str = "https://jaydeo-trav-planner.vercel.app"
+    PASSWORD_RESET_MINUTES: int = 30
+
     # ==========================================================
     # AI / LLM
 # ==========================================================

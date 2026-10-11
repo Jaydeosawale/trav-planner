@@ -10,17 +10,11 @@ from __future__ import annotations
 import asyncio
 import getpass
 
-from passlib.context import CryptContext
+from app.common.security.passwords import hash_password
 from sqlalchemy import select
 
 from app.database.session import SessionLocal
 from app.modules.auth.model import User
-
-
-password_context = CryptContext(
-    schemes=["bcrypt"],
-    deprecated="auto",
-)
 
 
 async def create_admin() -> None:
@@ -49,8 +43,8 @@ async def create_admin() -> None:
         print("ERROR: Passwords do not match.")
         return
 
-    if len(password) < 8:
-        print("ERROR: Password must be at least 8 characters.")
+    if len(password) < 8 or len(password.encode("utf-8")) > 72:
+        print("ERROR: Use at least 8 characters and a shorter password if it includes special symbols.")
         return
 
     async with SessionLocal() as db:
@@ -87,7 +81,7 @@ async def create_admin() -> None:
 
         admin = User(
             email=email,
-            password_hash=password_context.hash(password),
+            password_hash=hash_password(password),
             full_name=full_name,
             is_active=True,
             role="admin",

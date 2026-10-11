@@ -51,7 +51,7 @@ class AdminService:
 
         admin_users = await db.scalar(
             select(func.count(User.id)).where(
-                User.role.in_(["admin", "super_admin"])
+                User.role == "admin"
             )
         )
 

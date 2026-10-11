@@ -9,14 +9,28 @@ from datetime import datetime
 from pydantic import BaseModel
 from pydantic import ConfigDict
 from pydantic import EmailStr
-from pydantic import Field
+from pydantic import Field, field_validator
 
 
 # ==========================================================
 # Register
 # ==========================================================
 
-class RegisterRequest(BaseModel):
+class Credentials(BaseModel):
+    @field_validator('email', check_fields=False)
+    @classmethod
+    def normalize_email(cls, value):
+        return value.strip().lower()
+
+    @field_validator('password', check_fields=False)
+    @classmethod
+    def validate_password_bytes(cls, value):
+        if len(value.encode('utf-8')) > 72:
+            raise ValueError('Password must be no more than 72 UTF-8 bytes.')
+        return value
+
+
+class RegisterRequest(Credentials):
     """
     User registration payload.
     """
@@ -25,7 +39,7 @@ class RegisterRequest(BaseModel):
 
     password: str = Field(
         min_length=8,
-        max_length=128,
+        max_length=72,
     )
 
     full_name: str = Field(
@@ -38,7 +52,7 @@ class RegisterRequest(BaseModel):
 # Login
 # ==========================================================
 
-class LoginRequest(BaseModel):
+class LoginRequest(Credentials):
     """
     User login payload.
     """
@@ -47,7 +61,7 @@ class LoginRequest(BaseModel):
 
     password: str = Field(
         min_length=8,
-        max_length=128,
+        max_length=72,
     )
 
 
@@ -96,4 +110,12 @@ class TokenResponse(BaseModel):
 
     refresh_token: str
 
-    token_type: str = "bearer"    
+    token_type: str = "bearer"
+
+class PasswordResetRequest(Credentials):
+    email: EmailStr
+
+
+class PasswordResetConfirm(Credentials):
+    token: str = Field(min_length=40, max_length=128)
+    password: str = Field(min_length=8, max_length=72)

@@ -1,6 +1,7 @@
 import 'package:trav_planner/shared/widgets/brand_logo.dart';
 import 'package:trav_planner/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
+import '../../data/repositories/auth_repository.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({super.key});
@@ -13,6 +14,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   final _emailController = TextEditingController();
 
   bool _submitted = false;
+  bool _sending = false;
+  String? _error;
 
   @override
   void dispose() {
@@ -20,17 +23,28 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     super.dispose();
   }
 
-  void _sendResetLink() {
-    if (_emailController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter your email address.')),
-      );
+  Future<void> _sendResetLink() async {
+    final email = _emailController.text.trim();
+    if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email)) {
+      setState(() => _error = 'Enter a valid email address.');
       return;
     }
-
     setState(() {
-      _submitted = true;
+      _sending = true;
+      _error = null;
     });
+    try {
+      await AuthRepository.instance.requestRecovery(email);
+      if (mounted) setState(() => _submitted = true);
+    } catch (error) {
+      if (mounted) {
+        setState(
+          () => _error = error.toString().replaceFirst('Exception: ', ''),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _sending = false);
+    }
   }
 
   @override
@@ -57,6 +71,14 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                 children: [
                   const BrandLogo(size: 56),
 
+                  if (_error != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 16),
+                      child: Text(
+                        _error!,
+                        style: const TextStyle(color: AppColors.error),
+                      ),
+                    ),
                   const SizedBox(height: 32),
 
                   Text(
@@ -118,14 +140,14 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                       width: double.infinity,
                       height: 54,
                       child: FilledButton(
-                        onPressed: _sendResetLink,
+                        onPressed: _sending ? null : _sendResetLink,
                         style: FilledButton.styleFrom(
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),
                         ),
-                        child: const Text(
-                          'Send Reset Link',
+                        child: Text(
+                          _sending ? 'Sending…' : 'Send Reset Link',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,

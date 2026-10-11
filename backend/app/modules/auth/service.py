@@ -4,7 +4,8 @@ Authentication service.
 
 from __future__ import annotations
 
-from passlib.context import CryptContext
+from app.common.security.passwords import hash_password, verify_password
+from app.common.exceptions.unauthorized import UnauthorizedException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.common.constants.not_found import NotFoundException
@@ -28,10 +29,6 @@ class AuthService:
     def __init__(self) -> None:
         self.repository = UserRepository()
 
-        self.password_context = CryptContext(
-            schemes=["bcrypt"],
-            deprecated="auto",
-        )
 
     # ==========================================================
     # Register
@@ -58,7 +55,7 @@ class AuthService:
 
         user = User(
             email=payload.email,
-            password_hash=self.password_context.hash(
+            password_hash=hash_password(
                 payload.password,
             ),
             full_name=payload.full_name,
@@ -93,22 +90,20 @@ class AuthService:
         )
 
         if user is None:
-            raise NotFoundException("User")
+            raise UnauthorizedException("Invalid email or password.")
 
         if not user.is_active:
             raise ConflictException(
                 "User account is inactive."
             )
 
-        password_valid = self.password_context.verify(
+        password_valid = verify_password(
             payload.password,
             user.password_hash,
         )
 
         if not password_valid:
-            raise ConflictException(
-                "Invalid email or password."
-            )
+            raise UnauthorizedException("Invalid email or password.")
 
         # ------------------------------------------------------
         # Access Token
@@ -116,6 +111,7 @@ class AuthService:
 
         access_token = create_access_token(
             user_id=user.id,
+            auth_version=user.auth_version,
         )
 
         # ------------------------------------------------------
@@ -124,6 +120,7 @@ class AuthService:
 
         refresh_token = create_refresh_token(
             user_id=user.id,
+            auth_version=user.auth_version,
         )
 
         return TokenResponse(
@@ -169,13 +166,12 @@ class AuthService:
         if user is None:
             raise NotFoundException("User")
 
-        if not user.is_active:
-            raise ConflictException(
-                "User account is inactive."
-            )
+        if not user.is_active or token_payload.get('ver', 0) != user.auth_version:
+            raise UnauthorizedException("Invalid or expired refresh token.")
 
         access_token = create_access_token(
             user_id=user.id,
+            auth_version=user.auth_version,
         )
 
         return TokenResponse(

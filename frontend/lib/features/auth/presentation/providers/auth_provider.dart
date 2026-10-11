@@ -110,13 +110,18 @@ class AuthNotifier extends Notifier<AuthState> {
   // Login
   // ==========================================================
 
-  Future<bool> login({required String email, required String password}) async {
+  Future<bool> login({
+    required String email,
+    required String password,
+    bool rememberMe = true,
+  }) async {
     state = const AuthState.checking();
 
     try {
       final response = await _repository.login(
         email: email,
         password: password,
+        rememberMe: rememberMe,
       );
 
       if (!response.success) {

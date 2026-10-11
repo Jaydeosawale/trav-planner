@@ -51,6 +51,9 @@ async def get_current_user(
             "Authenticated user not found."
         )
 
+    if payload.get("ver", 0) != user.auth_version:
+        raise UnauthorizedException("Your session expired. Please sign in again.")
+
     if not user.is_active:
         raise ForbiddenException(
             "User account is inactive."

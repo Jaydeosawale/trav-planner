@@ -2,11 +2,11 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "bash scripts/vercel-build.sh",
   "outputDirectory": "build/web",
-  "installCommand": "echo Flutter dependencies are installed by the build script",
+  "installCommand": "npm ci --omit=dev",
   "framework": null,
   "rewrites": [
     {
-      "source": "/((?!.*\\.).*)",
+      "source": "/((?!api/|.*\\.).*)",
       "destination": "/index.html"
     }
   ],
@@ -38,5 +38,10 @@
         }
       ]
     }
-  ]
+  ],
+  "functions": {
+    "api/recovery-email.js": {
+      "maxDuration": 30
+    }
+  }
 }

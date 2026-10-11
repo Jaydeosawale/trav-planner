@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/theme/app_theme.dart';
+import 'features/auth/presentation/pages/reset_password_page.dart';
 import 'features/splash/presentation/pages/splash_page.dart';
 
 void main() {
@@ -21,7 +22,12 @@ class TravPlannerApp extends StatelessWidget {
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: ThemeMode.light,
-      home: const SplashPage(),
+      home: Uri.base.fragment.startsWith('reset_token=')
+          ? ResetPasswordPage(
+              token:
+                  Uri.splitQueryString(Uri.base.fragment)['reset_token'] ?? '',
+            )
+          : const SplashPage(),
     );
   }
 }

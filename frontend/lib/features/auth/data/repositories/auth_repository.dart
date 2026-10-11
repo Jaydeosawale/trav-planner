@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/api_response.dart';
 import '../../../../core/storage/app_storage.dart';
@@ -15,11 +16,12 @@ class AuthRepository {
   Future<ApiResponse> login({
     required String email,
     required String password,
+    bool rememberMe = true,
   }) async {
     try {
       final response = await ApiClient.dio.post(
         '/auth/login',
-        data: {'email': email, 'password': password},
+        data: {'email': email.trim().toLowerCase(), 'password': password},
       );
 
       final apiResponse = ApiResponse.fromJson(
@@ -28,6 +30,7 @@ class AuthRepository {
       );
 
       if (apiResponse.success && apiResponse.data != null) {
+        await AppStorage.configureSession(rememberMe: rememberMe);
         final data = apiResponse.data!;
 
         final accessToken = data['access_token'] as String?;
@@ -168,5 +171,44 @@ class AuthRepository {
     final token = await AppStorage.getAccessToken();
 
     return token != null && token.isNotEmpty;
+  }
+
+  Future<String> requestRecovery(String email) async {
+    try {
+      final result = await ApiClient.dio.post(
+        '/auth/forgot-password',
+        data: {'email': email.trim().toLowerCase()},
+      );
+      return result.data['message'] as String;
+    } on DioException catch (error) {
+      throw Exception(
+        _message(
+          error,
+          'We could not send a recovery email. Please try again.',
+        ),
+      );
+    }
+  }
+
+  Future<void> resetPassword(String token, String password) async {
+    try {
+      await ApiClient.dio.post(
+        '/auth/reset-password',
+        data: {'token': token, 'password': password},
+      );
+      await AppStorage.clearTokens();
+    } on DioException catch (error) {
+      throw Exception(
+        _message(error, 'We could not change your password. Please try again.'),
+      );
+    }
+  }
+
+  static String _message(DioException error, String fallback) {
+    final data = error.response?.data;
+    if (data is Map && data['message'] is String) {
+      return data['message'] as String;
+    }
+    return fallback;
   }
 }

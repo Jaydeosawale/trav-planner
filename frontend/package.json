@@ -1,0 +1,7 @@
+{
+  "name": "trav-recovery-mail",
+  "private": true,
+  "version": "1.0.0",
+  "dependencies": { "nodemailer": "10.1.0" },
+  "scripts": { "test": "node --test test-mail/*.test.cjs" }
+}

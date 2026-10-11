@@ -54,7 +54,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
     final success = await ref
         .read(authProvider.notifier)
-        .login(email: email, password: password);
+        .login(email: email, password: password, rememberMe: _rememberMe);
 
     if (!mounted) return;
 

@@ -4,6 +4,8 @@ User / Authentication Model.
 
 from __future__ import annotations
 
+from datetime import datetime
+from sqlalchemy import DateTime, ForeignKey, Integer
 from sqlalchemy import Boolean
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped
@@ -72,6 +74,8 @@ class User(
         index=True,
     )
 
+    auth_version: Mapped[int] = mapped_column(Integer, default=0, server_default="0", nullable=False)
+
     # ==========================================================
     # Representation
     # ==========================================================
@@ -84,3 +88,11 @@ class User(
             f"full_name='{self.full_name}'"
             f")>"
         )
+
+
+class PasswordResetToken(Base, UUIDMixin, TimestampMixin):
+    __tablename__ = "password_reset_tokens"
+    user_id: Mapped[str] = mapped_column(String(36), ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
