@@ -15,7 +15,7 @@ class MobileBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) => DecoratedBox(
     decoration: const BoxDecoration(
-      color: AppColors.surface,
+      color: AppColors.surfaceVariant,
       border: Border(top: BorderSide(color: AppColors.border)),
     ),
     child: SafeArea(

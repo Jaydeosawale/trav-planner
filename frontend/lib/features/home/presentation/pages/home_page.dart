@@ -1,3 +1,4 @@
+import '../widgets/destination_spotlight.dart';
 import '../../../destinations/presentation/destination_details_page.dart';
 import '../../../destinations/data/place.dart';
 import 'package:flutter/material.dart';
@@ -96,64 +97,24 @@ class HomePage extends ConsumerWidget {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 32),
+                          const SizedBox(height: 18),
                         ],
-                        const _Eyebrow('YOUR NEXT GREAT ADVENTURE'),
-                        const SizedBox(height: 12),
-                        Text(
-                          'Somewhere\nworth going.',
-                          style: Theme.of(context).textTheme.displayLarge
-                              ?.copyWith(fontSize: wide ? 54 : 38),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Beautiful places. Thoughtful plans. All yours.',
-                          style: Theme.of(context).textTheme.bodyLarge
-                              ?.copyWith(color: AppColors.textSecondary),
-                        ),
-                        const SizedBox(height: 22),
-                        ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 650),
-                          child: TextField(
-                            textInputAction: TextInputAction.search,
-                            onSubmitted: (value) =>
-                                _explore(context, value.trim()),
-                            decoration: InputDecoration(
-                              hintText: 'Where do you want to go?',
-                              prefixIcon: const Icon(Icons.search_rounded),
-                              suffixIcon: IconButton(
-                                tooltip: 'Explore destinations and filters',
-                                onPressed: () => _explore(context),
-                                icon: const Icon(Icons.tune_rounded),
-                              ),
-                            ),
-                          ),
+                        DestinationSpotlight(
+                          banners:
+                              ref.watch(bannersProvider).asData?.value ?? [],
+                          onSearch: (query) => _explore(context, query),
                         ),
                         const SizedBox(height: 24),
                         if (wide)
-                          Row(
+                          const Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Expanded(
-                                flex: 6,
-                                child: _FeaturedDestination(),
-                              ),
-                              const SizedBox(width: 24),
-                              const Expanded(
-                                flex: 4,
-                                child: Column(
-                                  children: [
-                                    _PlannerPanel(),
-                                    SizedBox(height: 16),
-                                    _TripShortcut(),
-                                  ],
-                                ),
-                              ),
+                              Expanded(flex: 6, child: _PlannerPanel()),
+                              SizedBox(width: 24),
+                              Expanded(flex: 4, child: _TripShortcut()),
                             ],
                           )
                         else ...[
-                          const _FeaturedDestination(),
-                          const SizedBox(height: 24),
                           const _PlannerPanel(),
                           const SizedBox(height: 16),
                           const _TripShortcut(),
@@ -240,136 +201,6 @@ class HomePage extends ConsumerWidget {
   }
 }
 
-class _Eyebrow extends StatelessWidget {
-  const _Eyebrow(this.text);
-  final String text;
-  @override
-  Widget build(BuildContext context) => Text(
-    text,
-    style: const TextStyle(
-      fontSize: 11,
-      fontWeight: FontWeight.w700,
-      letterSpacing: 1.8,
-      color: AppColors.textSecondary,
-    ),
-  );
-}
-
-class _FeaturedDestination extends ConsumerWidget {
-  const _FeaturedDestination();
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final banners = ref.watch(bannersProvider).asData?.value;
-    final banner = banners != null && banners.isNotEmpty ? banners.first : null;
-    return Semantics(
-      label: banner?.title ?? 'Bali destination inspiration',
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: SizedBox(
-          height: MediaQuery.sizeOf(context).width >= 900 ? 410 : 310,
-          width: double.infinity,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              if (banner != null)
-                Image.network(
-                  banner.imageUrl,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, error, stack) => Image.asset(
-                    'assets/images/destinations/bali_1.jpg',
-                    fit: BoxFit.cover,
-                  ),
-                )
-              else
-                Image.asset(
-                  'assets/images/destinations/bali_1.jpg',
-                  fit: BoxFit.cover,
-                ),
-              const DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Colors.transparent, Color(0xE6061B17)],
-                  ),
-                ),
-              ),
-              Positioned(
-                top: 16,
-                right: 16,
-                child: IconButton.filled(
-                  tooltip: 'View saved destinations',
-                  style: IconButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: AppColors.textPrimary,
-                    minimumSize: const Size(48, 48),
-                  ),
-                  onPressed: () => Navigator.of(
-                    context,
-                  ).push(MaterialPageRoute(builder: (_) => const SavedPage())),
-                  icon: const Icon(Icons.favorite_border_rounded),
-                ),
-              ),
-              Positioned(
-                left: 24,
-                right: 24,
-                bottom: 24,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'DESTINATION SPOTLIGHT',
-                      style: TextStyle(
-                        color: Color(0xFFE2E8F0),
-                        fontSize: 10,
-                        letterSpacing: 1.6,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      banner?.title ?? 'Bali, at your pace.',
-                      style: Theme.of(
-                        context,
-                      ).textTheme.headlineMedium?.copyWith(color: Colors.white),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      banner?.subtitle ?? 'Temples. Quiet mornings. Ocean air.',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        height: 1.4,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        side: const BorderSide(color: Colors.white54),
-                        minimumSize: const Size(48, 44),
-                      ),
-                      onPressed: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => ExplorePage(
-                            initialQuery: banner == null ? 'Bali' : '',
-                          ),
-                        ),
-                      ),
-                      icon: const Icon(Icons.north_east_rounded, size: 18),
-                      label: const Text('Explore destinations'),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _PlannerPanel extends StatelessWidget {
   const _PlannerPanel();
   @override
@@ -377,12 +208,7 @@ class _PlannerPanel extends StatelessWidget {
     width: double.infinity,
     padding: const EdgeInsets.all(24),
     decoration: BoxDecoration(
-      gradient: const LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [Color(0xFFEFF5FF), Color(0xFFE9FAF6)],
-      ),
-      border: Border.all(color: Color(0xFFDDEAF6)),
+      color: AppColors.ocean,
       borderRadius: BorderRadius.circular(24),
     ),
     child: Column(
@@ -390,39 +216,47 @@ class _PlannerPanel extends StatelessWidget {
       children: [
         const Row(
           children: [
-            Icon(
-              Icons.auto_awesome_rounded,
-              color: AppColors.primary,
-              size: 22,
-            ),
+            Icon(Icons.auto_awesome_rounded, color: AppColors.sunset, size: 22),
             SizedBox(width: 10),
-            Expanded(child: _Eyebrow('MADE FOR YOUR JOURNEY')),
+            Expanded(
+              child: Text(
+                'YOUR PERSONAL TRAVEL PLANNER',
+                style: TextStyle(
+                  color: Color(0xFFCFDFD7),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.6,
+                ),
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 16),
         Text(
-          'A little inspiration.\nA plan that fits you.',
-          style: Theme.of(context).textTheme.headlineSmall,
+          'The idea is yours.\nThe plan is on us.',
+          style: Theme.of(
+            context,
+          ).textTheme.headlineSmall?.copyWith(color: Colors.white),
         ),
         const SizedBox(height: 16),
         const Text(
-          'Tell us what you love. Let AI help shape your next escape.',
-          style: TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 14,
-            height: 1.5,
-          ),
+          'Dates, budget, interests. Start with what matters to you.',
+          style: TextStyle(color: Color(0xFFCFDFD7), fontSize: 14, height: 1.5),
         ),
         const SizedBox(height: 24),
         SizedBox(
           width: double.infinity,
           child: FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.sunset,
+              foregroundColor: AppColors.ocean,
+            ),
             onPressed: () => Navigator.of(
               context,
             ).push(MaterialPageRoute(builder: (_) => const AISearchPage())),
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [Text('Plan with AI'), Icon(Icons.north_east_rounded)],
+              children: [Text('Plan my trip'), Icon(Icons.north_east_rounded)],
             ),
           ),
         ),
