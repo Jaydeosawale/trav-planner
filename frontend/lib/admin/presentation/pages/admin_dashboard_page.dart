@@ -883,11 +883,7 @@ class _MobileAdminDashboard extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
 
                       children: [
-                        Icon(
-                          Icons.flight_takeoff_rounded,
-                          color: AppColors.textPrimary,
-                          size: 42,
-                        ),
+                        BrandLogo(size: 42, compact: true),
 
                         SizedBox(height: 20),
 

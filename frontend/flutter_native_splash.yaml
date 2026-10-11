@@ -5,7 +5,7 @@ flutter_native_splash:
   # --------------------------------------------------
 
   color: "#F8FAFC"
-  image: assets/images/branding/travplanner_symbol_1024.png
+  image: assets/images/branding/trav-symbol.png
 
   android: true
   ios: true
@@ -16,7 +16,7 @@ flutter_native_splash:
 
   android_12:
     color: "#F8FAFC"
-    image: assets/images/branding/travplanner_symbol_1024.png
+    image: assets/images/branding/trav-symbol.png
 
   # --------------------------------------------------
   # iOS
