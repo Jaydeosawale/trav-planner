@@ -24,7 +24,7 @@ from sqlalchemy import (
     DateTime,
     MetaData,
     String,
-    func,
+    text,
 )
 from sqlalchemy.orm import (
     DeclarativeBase,
@@ -88,14 +88,14 @@ class TimestampMixin:
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        server_default=func.now(),
+        server_default=text("(CURRENT_TIMESTAMP)"),
         nullable=False,
     )
 
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        server_default=func.now(),
-        onupdate=func.now(),
+        server_default=text("(CURRENT_TIMESTAMP)"),
+        onupdate=text("(CURRENT_TIMESTAMP)"),
         nullable=False,
     )
 

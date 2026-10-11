@@ -8,7 +8,7 @@ from fastapi import APIRouter
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.common.responses.api_response import ApiResponse
+from app.common.responses.api_response import ApiResponse, success_response
 from app.database.session import get_db
 
 from app.modules.state.schema import (
@@ -38,7 +38,7 @@ async def get_states(
 ):
     states = await service.get_all(db)
 
-    return ApiResponse.success(
+    return success_response(
         data=states,
         message="States fetched successfully.",
     )
@@ -57,7 +57,7 @@ async def get_active_states(
 ):
     states = await service.get_active(db)
 
-    return ApiResponse.success(
+    return success_response(
         data=states,
         message="Active states fetched successfully.",
     )
@@ -80,7 +80,7 @@ async def get_states_by_country(
         country_id,
     )
 
-    return ApiResponse.success(
+    return success_response(
         data=states,
         message="States fetched successfully.",
     )
@@ -103,7 +103,7 @@ async def get_state(
         state_id,
     )
 
-    return ApiResponse.success(
+    return success_response(
         data=state,
         message="State fetched successfully.",
     )
@@ -126,7 +126,7 @@ async def create_state(
         payload,
     )
 
-    return ApiResponse.success(
+    return success_response(
         data=state,
         message="State created successfully.",
     )
@@ -151,7 +151,7 @@ async def update_state(
         payload,
     )
 
-    return ApiResponse.success(
+    return success_response(
         data=state,
         message="State updated successfully.",
     )
@@ -174,6 +174,6 @@ async def delete_state(
         state_id,
     )
 
-    return ApiResponse.success(
+    return success_response(
         message="State deleted successfully.",
     )

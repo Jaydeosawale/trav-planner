@@ -1,3 +1,4 @@
+import 'package:trav_planner/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -8,37 +9,26 @@ class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
 
   @override
-  Widget build(
-    BuildContext context,
-    WidgetRef ref,
-  ) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
 
     final user = authState.user;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFF),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text(
           'Profile',
-          style: TextStyle(
-            fontWeight: FontWeight.w800,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w800),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(
-          20,
-          10,
-          20,
-          40,
-        ),
+        padding: const EdgeInsets.fromLTRB(20, 10, 20, 40),
         child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // ========================================================
             // Profile Header
@@ -49,28 +39,21 @@ class ProfilePage extends ConsumerWidget {
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [
-                    Color(0xFF2563EB),
-                    Color(0xFF1684F5),
-                  ],
+                  colors: [AppColors.surfaceVariant, AppColors.surfaceVariant],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                borderRadius:
-                    BorderRadius.circular(28),
+                borderRadius: BorderRadius.circular(28),
               ),
               child: Row(
                 children: [
                   CircleAvatar(
                     radius: 34,
-                    backgroundColor: Colors.white,
+                    backgroundColor: AppColors.surface,
                     child: Text(
-                      _initials(
-                        user?.fullName ??
-                            'Trav Planner',
-                      ),
+                      _initials(user?.fullName ?? 'Trav Planner'),
                       style: const TextStyle(
-                        color: Color(0xFF2563EB),
+                        color: AppColors.primary,
                         fontSize: 22,
                         fontWeight: FontWeight.w800,
                       ),
@@ -81,14 +64,12 @@ class ProfilePage extends ConsumerWidget {
 
                   Expanded(
                     child: Column(
-                      crossAxisAlignment:
-                          CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          user?.fullName ??
-                              'Trav Planner',
+                          user?.fullName ?? 'Trav Planner',
                           style: const TextStyle(
-                            color: Colors.white,
+                            color: AppColors.textPrimary,
                             fontSize: 21,
                             fontWeight: FontWeight.w800,
                           ),
@@ -99,11 +80,10 @@ class ProfilePage extends ConsumerWidget {
                         Text(
                           user?.email ?? '',
                           style: const TextStyle(
-                            color: Colors.white70,
+                            color: AppColors.textSecondary,
                             fontSize: 14,
                           ),
-                          overflow:
-                              TextOverflow.ellipsis,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
@@ -117,42 +97,35 @@ class ProfilePage extends ConsumerWidget {
             // ========================================================
             // Account
             // ========================================================
-
             const Text(
               'Account',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
-                color: Color(0xFF123B72),
+                color: AppColors.textPrimary,
               ),
             ),
 
             const SizedBox(height: 12),
 
             _ProfileMenuItem(
-              icon:
-                  Icons.person_outline_rounded,
+              icon: Icons.person_outline_rounded,
               title: 'Edit Profile',
-              subtitle:
-                  'Update your personal information',
+              subtitle: 'Update your personal information',
               onTap: () {},
             ),
 
             _ProfileMenuItem(
-              icon:
-                  Icons.settings_outlined,
+              icon: Icons.settings_outlined,
               title: 'Settings',
-              subtitle:
-                  'Manage app preferences',
+              subtitle: 'Manage app preferences',
               onTap: () {},
             ),
 
             _ProfileMenuItem(
-              icon:
-                  Icons.lock_outline_rounded,
+              icon: Icons.lock_outline_rounded,
               title: 'Security',
-              subtitle:
-                  'Password and account security',
+              subtitle: 'Password and account security',
               onTap: () {},
             ),
 
@@ -161,33 +134,28 @@ class ProfilePage extends ConsumerWidget {
             // ========================================================
             // Travel
             // ========================================================
-
             const Text(
               'Travel',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
-                color: Color(0xFF123B72),
+                color: AppColors.textPrimary,
               ),
             ),
 
             const SizedBox(height: 12),
 
             _ProfileMenuItem(
-              icon:
-                  Icons.notifications_none_rounded,
+              icon: Icons.notifications_none_rounded,
               title: 'Notifications',
-              subtitle:
-                  'Manage travel and trip notifications',
+              subtitle: 'Manage travel and trip notifications',
               onTap: () {},
             ),
 
             _ProfileMenuItem(
-              icon:
-                  Icons.travel_explore_rounded,
+              icon: Icons.travel_explore_rounded,
               title: 'Travel Preferences',
-              subtitle:
-                  'Customize your travel experience',
+              subtitle: 'Customize your travel experience',
               onTap: () {},
             ),
 
@@ -196,37 +164,21 @@ class ProfilePage extends ConsumerWidget {
             // ========================================================
             // Logout
             // ========================================================
-
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
-                onPressed: () => _logout(
-                  context,
-                  ref,
-                ),
-                icon: const Icon(
-                  Icons.logout_rounded,
-                ),
+                onPressed: () => _logout(context, ref),
+                icon: const Icon(Icons.logout_rounded),
                 label: const Text(
                   'Logout',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.w700),
                 ),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor:
-                      Colors.red.shade600,
-                  side: BorderSide(
-                    color: Colors.red.shade200,
-                  ),
-                  padding:
-                      const EdgeInsets.symmetric(
-                    vertical: 16,
-                  ),
-                  shape:
-                      RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(18),
+                  foregroundColor: AppColors.error,
+                  side: BorderSide(color: AppColors.errorContainer),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18),
                   ),
                 ),
               ),
@@ -245,9 +197,7 @@ class ProfilePage extends ConsumerWidget {
     final parts = name
         .trim()
         .split(RegExp(r'\s+'))
-        .where(
-          (part) => part.isNotEmpty,
-        )
+        .where((part) => part.isNotEmpty)
         .toList();
 
     if (parts.isEmpty) {
@@ -256,48 +206,34 @@ class ProfilePage extends ConsumerWidget {
 
     if (parts.length == 1) {
       return parts.first
-          .substring(
-            0,
-            parts.first.length >= 2
-                ? 2
-                : 1,
-          )
+          .substring(0, parts.first.length >= 2 ? 2 : 1)
           .toUpperCase();
     }
 
-    return '${parts.first[0]}${parts.last[0]}'
-        .toUpperCase();
+    return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
   }
 
   // ==========================================================
   // Logout
   // ==========================================================
 
-  static Future<void> _logout(
-    BuildContext context,
-    WidgetRef ref,
-  ) async {
-    final shouldLogout =
-        await showDialog<bool>(
+  static Future<void> _logout(BuildContext context, WidgetRef ref) async {
+    final shouldLogout = await showDialog<bool>(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: const Text('Logout?'),
-          content: const Text(
-            'Are you sure you want to logout?',
-          ),
+          content: const Text('Are you sure you want to logout?'),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context)
-                    .pop(false);
+                Navigator.of(context).pop(false);
               },
               child: const Text('Cancel'),
             ),
             FilledButton(
               onPressed: () {
-                Navigator.of(context)
-                    .pop(true);
+                Navigator.of(context).pop(true);
               },
               child: const Text('Logout'),
             ),
@@ -306,8 +242,7 @@ class ProfilePage extends ConsumerWidget {
       },
     );
 
-    if (shouldLogout != true ||
-        !context.mounted) {
+    if (shouldLogout != true || !context.mounted) {
       return;
     }
 
@@ -315,9 +250,7 @@ class ProfilePage extends ConsumerWidget {
     // Clear authentication state and tokens.
     // ----------------------------------------------------------
 
-    await ref
-        .read(authProvider.notifier)
-        .logout();
+    await ref.read(authProvider.notifier).logout();
 
     if (!context.mounted) {
       return;
@@ -332,9 +265,7 @@ class ProfilePage extends ConsumerWidget {
     // ----------------------------------------------------------
 
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(
-        builder: (_) => const LoginPage(),
-      ),
+      MaterialPageRoute(builder: (_) => const LoginPage()),
       (route) => false,
     );
   }
@@ -360,54 +291,31 @@ class _ProfileMenuItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(
-        bottom: 10,
-      ),
+      margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius:
-            BorderRadius.circular(18),
-        border: Border.all(
-          color: Colors.grey.shade200,
-        ),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.border),
       ),
-      child: ListTile(
-        contentPadding:
-            const EdgeInsets.symmetric(
-          horizontal: 18,
-          vertical: 5,
-        ),
+      child: Material(color: Colors.transparent, borderRadius: BorderRadius.circular(18), child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 5),
         leading: Container(
           width: 46,
           height: 46,
           decoration: BoxDecoration(
-            color: const Color(0xFFEAF2FF),
-            borderRadius:
-                BorderRadius.circular(14),
+            color: AppColors.surfaceVariant,
+            borderRadius: BorderRadius.circular(14),
           ),
-          child: Icon(
-            icon,
-            color: const Color(0xFF2563EB),
-          ),
+          child: Icon(icon, color: AppColors.primary),
         ),
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontWeight: FontWeight.w700,
-          ),
-        ),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
         subtitle: Text(
           subtitle,
-          style: TextStyle(
-            color: Colors.grey.shade600,
-            fontSize: 12,
-          ),
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
         ),
-        trailing: const Icon(
-          Icons.chevron_right_rounded,
-        ),
+        trailing: const Icon(Icons.chevron_right_rounded),
         onTap: onTap,
-      ),
+      )),
     );
   }
 }

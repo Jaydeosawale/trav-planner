@@ -10,7 +10,6 @@ from alembic import op
 
 
 # revision identifiers, used by Alembic.
-
 revision: str = "06c9e1683709"
 down_revision: Union[str, Sequence[str], None] = "f7a4ae1e9630"
 branch_labels: Union[str, Sequence[str], None] = None
@@ -25,21 +24,19 @@ def upgrade() -> None:
     within a country. State codes are the unique
     identifier within a country.
     """
-
-    op.drop_constraint(
-        "uq_states_country_name",
-        "states",
-        type_="unique",
-    )
+    with op.batch_alter_table("states") as batch_op:
+        batch_op.drop_constraint(
+            "uq_states_country_name",
+            type_="unique",
+        )
 
 
 def downgrade() -> None:
     """
     Restore country + state name uniqueness.
     """
-
-    op.create_unique_constraint(
-        "uq_states_country_name",
-        "states",
-        ["country_id", "name"],
-    )
+    with op.batch_alter_table("states") as batch_op:
+        batch_op.create_unique_constraint(
+            "uq_states_country_name",
+            ["country_id", "name"],
+        )

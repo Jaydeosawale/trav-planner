@@ -53,7 +53,7 @@ app.add_middleware(LoggingMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allowed_origins,
-    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$",
+    allow_origin_regex=settings.ALLOWED_ORIGIN_REGEX or None,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -85,3 +85,12 @@ async def root():
         "environment": settings.ENVIRONMENT,
         "status": "running",
     }
+
+@app.get('/health', tags=['Health'])
+async def health():
+    """Readiness check: Render only routes traffic once PostgreSQL is reachable."""
+    from sqlalchemy import text
+    from app.database.session import engine
+    async with engine.connect() as connection:
+        await connection.execute(text('SELECT 1'))
+    return {'status': 'ok'}

@@ -8,6 +8,10 @@ class AuthRepository {
 
   static final AuthRepository instance = AuthRepository._();
 
+  // ==========================================================
+  // Login
+  // ==========================================================
+
   Future<ApiResponse> login({
     required String email,
     required String password,
@@ -15,10 +19,7 @@ class AuthRepository {
     try {
       final response = await ApiClient.dio.post(
         '/auth/login',
-        data: {
-          'email': email,
-          'password': password,
-        },
+        data: {'email': email, 'password': password},
       );
 
       final apiResponse = ApiResponse.fromJson(
@@ -43,12 +44,13 @@ class AuthRepository {
 
       return apiResponse;
     } catch (e) {
-      return ApiResponse(
-        success: false,
-        error: e.toString(),
-      );
+      return ApiResponse(success: false, error: e.toString());
     }
   }
+
+  // ==========================================================
+  // Register
+  // ==========================================================
 
   Future<ApiResponse> register({
     required String email,
@@ -58,11 +60,7 @@ class AuthRepository {
     try {
       final response = await ApiClient.dio.post(
         '/auth/register',
-        data: {
-          'email': email,
-          'password': password,
-          'full_name': fullName,
-        },
+        data: {'email': email, 'password': password, 'full_name': fullName},
       );
 
       return ApiResponse.fromJson(
@@ -70,32 +68,47 @@ class AuthRepository {
         (json) => json as Map<String, dynamic>,
       );
     } catch (e) {
-      return ApiResponse(
-        success: false,
-        error: e.toString(),
-      );
+      return ApiResponse(success: false, error: e.toString());
     }
   }
 
-  Future<ApiResponse<UserModel>> getCurrentUser() async {
-  try {
-    final response = await ApiClient.dio.get(
-      '/auth/me',
-    );
+  // ==========================================================
+  // Current User
+  // ==========================================================
 
-    return ApiResponse<UserModel>.fromJson(
-      response.data as Map<String, dynamic>,
-      (json) => UserModel.fromJson(
-        json as Map<String, dynamic>,
-      ),
-    );
-  } catch (e) {
-    return ApiResponse<UserModel>(
-      success: false,
-      error: e.toString(),
-    );
+  Future<ApiResponse<UserModel>> getCurrentUser() async {
+    try {
+      final response = await ApiClient.dio.get('/auth/me');
+
+      return ApiResponse<UserModel>.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => UserModel.fromJson(json as Map<String, dynamic>),
+      );
+    } catch (e) {
+      return ApiResponse<UserModel>(success: false, error: e.toString());
+    }
   }
-}
+
+  // ==========================================================
+  // Current Admin
+  // ==========================================================
+
+  Future<ApiResponse<UserModel>> getCurrentAdmin() async {
+    try {
+      final response = await ApiClient.dio.get('/admin/me');
+
+      return ApiResponse<UserModel>.fromJson(
+        response.data as Map<String, dynamic>,
+        (json) => UserModel.fromJson(json as Map<String, dynamic>),
+      );
+    } catch (e) {
+      return ApiResponse<UserModel>(success: false, error: e.toString());
+    }
+  }
+
+  // ==========================================================
+  // Refresh Token
+  // ==========================================================
 
   Future<ApiResponse> refreshToken() async {
     try {
@@ -110,9 +123,7 @@ class AuthRepository {
 
       final response = await ApiClient.dio.post(
         '/auth/refresh',
-        data: {
-          'refresh_token': refreshToken,
-        },
+        data: {'refresh_token': refreshToken},
       );
 
       final apiResponse = ApiResponse.fromJson(
@@ -130,26 +141,28 @@ class AuthRepository {
           await AppStorage.saveAccessToken(accessToken);
         }
 
-        if (newRefreshToken != null &&
-            newRefreshToken.isNotEmpty) {
-          await AppStorage.saveRefreshToken(
-            newRefreshToken,
-          );
+        if (newRefreshToken != null && newRefreshToken.isNotEmpty) {
+          await AppStorage.saveRefreshToken(newRefreshToken);
         }
       }
 
       return apiResponse;
     } catch (e) {
-      return ApiResponse(
-        success: false,
-        error: e.toString(),
-      );
+      return ApiResponse(success: false, error: e.toString());
     }
   }
+
+  // ==========================================================
+  // Logout
+  // ==========================================================
 
   Future<void> logout() async {
     await AppStorage.clearTokens();
   }
+
+  // ==========================================================
+  // Stored Session
+  // ==========================================================
 
   Future<bool> hasStoredSession() async {
     final token = await AppStorage.getAccessToken();

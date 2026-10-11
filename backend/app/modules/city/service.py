@@ -1,9 +1,13 @@
+"""
+City Service.
+"""
+
 from __future__ import annotations
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.common.exceptions.conflict import ConflictException
 from app.common.constants.not_found import NotFoundException
+from app.common.exceptions.conflict import ConflictException
 
 from app.modules.city.model import City
 from app.modules.city.repository import CityRepository
@@ -26,17 +30,33 @@ class CityService(BaseService[City]):
         self.country_repository = CountryRepository()
         self.state_repository = StateRepository()
 
+    # ==========================================================
+    # Get All
+    # ==========================================================
+
     async def get_all(
         self,
         db: AsyncSession,
     ) -> list[City]:
-        return await self.repository.get_all(db)
+        return await self.repository.get_all(
+            db,
+        )
+
+    # ==========================================================
+    # Get Active
+    # ==========================================================
 
     async def get_active(
         self,
         db: AsyncSession,
     ) -> list[City]:
-        return await self.repository.get_active(db)
+        return await self.repository.get_active(
+            db,
+        )
+
+    # ==========================================================
+    # Get By Country
+    # ==========================================================
 
     async def get_by_country(
         self,
@@ -48,6 +68,10 @@ class CityService(BaseService[City]):
             country_id,
         )
 
+    # ==========================================================
+    # Get By State
+    # ==========================================================
+
     async def get_by_state(
         self,
         db: AsyncSession,
@@ -57,6 +81,37 @@ class CityService(BaseService[City]):
             db,
             state_id,
         )
+
+    # ==========================================================
+    # Search / Pagination
+    # ==========================================================
+
+    async def search(
+        self,
+        db: AsyncSession,
+        *,
+        page: int = 1,
+        size: int = 50,
+        search: str | None = None,
+        country_id: str | None = None,
+        state_id: str | None = None,
+    ) -> tuple[list[City], int]:
+        """
+        Search and paginate cities.
+        """
+
+        return await self.repository.search(
+            db,
+            page=page,
+            size=size,
+            search=search,
+            country_id=country_id,
+            state_id=state_id,
+        )
+
+    # ==========================================================
+    # Create
+    # ==========================================================
 
     async def create(
         self,
@@ -109,6 +164,10 @@ class CityService(BaseService[City]):
             db,
             city,
         )
+
+    # ==========================================================
+    # Update
+    # ==========================================================
 
     async def update(
         self,
@@ -166,6 +225,10 @@ class CityService(BaseService[City]):
             db,
             city,
         )
+
+    # ==========================================================
+    # Delete
+    # ==========================================================
 
     async def delete(
         self,

@@ -43,7 +43,9 @@ async def create_destination(
     )
 
     return success_response(
-        data=DestinationResponse.model_validate(destination),
+        data=DestinationResponse.model_validate(
+            destination,
+        ),
         message="Destination created successfully",
     )
 
@@ -60,10 +62,15 @@ async def get_destinations(
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Return all active destinations.
+    Return all active/non-deleted destinations.
+
+    The repository eagerly loads the related city so
+    destination.city is available without async lazy loading.
     """
 
-    destinations = await service.get_all(db)
+    destinations = await service.get_all(
+        db,
+    )
 
     return success_response(
         data=[
@@ -98,7 +105,9 @@ async def get_destination(
     )
 
     return success_response(
-        data=DestinationResponse.model_validate(destination),
+        data=DestinationResponse.model_validate(
+            destination,
+        ),
         message="Destination retrieved successfully",
     )
 
@@ -125,7 +134,9 @@ async def get_destination_by_slug(
     )
 
     return success_response(
-        data=DestinationResponse.model_validate(destination),
+        data=DestinationResponse.model_validate(
+            destination,
+        ),
         message="Destination retrieved successfully",
     )
 
@@ -154,7 +165,9 @@ async def update_destination(
     )
 
     return success_response(
-        data=DestinationResponse.model_validate(destination),
+        data=DestinationResponse.model_validate(
+            destination,
+        ),
         message="Destination updated successfully",
     )
 

@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
+from sqlalchemy import or_
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,12 +18,18 @@ class BannerRepository(BaseRepository[Banner]):
     def __init__(self) -> None:
         super().__init__(Banner)
 
-    async def get_all(
+    # ==========================================================
+    # Admin
+    # ==========================================================
+
+    async def get_all_admin(
         self,
         db: AsyncSession,
     ) -> list[Banner]:
         """
-        Return all active banners ordered by display order.
+        Return all non-deleted banners.
+
+        Used by Admin CMS.
         """
 
         result = await db.execute(
@@ -29,10 +38,48 @@ class BannerRepository(BaseRepository[Banner]):
                 Banner.is_deleted.is_(False)
             )
             .order_by(
-                Banner.display_order
+                Banner.priority.desc(),
+                Banner.display_order,
             )
         )
 
-        return list(
-            result.scalars().all()
+        return list(result.scalars().all())
+
+    # ==========================================================
+    # User Home
+    # ==========================================================
+
+    async def get_active_for_home(
+        self,
+        db: AsyncSession,
+    ) -> list[Banner]:
+        """
+        Return banners that are currently active
+        and within their schedule.
+        """
+
+        now = datetime.now(timezone.utc)
+
+        result = await db.execute(
+            select(Banner)
+            .where(
+                Banner.is_deleted.is_(False),
+                Banner.is_active.is_(True),
+
+                or_(
+                    Banner.starts_at.is_(None),
+                    Banner.starts_at <= now,
+                ),
+
+                or_(
+                    Banner.ends_at.is_(None),
+                    Banner.ends_at >= now,
+                ),
+            )
+            .order_by(
+                Banner.priority.desc(),
+                Banner.display_order,
+            )
         )
+
+        return list(result.scalars().all())

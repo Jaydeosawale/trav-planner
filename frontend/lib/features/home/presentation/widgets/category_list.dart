@@ -1,3 +1,4 @@
+import 'package:trav_planner/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
@@ -8,38 +9,28 @@ class CategoryList extends StatelessWidget {
     (
       Icons.beach_access_rounded,
       "Beaches",
-      Color(0xFF38BDF8),
-      Color(0xFF2563EB),
+      AppColors.accent,
+      AppColors.primary,
     ),
     (
       Icons.landscape_rounded,
       "Mountains",
-      Color(0xFF22C55E),
-      Color(0xFF10B981),
+      AppColors.success,
+      AppColors.success,
     ),
     (
       Icons.account_balance_rounded,
       "Heritage",
-      Color(0xFFF59E0B),
-      Color(0xFFF97316),
+      AppColors.warning,
+      AppColors.primary,
     ),
-    (
-      Icons.forest_rounded,
-      "Nature",
-      Color(0xFF84CC16),
-      Color(0xFF16A34A),
-    ),
-    (
-      Icons.location_city_rounded,
-      "Cities",
-      Color(0xFF8B5CF6),
-      Color(0xFF4F46E5),
-    ),
+    (Icons.forest_rounded, "Nature", AppColors.success, AppColors.success),
+    (Icons.location_city_rounded, "Cities", AppColors.accent, AppColors.accent),
     (
       Icons.temple_hindu_rounded,
       "Spiritual",
-      Color(0xFFFB923C),
-      Color(0xFFEA580C),
+      AppColors.primary,
+      AppColors.primary,
     ),
   ];
 
@@ -53,7 +44,7 @@ class CategoryList extends StatelessWidget {
           style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.w800,
-            color: Color(0xFF111827),
+            color: AppColors.textPrimary,
           ),
         ),
 
@@ -62,7 +53,7 @@ class CategoryList extends StatelessWidget {
         Text(
           "Choose the kind of experience you love",
           style: TextStyle(
-            color: Colors.grey.shade600,
+            color: AppColors.textSecondary,
             fontSize: 15,
             fontWeight: FontWeight.w500,
           ),
@@ -81,67 +72,61 @@ class CategoryList extends StatelessWidget {
               final item = items[index];
 
               return Container(
-                width: 100,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(26),
-                  border: Border.all(
-                    color: const Color(0xFFE7EDF5),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: .05),
-                      blurRadius: 18,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-
-                    Container(
-                      width: 58,
-                      height: 58,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: LinearGradient(
-                          colors: [
-                            item.$3,
-                            item.$4,
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+                    width: 100,
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(26),
+                      border: Border.all(color: AppColors.border),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: .05),
+                          blurRadius: 18,
+                          offset: const Offset(0, 10),
                         ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: item.$4.withValues(alpha: .35),
-                            blurRadius: 18,
-                            offset: const Offset(0, 8),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 58,
+                          height: 58,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: LinearGradient(
+                              colors: [item.$3, item.$4],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: item.$4.withValues(alpha: .35),
+                                blurRadius: 18,
+                                offset: const Offset(0, 8),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      child: Icon(
-                        item.$1,
-                        color: Colors.white,
-                        size: 30,
-                      ),
-                    ),
+                          child: Icon(
+                            item.$1,
+                            color: AppColors.textPrimary,
+                            size: 30,
+                          ),
+                        ),
 
-                    const SizedBox(height: 12),
+                        const SizedBox(height: 12),
 
-                    Text(
-                      item.$2,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF111827),
-                      ),
+                        Text(
+                          item.$2,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              )
+                  )
                   .animate(delay: (index * 70).ms)
                   .fade(duration: 450.ms)
                   .slideY(begin: .20);

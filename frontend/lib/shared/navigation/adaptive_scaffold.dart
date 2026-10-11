@@ -1,8 +1,10 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/responsive/responsive.dart';
+import '../../features/ai/presentation/pages/ai_search_page.dart';
+import '../../features/explore/presentation/pages/explore_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
+import '../../features/trips/presentation/pages/my_trips_page.dart';
 import 'desktop_top_nav.dart';
 import 'mobile_bottom_nav.dart';
 import 'tablet_navigation_rail.dart';
@@ -20,29 +22,14 @@ class AdaptiveScaffold extends StatefulWidget {
   });
 
   @override
-  State<AdaptiveScaffold> createState() =>
-      _AdaptiveScaffoldState();
+  State<AdaptiveScaffold> createState() => _AdaptiveScaffoldState();
 }
 
-class _AdaptiveScaffoldState
-    extends State<AdaptiveScaffold> {
+class _AdaptiveScaffoldState extends State<AdaptiveScaffold> {
   int _selectedIndex = 0;
 
-  bool _isDesktop(BuildContext context) {
-    if (kIsWeb) {
-      return true;
-    }
-
-    return Responsive.isDesktop(context);
-  }
-
-  bool _isTablet(BuildContext context) {
-    if (kIsWeb) {
-      return false;
-    }
-
-    return Responsive.isTablet(context);
-  }
+  bool _isDesktop(BuildContext context) => Responsive.isDesktop(context);
+  bool _isTablet(BuildContext context) => Responsive.isTablet(context);
 
   void _onNavigationSelected(int index) {
     setState(() {
@@ -52,17 +39,25 @@ class _AdaptiveScaffoldState
 
   Widget _buildBody() {
     switch (_selectedIndex) {
-      case 5:
-        // Profile
-        return const ProfilePage();
-
-      case 4:
-        // Saved page is not wired yet.
-        // Keep the current body until SavedPage
-        // is connected.
+      case 0:
         return widget.body;
 
-      case 0:
+      case 1:
+        return const ExplorePage();
+
+      case 2:
+        return const AISearchPage();
+
+      case 3:
+        return const MyTripsPage();
+
+      case 4:
+        return const ProfilePage();
+
+      // ========================================================
+      // Safety fallback
+      // ========================================================
+
       default:
         return widget.body;
     }
@@ -80,12 +75,10 @@ class _AdaptiveScaffoldState
       return Scaffold(
         appBar: DesktopTopNav(
           selectedIndex: _selectedIndex,
-          onDestinationSelected:
-              _onNavigationSelected,
+          onDestinationSelected: _onNavigationSelected,
         ),
         body: body,
-        floatingActionButton:
-            widget.floatingActionButton,
+        floatingActionButton: widget.floatingActionButton,
       );
     }
 
@@ -96,21 +89,15 @@ class _AdaptiveScaffoldState
     if (_isTablet(context)) {
       return Scaffold(
         appBar: widget.appBar,
-        floatingActionButton:
-            widget.floatingActionButton,
+        floatingActionButton: widget.floatingActionButton,
         body: Row(
           children: [
             TabletNavigationRail(
               selectedIndex: _selectedIndex,
-              onDestinationSelected:
-                  _onNavigationSelected,
+              onDestinationSelected: _onNavigationSelected,
             ),
-            const VerticalDivider(
-              width: 1,
-            ),
-            Expanded(
-              child: body,
-            ),
+            const VerticalDivider(width: 1),
+            Expanded(child: body),
           ],
         ),
       );
@@ -123,8 +110,7 @@ class _AdaptiveScaffoldState
     return Scaffold(
       extendBody: false,
       appBar: widget.appBar,
-      floatingActionButton:
-          widget.floatingActionButton,
+      floatingActionButton: widget.floatingActionButton,
       bottomNavigationBar: MobileBottomNav(
         currentIndex: _selectedIndex,
         onTap: _onNavigationSelected,

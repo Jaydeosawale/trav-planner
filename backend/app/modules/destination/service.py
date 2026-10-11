@@ -35,6 +35,10 @@ class DestinationService:
         Create a new destination.
         """
 
+        # ------------------------------------------------------
+        # Check duplicate slug
+        # ------------------------------------------------------
+
         existing_destination = await self.repository.get_by_slug(
             db,
             payload.slug,
@@ -44,6 +48,10 @@ class DestinationService:
             raise ConflictException(
                 "A destination with this slug already exists."
             )
+
+        # ------------------------------------------------------
+        # Create destination
+        # ------------------------------------------------------
 
         destination = Destination(
             city_id=payload.city_id,
@@ -64,7 +72,19 @@ class DestinationService:
 
         await db.commit()
 
-        return destination
+        # ------------------------------------------------------
+        # Re-fetch with city relationship loaded
+        # ------------------------------------------------------
+
+        refreshed_destination = await self.repository.get_by_id(
+            db,
+            destination.id,
+        )
+
+        if refreshed_destination is None:
+            raise NotFoundException("Destination")
+
+        return refreshed_destination
 
     # ==========================================================
     # Get All
@@ -75,7 +95,7 @@ class DestinationService:
         db: AsyncSession,
     ) -> list[Destination]:
         """
-        Return all active destinations.
+        Return all active/non-deleted destinations.
         """
 
         return await self.repository.get_all(db)
@@ -137,22 +157,36 @@ class DestinationService:
         payload: DestinationUpdate,
     ) -> Destination:
         """
-        Update a destination.
+        Update an existing destination.
         """
+
+        # ------------------------------------------------------
+        # Get existing destination
+        # ------------------------------------------------------
 
         destination = await self.get_by_id(
             db,
             destination_id,
         )
 
+        # ------------------------------------------------------
+        # Extract only provided fields
+        # ------------------------------------------------------
+
         update_data = payload.model_dump(
             exclude_unset=True,
         )
 
+        # ------------------------------------------------------
+        # Check duplicate slug
+        # ------------------------------------------------------
+
         if "slug" in update_data:
-            existing_destination = await self.repository.get_by_slug(
-                db,
-                update_data["slug"],
+            existing_destination = (
+                await self.repository.get_by_slug(
+                    db,
+                    update_data["slug"],
+                )
             )
 
             if (
@@ -163,8 +197,16 @@ class DestinationService:
                     "A destination with this slug already exists."
                 )
 
+        # ------------------------------------------------------
+        # Apply updates
+        # ------------------------------------------------------
+
         for field, value in update_data.items():
-            setattr(destination, field, value)
+            setattr(
+                destination,
+                field,
+                value,
+            )
 
         destination = await self.repository.update(
             db,
@@ -173,7 +215,19 @@ class DestinationService:
 
         await db.commit()
 
-        return destination
+        # ------------------------------------------------------
+        # Re-fetch with city relationship loaded
+        # ------------------------------------------------------
+
+        refreshed_destination = await self.repository.get_by_id(
+            db,
+            destination.id,
+        )
+
+        if refreshed_destination is None:
+            raise NotFoundException("Destination")
+
+        return refreshed_destination
 
     # ==========================================================
     # Delete

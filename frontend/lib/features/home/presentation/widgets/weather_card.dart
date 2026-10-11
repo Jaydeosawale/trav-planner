@@ -1,3 +1,4 @@
+import 'package:trav_planner/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
@@ -13,19 +14,12 @@ class WeatherCard extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(30),
         gradient: const LinearGradient(
-          colors: [
-            Color(0xff38BDF8),
-            Color(0xff0EA5E9),
-          ],
+          colors: [AppColors.accent, AppColors.accent],
         ),
       ),
       child: const Row(
         children: [
-          Icon(
-            Icons.wb_sunny_rounded,
-            size: 70,
-            color: Colors.white,
-          ),
+          Icon(Icons.wb_sunny_rounded, size: 70, color: AppColors.textPrimary),
           SizedBox(width: 20),
           Expanded(
             child: Column(
@@ -35,18 +29,18 @@ class WeatherCard extends StatelessWidget {
                 Text(
                   "26°C",
                   style: TextStyle(
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                     fontSize: 40,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
                   "Perfect Weather for Travel",
-                  style: TextStyle(color: Colors.white70),
+                  style: TextStyle(color: AppColors.textSecondary),
                 ),
               ],
             ),
-          )
+          ),
         ],
       ),
     ).animate().fade().slideY();

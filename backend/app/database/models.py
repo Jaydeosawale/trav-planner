@@ -12,7 +12,13 @@ from app.modules.state.model import State
 from app.modules.city.model import City
 from app.modules.auth.model import User
 from app.modules.destination.model import Destination
+from app.modules.destination_photo.model import DestinationPhoto
+from app.modules.place.model import Place
 from app.modules.planner.model import Planner
+from app.modules.admin.model import (
+    AIBillingAuditLog,
+    AIBillingSettings,
+)
 
 
 __all__ = [
@@ -21,8 +27,11 @@ __all__ = [
     "Country",
     "State",
     "City",
+    "User",
     "Destination",
-    "Planner"
-
-
+    "DestinationPhoto",
+    "Place",
+    "Planner",
+    "AIBillingSettings",
+    "AIBillingAuditLog",
 ]

@@ -4,7 +4,7 @@ import '../../data/datasources/banner_api.dart';
 import '../../data/datasources/destination_api.dart';
 import '../../data/models/banner_model.dart';
 import '../../data/models/destination_model.dart';
-import '../../../../core/responsive/responsive.dart';
+
 final destinationApiProvider = Provider<DestinationApi>(
   (ref) {
     return DestinationApi();

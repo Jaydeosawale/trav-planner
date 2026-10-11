@@ -1,10 +1,15 @@
+import 'package:trav_planner/shared/widgets/brand_logo.dart';
+import 'package:trav_planner/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../home/presentation/pages/home_page.dart';
+//import '../../../admin/presentation/pages/admin_dashboard_page.dart';
+import '../../../../admin/presentation/pages/admin_dashboard_page.dart';
 import '../providers/auth_provider.dart';
 import 'forgot_password_page.dart';
 import 'signup_page.dart';
+
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
@@ -18,6 +23,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   bool _obscurePassword = true;
   bool _rememberMe = true;
+  bool _isLoggingIn = false;
 
   @override
   void dispose() {
@@ -26,89 +32,114 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     super.dispose();
   }
 
+  // ==========================================================
+  // Login
+  // ==========================================================
+
   Future<void> _login() async {
-  final email = _emailController.text.trim();
-  final password = _passwordController.text;
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
 
-  if (email.isEmpty || password.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Please enter your email and password.',
-        ),
-      ),
-    );
-    return;
-  }
-
-  final success = await ref.read(authProvider.notifier).login(
-        email: email,
-        password: password,
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter your email and password.')),
       );
 
-  if (!mounted) return;
+      return;
+    }
 
-  if (success) {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (_) => const HomePage(),
-      ),
-    );
-    return;
+    setState(() {
+      _isLoggingIn = true;
+    });
+
+    final success = await ref
+        .read(authProvider.notifier)
+        .login(email: email, password: password);
+
+    if (!mounted) return;
+
+    setState(() {
+      _isLoggingIn = false;
+    });
+
+    if (!success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Login failed. Please check your email and password.'),
+        ),
+      );
+
+      return;
+    }
+
+    // ========================================================
+    // Role-based navigation
+    // ========================================================
+
+    final authState = ref.read(authProvider);
+    final user = authState.user;
+
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to load user profile.')),
+      );
+
+      return;
+    }
+
+    if (user.isAdmin) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const AdminDashboardPage()),
+        (route) => false,
+      );
+    } else {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const HomePage()),
+        (route) => false,
+      );
+    }
   }
 
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(
-      content: Text(
-        'Login failed. Please check your email and password.',
-      ),
-    ),
-  );
-}
+  // ==========================================================
+  // Forgot Password
+  // ==========================================================
 
   void _openForgotPassword() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => const ForgotPasswordPage(),
-      ),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const ForgotPasswordPage()));
   }
 
+  // ==========================================================
+  // Sign Up
+  // ==========================================================
+
   void _openSignUp() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => const SignUpPage(),
-      ),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const SignUpPage()));
   }
+
+  // ==========================================================
+  // UI
+  // ==========================================================
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFF),
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 24,
-              vertical: 32,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxWidth: 460,
-              ),
+              constraints: const BoxConstraints(maxWidth: 460),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Center(
-                    child: Image.asset(
-                      'assets/images/branding/travplanner_symbol_1024.png',
-                      width: 88,
-                      height: 88,
-                    ),
-                  ),
+                  Center(child: const BrandLogo(size: 56)),
 
                   const SizedBox(height: 36),
 
@@ -116,7 +147,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     'Welcome back',
                     style: theme.textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.w800,
-                      color: const Color(0xFF172033),
+                      color: AppColors.textPrimary,
                     ),
                   ),
 
@@ -125,7 +156,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   Text(
                     'Sign in to continue planning your next adventure.',
                     style: theme.textTheme.bodyLarge?.copyWith(
-                      color: const Color(0xFF697386),
+                      color: AppColors.textSecondary,
                     ),
                   ),
 
@@ -202,8 +233,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           });
                         },
                       ),
+
                       const Text('Remember me'),
+
                       const Spacer(),
+
                       TextButton(
                         onPressed: _openForgotPassword,
                         child: const Text('Forgot password?'),
@@ -217,19 +251,27 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     width: double.infinity,
                     height: 54,
                     child: FilledButton(
-                      onPressed: _login,
+                      onPressed: _isLoggingIn ? null : _login,
                       style: FilledButton.styleFrom(
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
                       ),
-                      child: const Text(
-                        'Login',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
+                      child: _isLoggingIn
+                          ? const SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.5,
+                              ),
+                            )
+                          : const Text(
+                              'Login',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                     ),
                   ),
 
@@ -238,16 +280,18 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   Row(
                     children: [
                       const Expanded(child: Divider()),
+
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Text(
                           'OR',
                           style: theme.textTheme.labelMedium?.copyWith(
-                            color: const Color(0xFF8A93A3),
+                            color: AppColors.textSecondary,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
+
                       const Expanded(child: Divider()),
                     ],
                   ),

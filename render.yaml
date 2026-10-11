@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: jaydeo-trav-planner-api
+    runtime: python
+    plan: free
+    region: singapore
+    branch: main
+    rootDir: backend
+    buildCommand: pip install -r requirements/production.txt
+    startCommand: bash scripts/render-start.sh
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.11
+      - key: APP_ENV
+        value: production
+      - key: DEBUG
+        value: "false"
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: ALLOWED_ORIGINS
+        value: https://jaydeo-trav-planner.vercel.app
+      - key: ALLOWED_ORIGIN_REGEX
+        value: ""
+      - key: AI_PROVIDER
+        value: gemini
+      - key: AI_COST_MODE
+        value: free
+

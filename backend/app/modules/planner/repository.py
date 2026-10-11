@@ -30,8 +30,7 @@ class PlannerRepository:
 
         db.add(planner)
 
-        await db.flush()
-
+        await db.commit()
         await db.refresh(planner)
 
         return planner
@@ -101,7 +100,9 @@ class PlannerRepository:
                 Planner.user_id == user_id,
                 Planner.is_deleted.is_(False),
             )
-            .order_by(Planner.created_at.desc())
+            .order_by(
+                Planner.created_at.desc()
+            )
         )
 
         return list(result.scalars().all())
@@ -119,8 +120,7 @@ class PlannerRepository:
         Persist planner changes.
         """
 
-        await db.flush()
-
+        await db.commit()
         await db.refresh(planner)
 
         return planner
@@ -140,4 +140,4 @@ class PlannerRepository:
 
         planner.is_deleted = True
 
-        await db.flush()
+        await db.commit()

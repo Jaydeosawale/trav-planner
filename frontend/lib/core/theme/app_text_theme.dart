@@ -1,32 +1,65 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'app_colors.dart';
 
 class AppTextTheme {
   static TextTheme get textTheme =>
-      GoogleFonts.plusJakartaSansTextTheme().copyWith(
-        displayLarge: GoogleFonts.plusJakartaSans(
-          fontSize: 38,
-          fontWeight: FontWeight.bold,
+      const TextTheme(
+        displayLarge: TextStyle(
+          fontFamily: 'Manrope',
+          fontSize: 48,
+          height: 1.12,
+          fontWeight: FontWeight.w800,
+          letterSpacing: -1.8,
         ),
-        headlineMedium: GoogleFonts.plusJakartaSans(
-          fontSize: 30,
-          fontWeight: FontWeight.bold,
+        displayMedium: TextStyle(
+          fontFamily: 'Manrope',
+          fontSize: 40,
+          height: 1.12,
+          fontWeight: FontWeight.w800,
+          letterSpacing: -1.5,
         ),
-        titleLarge: GoogleFonts.plusJakartaSans(
+        displaySmall: TextStyle(
+          fontFamily: 'Manrope',
+          fontSize: 34,
+          height: 1.18,
+          fontWeight: FontWeight.w800,
+          letterSpacing: -1.2,
+        ),
+        headlineLarge: TextStyle(
+          fontFamily: 'Manrope',
+          fontSize: 32,
+          height: 1.2,
+          fontWeight: FontWeight.w800,
+          letterSpacing: -1,
+        ),
+        headlineMedium: TextStyle(
+          fontFamily: 'Manrope',
+          fontSize: 28,
+          height: 1.25,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -.8,
+        ),
+        headlineSmall: TextStyle(
+          fontFamily: 'Manrope',
           fontSize: 24,
+          height: 1.3,
           fontWeight: FontWeight.w700,
         ),
-        titleMedium: GoogleFonts.plusJakartaSans(
-          fontSize: 20,
+        titleLarge: TextStyle(
+          fontFamily: 'Manrope',
+          fontSize: 22,
           fontWeight: FontWeight.w700,
         ),
-        bodyLarge: GoogleFonts.plusJakartaSans(
-          fontSize: 16,
-          fontWeight: FontWeight.w500,
-        ),
-        bodyMedium: GoogleFonts.plusJakartaSans(
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-        ),
+        titleMedium: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+        titleSmall: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        bodyLarge: TextStyle(fontSize: 16, height: 1.5),
+        bodyMedium: TextStyle(fontSize: 14, height: 1.5),
+        bodySmall: TextStyle(fontSize: 12, height: 1.5),
+        labelLarge: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+        labelMedium: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+        labelSmall: TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+      ).apply(
+        bodyColor: AppColors.textPrimary,
+        displayColor: AppColors.textPrimary,
       );
 }

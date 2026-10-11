@@ -1,3 +1,4 @@
+import 'package:trav_planner/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 
 class GreetingWidget extends StatelessWidget {
@@ -30,7 +31,7 @@ class GreetingWidget extends StatelessWidget {
     return Text(
       greeting(),
       style: TextStyle(
-        color: Colors.grey.shade600,
+        color: AppColors.textSecondary,
         fontSize: 17,
         fontWeight: FontWeight.w500,
       ),

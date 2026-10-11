@@ -80,3 +80,18 @@ class CountryListResponse(BaseModel):
     flag_url: str | None
 
     is_active: bool
+
+
+    # ==========================================================
+# Admin Update
+# ==========================================================
+
+class CountryAdminUpdate(BaseModel):
+    """
+    Admin-only country update.
+
+    For now, Admin controls only whether the country
+    is available to users.
+    """
+
+    is_active: bool

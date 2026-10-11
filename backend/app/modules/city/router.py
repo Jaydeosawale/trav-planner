@@ -6,14 +6,20 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 from fastapi import Depends
+from fastapi import Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.common.responses.api_response import ApiResponse
+from app.common.responses.api_response import (
+    ApiResponse,
+    success_response,
+)
+
 from app.database.session import get_db
 
 from app.modules.city.schema import (
     CityBase,
     CityListResponse,
+    CityPaginatedResponse,
     CityResponse,
 )
 
@@ -36,9 +42,11 @@ service = CityService()
 async def get_cities(
     db: AsyncSession = Depends(get_db),
 ):
-    cities = await service.get_all(db)
+    cities = await service.get_all(
+        db,
+    )
 
-    return ApiResponse.success(
+    return success_response(
         data=cities,
         message="Cities fetched successfully.",
     )
@@ -55,9 +63,11 @@ async def get_cities(
 async def get_active_cities(
     db: AsyncSession = Depends(get_db),
 ):
-    cities = await service.get_active(db)
+    cities = await service.get_active(
+        db,
+    )
 
-    return ApiResponse.success(
+    return success_response(
         data=cities,
         message="Active cities fetched successfully.",
     )
@@ -80,7 +90,7 @@ async def get_cities_by_country(
         country_id,
     )
 
-    return ApiResponse.success(
+    return success_response(
         data=cities,
         message="Cities fetched successfully.",
     )
@@ -103,8 +113,68 @@ async def get_cities_by_state(
         state_id,
     )
 
-    return ApiResponse.success(
+    return success_response(
         data=cities,
+        message="Cities fetched successfully.",
+    )
+
+
+# ==========================================================
+# Search / Paginated Cities
+# IMPORTANT: Must be before /{city_id}
+# ==========================================================
+
+@router.get(
+    "/search",
+    response_model=ApiResponse[CityPaginatedResponse],
+)
+async def search_cities(
+    page: int = Query(
+        default=1,
+        ge=1,
+    ),
+    size: int = Query(
+        default=50,
+        ge=1,
+        le=100,
+    ),
+    search: str | None = Query(
+        default=None,
+        min_length=1,
+    ),
+    country_id: str | None = Query(
+        default=None,
+    ),
+    state_id: str | None = Query(
+        default=None,
+    ),
+    db: AsyncSession = Depends(get_db),
+):
+    cities, total = await service.search(
+        db,
+        page=page,
+        size=size,
+        search=search,
+        country_id=country_id,
+        state_id=state_id,
+    )
+
+    pages = (
+        (total + size - 1) // size
+        if total > 0
+        else 0
+    )
+
+    data = CityPaginatedResponse(
+        items=cities,
+        total=total,
+        page=page,
+        size=size,
+        pages=pages,
+    )
+
+    return success_response(
+        data=data,
         message="Cities fetched successfully.",
     )
 
@@ -126,7 +196,7 @@ async def get_city(
         city_id,
     )
 
-    return ApiResponse.success(
+    return success_response(
         data=city,
         message="City fetched successfully.",
     )
@@ -149,7 +219,7 @@ async def create_city(
         payload,
     )
 
-    return ApiResponse.success(
+    return success_response(
         data=city,
         message="City created successfully.",
     )
@@ -174,7 +244,7 @@ async def update_city(
         payload,
     )
 
-    return ApiResponse.success(
+    return success_response(
         data=city,
         message="City updated successfully.",
     )
@@ -197,6 +267,6 @@ async def delete_city(
         city_id,
     )
 
-    return ApiResponse.success(
+    return success_response(
         message="City deleted successfully.",
     )

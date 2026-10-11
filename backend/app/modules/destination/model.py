@@ -15,6 +15,9 @@ from sqlalchemy import Text
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
+if TYPE_CHECKING:
+    from app.modules.city.model import City
+    from app.modules.destination_photo.model import DestinationPhoto
 
 from app.database.base import (
     Base,
@@ -52,6 +55,11 @@ class Destination(
     city: Mapped["City"] = relationship(
         "City",
     )
+    photos: Mapped[list["DestinationPhoto"]] = relationship(
+    "DestinationPhoto",
+    back_populates="destination",
+    cascade="all, delete-orphan",
+)
 
     # ==========================================================
     # Basic Information

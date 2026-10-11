@@ -1,3 +1,4 @@
+import 'package:trav_planner/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 
 class FloatingBottomNav extends StatefulWidget {
@@ -27,9 +28,7 @@ class _FloatingBottomNavState extends State<FloatingBottomNav> {
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: .95),
           borderRadius: BorderRadius.circular(30),
-          border: Border.all(
-            color: Colors.grey.shade200,
-          ),
+          border: Border.all(color: AppColors.border),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: .08),
@@ -39,68 +38,63 @@ class _FloatingBottomNavState extends State<FloatingBottomNav> {
           ],
         ),
         child: Row(
-          children: List.generate(
-            items.length,
-            (index) {
-              final item = items[index];
-              final selected = index == selectedIndex;
+          children: List.generate(items.length, (index) {
+            final item = items[index];
+            final selected = index == selectedIndex;
 
-              return Expanded(
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(24),
-                  onTap: () {
-                    setState(() {
-                      selectedIndex = index;
-                    });
-                  },
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 250),
-                    curve: Curves.easeOut,
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 4,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: selected
-                          ? const Color(0xFF2563EB)
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(22),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        AnimatedScale(
-                          duration: const Duration(milliseconds: 250),
-                          scale: selected ? 1.15 : 1,
-                          child: Icon(
-                            item.$1,
-                            color: selected
-                                ? Colors.white
-                                : Colors.grey.shade600,
-                            size: 25,
-                          ),
+            return Expanded(
+              child: InkWell(
+                borderRadius: BorderRadius.circular(24),
+                onTap: () {
+                  setState(() {
+                    selectedIndex = index;
+                  });
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeOut,
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: selected ? AppColors.primary : Colors.transparent,
+                    borderRadius: BorderRadius.circular(22),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      AnimatedScale(
+                        duration: const Duration(milliseconds: 250),
+                        scale: selected ? 1.15 : 1,
+                        child: Icon(
+                          item.$1,
+                          color: selected
+                              ? AppColors.onPrimary
+                              : AppColors.textSecondary,
+                          size: 25,
                         ),
+                      ),
 
-                        const SizedBox(height: 3),
+                      const SizedBox(height: 3),
 
-                        AnimatedDefaultTextStyle(
-                          duration: const Duration(milliseconds: 250),
-                          style: TextStyle(
-                            color: selected
-                                ? Colors.white
-                                : Colors.grey.shade600,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          child: Text(item.$2),
+                      AnimatedDefaultTextStyle(
+                        duration: const Duration(milliseconds: 250),
+                        style: TextStyle(
+                          color: selected
+                              ? AppColors.onPrimary
+                              : AppColors.textSecondary,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
                         ),
-                      ],
-                    ),
+                        child: Text(item.$2),
+                      ),
+                    ],
                   ),
                 ),
-              );
-            },
-          ),
+              ),
+            );
+          }),
         ),
       ),
     );

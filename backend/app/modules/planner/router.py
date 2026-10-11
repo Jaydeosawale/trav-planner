@@ -8,7 +8,7 @@ from fastapi import APIRouter
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.common.responses.api_response import ApiResponse
+from app.common.responses.api_response import ApiResponse, success_response
 from app.database.session import get_db
 from app.dependencies.current_user import get_current_user
 from app.modules.auth.model import User
@@ -43,7 +43,7 @@ async def get_planners(
         current_user.id,
     )
 
-    return ApiResponse.success(
+    return success_response(
         data=planners,
         message="Planners fetched successfully.",
     )
@@ -68,7 +68,7 @@ async def get_planner(
         current_user.id,
     )
 
-    return ApiResponse.success(
+    return success_response(
         data=planner,
         message="Planner fetched successfully.",
     )
@@ -93,7 +93,7 @@ async def create_planner(
         payload,
     )
 
-    return ApiResponse.success(
+    return success_response(
         data=planner,
         message="Planner created successfully.",
     )
@@ -120,7 +120,7 @@ async def update_planner(
         payload,
     )
 
-    return ApiResponse.success(
+    return success_response(
         data=planner,
         message="Planner updated successfully.",
     )
@@ -145,6 +145,6 @@ async def delete_planner(
         current_user.id,
     )
 
-    return ApiResponse.success(
+    return success_response(
         message="Planner deleted successfully.",
     )

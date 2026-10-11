@@ -3,6 +3,7 @@ from __future__ import annotations
 from functools import lru_cache
 
 from pydantic import Field, computed_field
+from sqlalchemy.engine import make_url
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from app.core.environment import CURRENT_ENVIRONMENT
@@ -87,16 +88,28 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 30
 
     # ==========================================================
-    # AI Platform
-    # ==========================================================
+    # AI / LLM
+# ==========================================================
 
-    AI_PLATFORM_URL: str = "http://localhost:9000"
+    AI_PROVIDER: str = "gemini"
 
-    # ==========================================================
-    # API
-    # ==========================================================
+    GEMINI_API_KEY: str = ""
+    GEMINI_MODEL: str = "gemini-3.5-flash"
 
-    API_TIMEOUT: int = 60
+    GROQ_API_KEY: str = ""
+    GROQ_MODEL: str = ""
+
+    ANTHROPIC_API_KEY: str = ""
+    CLAUDE_MODEL: str = ""
+
+    OLLAMA_BASE_URL: str = "http://localhost:11434"
+    OLLAMA_MODEL: str = "qwen3:4b"
+    OLLAMA_THINK: bool = False
+
+    AI_TEMPERATURE: float = 0.2
+    AI_MAX_OUTPUT_TOKENS: int = 4096
+
+    AI_COST_MODE: str = "free"
 
     # ==========================================================
     # Logging
@@ -155,7 +168,19 @@ class Settings(BaseSettings):
         """
 
         if self.DATABASE_URL:
-            return self.DATABASE_URL
+            url = make_url(self.DATABASE_URL)
+            if url.drivername in ('postgres', 'postgresql'):
+                url = url.set(drivername='postgresql+asyncpg')
+            if url.drivername == 'postgresql+asyncpg':
+                query = dict(url.query)
+                sslmode = query.pop('sslmode', None)
+                # Neon connection strings use libpq parameters. asyncpg uses
+                # `ssl` instead and does not accept channel_binding.
+                query.pop('channel_binding', None)
+                if sslmode is not None:
+                    query['ssl'] = 'verify-full' if sslmode == 'require' else sslmode
+                url = url.set(query=query)
+            return url.render_as_string(hide_password=False)
 
         return (
             "postgresql+asyncpg://"

@@ -1,3 +1,4 @@
+import 'package:trav_planner/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
@@ -6,73 +7,46 @@ class AIPlannerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return Container(
-
-      margin: const EdgeInsets.symmetric(vertical:24),
+      margin: const EdgeInsets.symmetric(vertical: 24),
 
       padding: const EdgeInsets.all(24),
 
       decoration: BoxDecoration(
-
         borderRadius: BorderRadius.circular(32),
 
         gradient: const LinearGradient(
-
-          colors: [
-
-            Color(0xff0EA5E9),
-
-            Color(0xff2563EB),
-
-          ],
+          colors: [AppColors.accent, AppColors.primary],
         ),
       ),
 
       child: Column(
-
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
 
         children: [
-
           const Text(
-
             "✨ AI Travel Planner",
 
             style: TextStyle(
-
-              color: Colors.white,
+              color: AppColors.textPrimary,
 
               fontWeight: FontWeight.bold,
 
-              fontSize:28,
-
+              fontSize: 28,
             ),
           ),
 
-          const SizedBox(height:12),
+          const SizedBox(height: 12),
 
           const Text(
-
             "Describe your dream vacation and let AI create a personalized itinerary.",
 
-            style: TextStyle(
-
-              color: Colors.white70,
-
-            ),
+            style: TextStyle(color: AppColors.textSecondary),
           ),
 
-          const SizedBox(height:20),
+          const SizedBox(height: 20),
 
-          FilledButton(
-
-            onPressed: () {},
-
-            child: const Text("Start Planning"),
-
-          )
+          FilledButton(onPressed: () {}, child: const Text("Start Planning")),
         ],
       ),
     ).animate().fade().scale();

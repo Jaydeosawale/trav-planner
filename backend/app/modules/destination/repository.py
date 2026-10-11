@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.modules.destination.model import Destination
 
@@ -25,10 +26,16 @@ class DestinationRepository:
     ) -> list[Destination]:
         """
         Return all non-deleted destinations.
+
+        The related city is eagerly loaded so async SQLAlchemy
+        does not need a lazy database query later.
         """
 
         result = await db.execute(
             select(Destination)
+            .options(
+                selectinload(Destination.city),
+            )
             .where(
                 Destination.is_deleted.is_(False),
             )
@@ -50,10 +57,15 @@ class DestinationRepository:
     ) -> Destination | None:
         """
         Return a destination by ID.
+
+        The related city is eagerly loaded.
         """
 
         result = await db.execute(
             select(Destination)
+            .options(
+                selectinload(Destination.city),
+            )
             .where(
                 Destination.id == destination_id,
                 Destination.is_deleted.is_(False),
@@ -73,10 +85,15 @@ class DestinationRepository:
     ) -> Destination | None:
         """
         Return a destination by slug.
+
+        The related city is eagerly loaded.
         """
 
         result = await db.execute(
             select(Destination)
+            .options(
+                selectinload(Destination.city),
+            )
             .where(
                 Destination.slug == slug,
                 Destination.is_deleted.is_(False),
@@ -100,8 +117,7 @@ class DestinationRepository:
 
         db.add(destination)
 
-        await db.flush()
-
+        await db.commit()
         await db.refresh(destination)
 
         return destination
@@ -119,8 +135,7 @@ class DestinationRepository:
         Update a destination.
         """
 
-        await db.flush()
-
+        await db.commit()
         await db.refresh(destination)
 
         return destination
@@ -140,6 +155,6 @@ class DestinationRepository:
 
         destination.is_deleted = True
 
-        await db.flush()
+        await db.commit()
 
         return destination

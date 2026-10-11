@@ -9,9 +9,11 @@ class ApiConfig {
   ///
   /// Used when running the application on a physical
   /// Android/iOS device.
-  static const String _devMachineIp = "10.102.215.97";
-
+  static const String _devMachineIp = "10.222.42.97";
+  static const _configuredUrl = String.fromEnvironment('API_BASE_URL');
   static String get baseUrl {
+    if (_configuredUrl.isNotEmpty) return _configuredUrl;
+
     switch (AppEnvironment.current) {
       case Environment.production:
         return "https://api.travplanner.com/api/v1";

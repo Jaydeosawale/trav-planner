@@ -69,6 +69,7 @@ class UserResponse(BaseModel):
     full_name: str
     is_active: bool
     created_at: datetime
+    role: str
 
 # ==========================================================
 # Refresh Token Request

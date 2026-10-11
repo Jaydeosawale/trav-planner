@@ -15,6 +15,10 @@ class UserRepository:
     Database operations for users.
     """
 
+    # ==========================================================
+    # Get By ID
+    # ==========================================================
+
     async def get_by_id(
         self,
         db: AsyncSession,
@@ -28,6 +32,10 @@ class UserRepository:
         )
 
         return result.scalar_one_or_none()
+
+    # ==========================================================
+    # Get By Email
+    # ==========================================================
 
     async def get_by_email(
         self,
@@ -43,33 +51,57 @@ class UserRepository:
 
         return result.scalar_one_or_none()
 
+    # ==========================================================
+    # Create
+    # ==========================================================
+
     async def create(
         self,
         db: AsyncSession,
         user: User,
     ) -> User:
+        """
+        Create a user.
+        """
+
         db.add(user)
 
-        await db.flush()
+        await db.commit()
         await db.refresh(user)
 
         return user
+
+    # ==========================================================
+    # Update
+    # ==========================================================
 
     async def update(
         self,
         db: AsyncSession,
         user: User,
     ) -> User:
-        await db.flush()
+        """
+        Persist user changes.
+        """
+
+        await db.commit()
         await db.refresh(user)
 
         return user
+
+    # ==========================================================
+    # Delete
+    # ==========================================================
 
     async def delete(
         self,
         db: AsyncSession,
         user: User,
     ) -> None:
+        """
+        Soft delete a user.
+        """
+
         user.is_deleted = True
 
-        await db.flush()
+        await db.commit()

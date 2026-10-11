@@ -1,149 +1,73 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/app_colors.dart';
 
-class MobileBottomNav extends StatefulWidget {
+class MobileBottomNav extends StatelessWidget {
+  const MobileBottomNav({super.key, this.currentIndex = 0, this.onTap});
   final int currentIndex;
   final ValueChanged<int>? onTap;
-
-  const MobileBottomNav({
-    super.key,
-    this.currentIndex = 0,
-    this.onTap,
-  });
-
-  @override
-  State<MobileBottomNav> createState() =>
-      _MobileBottomNavState();
-}
-
-class _MobileBottomNavState
-    extends State<MobileBottomNav> {
-  late int _selectedIndex;
-
-  final List<(IconData, String)> _items = const [
-    (Icons.home_rounded, "Home"),
-    (Icons.luggage_rounded, "Trips"),
-    (Icons.auto_awesome_rounded, "AI"),
-    (Icons.favorite_rounded, "Saved"),
-    (Icons.person_rounded, "Profile"),
+  static const items = [
+    (Icons.home_outlined, 'Home'),
+    (Icons.explore_outlined, 'Explore'),
+    (Icons.auto_awesome_outlined, 'AI Planner'),
+    (Icons.luggage_outlined, 'My Trips'),
+    (Icons.person_outline, 'Profile'),
   ];
-
   @override
-  void initState() {
-    super.initState();
-    _selectedIndex = widget.currentIndex;
-  }
-
-  @override
-  void didUpdateWidget(
-    covariant MobileBottomNav oldWidget,
-  ) {
-    super.didUpdateWidget(oldWidget);
-
-    if (oldWidget.currentIndex !=
-        widget.currentIndex) {
-      _selectedIndex = widget.currentIndex;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      minimum: const EdgeInsets.fromLTRB(
-        18,
-        0,
-        18,
-        18,
-      ),
-      child: Container(
-        height: 74,
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: .95),
-          borderRadius: BorderRadius.circular(30),
-          border: Border.all(
-            color: Colors.grey.shade200,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: .08),
-              blurRadius: 24,
-              offset: const Offset(0, 10),
-            ),
-          ],
-        ),
+  Widget build(BuildContext context) => DecoratedBox(
+    decoration: const BoxDecoration(
+      color: AppColors.surface,
+      border: Border(top: BorderSide(color: AppColors.border)),
+    ),
+    child: SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
         child: Row(
-          children: List.generate(
-            _items.length,
-            (index) {
-              final item = _items[index];
-              final selected =
-                  index == _selectedIndex;
-
-              return Expanded(
+          children: List.generate(items.length, (index) {
+            final selected = index == currentIndex;
+            return Expanded(
+              child: Semantics(
+                selected: selected,
+                button: true,
+                label: items[index].$2,
                 child: InkWell(
-                  borderRadius:
-                      BorderRadius.circular(22),
-                  onTap: () {
-                    setState(() {
-                      _selectedIndex = index;
-                    });
-
-                    widget.onTap?.call(index);
-                  },
-                  child: AnimatedContainer(
-                    duration: const Duration(
-                      milliseconds: 250,
-                    ),
-                    margin:
-                        const EdgeInsets.symmetric(
-                      horizontal: 4,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: selected
-                          ? const Color(0xFF2563EB)
-                          : Colors.transparent,
-                      borderRadius:
-                          BorderRadius.circular(22),
-                    ),
+                  onTap: () => onTap?.call(index),
+                  borderRadius: BorderRadius.circular(12),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
                     child: Column(
-                      mainAxisAlignment:
-                          MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        AnimatedScale(
-                          duration: const Duration(
-                            milliseconds: 250,
-                          ),
-                          scale:
-                              selected ? 1.15 : 1,
-                          child: Icon(
-                            item.$1,
-                            color: selected
-                                ? Colors.white
-                                : Colors.grey.shade600,
-                            size: 24,
-                          ),
+                        Icon(
+                          items[index].$1,
+                          color: selected
+                              ? AppColors.primary
+                              : AppColors.textSecondary,
+                          size: 24,
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 7),
                         Text(
-                          item.$2,
+                          items[index].$2,
+                          maxLines: 1,
                           style: TextStyle(
-                            fontSize: 11,
-                            fontWeight:
-                                FontWeight.w600,
+                            fontSize: 10,
                             color: selected
-                                ? Colors.white
-                                : Colors.grey.shade600,
+                                ? AppColors.textPrimary
+                                : AppColors.textSecondary,
+                            fontWeight: selected
+                                ? FontWeight.w700
+                                : FontWeight.w400,
                           ),
                         ),
                       ],
                     ),
                   ),
                 ),
-              );
-            },
-          ),
+              ),
+            );
+          }),
         ),
       ),
-    );
-  }
+    ),
+  );
 }

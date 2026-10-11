@@ -14,6 +14,7 @@ from sqlalchemy.ext.asyncio import (
 
 from app.core.settings import settings
 
+
 # ------------------------------------------------------------------
 # Async Engine
 # ------------------------------------------------------------------
@@ -24,9 +25,10 @@ engine = create_async_engine(
     future=True,
     pool_pre_ping=True,
     pool_recycle=3600,
-    pool_size=20,
-    max_overflow=10,
+    pool_size=5,
+    max_overflow=5,
 )
+
 
 # ------------------------------------------------------------------
 # Session Factory
@@ -40,10 +42,10 @@ SessionLocal = async_sessionmaker(
     autocommit=False,
 )
 
+
 # ------------------------------------------------------------------
 # Dependency
 # ------------------------------------------------------------------
-
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """
@@ -60,8 +62,21 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
         finally:
             await session.close()
 
-    async def close_engine() -> None:
-     """
-     Gracefully dispose database connections.
-     """
-    await engine.dispose()        
+
+# ------------------------------------------------------------------
+# Engine Shutdown
+# ------------------------------------------------------------------
+
+async def close_engine() -> None:
+    """
+    Gracefully dispose database connections.
+    """
+
+    await engine.dispose()
+
+
+# ------------------------------------------------------------------
+# Register all SQLAlchemy models
+# ------------------------------------------------------------------
+
+from app.database import models as _models  # noqa: E402,F401

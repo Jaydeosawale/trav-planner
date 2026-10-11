@@ -1,3 +1,4 @@
+import 'package:trav_planner/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 
 class AnimatedPlane extends StatefulWidget {
@@ -39,7 +40,7 @@ class _AnimatedPlaneState extends State<AnimatedPlane>
             angle: -.3,
             child: const Icon(
               Icons.flight_takeoff,
-              color: Colors.white,
+              color: AppColors.textPrimary,
               size: 40,
             ),
           ),

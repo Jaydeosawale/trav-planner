@@ -7,11 +7,7 @@ import 'features/splash/presentation/pages/splash_page.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
-  runApp(
-    const ProviderScope(
-      child: TravPlannerApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: TravPlannerApp()));
 }
 
 class TravPlannerApp extends StatelessWidget {
@@ -21,8 +17,10 @@ class TravPlannerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Trav Planner',
-       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light,
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.dark,
+      darkTheme: AppTheme.dark,
+      themeMode: ThemeMode.dark,
       home: const SplashPage(),
     );
   }

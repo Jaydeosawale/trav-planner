@@ -3,36 +3,37 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/user_model.dart';
 import '../../data/repositories/auth_repository.dart';
 
-final authRepositoryProvider = Provider(
+final authRepositoryProvider = Provider<AuthRepository>(
   (ref) => AuthRepository.instance,
 );
 
-enum AuthStatus {
-  checking,
-  authenticated,
-  unauthenticated,
-}
+enum AuthStatus { checking, authenticated, unauthenticated }
 
 class AuthState {
   final AuthStatus status;
   final UserModel? user;
 
-  const AuthState({
-    required this.status,
-    this.user,
-  });
+  const AuthState({required this.status, this.user});
 
-  const AuthState.checking()
-      : status = AuthStatus.checking,
-        user = null;
+  const AuthState.checking() : status = AuthStatus.checking, user = null;
 
-  const AuthState.authenticated({
-    this.user,
-  }) : status = AuthStatus.authenticated;
+  const AuthState.authenticated({this.user})
+    : status = AuthStatus.authenticated;
 
   const AuthState.unauthenticated()
-      : status = AuthStatus.unauthenticated,
-        user = null;
+    : status = AuthStatus.unauthenticated,
+      user = null;
+
+  // ========================================================
+  // Role helpers
+  // ========================================================
+
+  bool get isAuthenticated =>
+      status == AuthStatus.authenticated && user != null;
+
+  bool get isAdmin => isAuthenticated && user!.isAdmin;
+
+  bool get isUser => isAuthenticated && user!.isUser;
 }
 
 class AuthNotifier extends Notifier<AuthState> {
@@ -53,32 +54,30 @@ class AuthNotifier extends Notifier<AuthState> {
     state = const AuthState.checking();
 
     try {
-      final hasSession =
-          await _repository.hasStoredSession();
+      final hasSession = await _repository.hasStoredSession();
 
       if (!hasSession) {
         state = const AuthState.unauthenticated();
         return;
       }
 
-      final response =
-          await _repository.getCurrentUser();
+      // ------------------------------------------------------
+      // Try existing access token
+      // ------------------------------------------------------
 
-      if (response.success &&
-          response.data != null) {
-        state = AuthState.authenticated(
-          user: response.data,
-        );
+      final response = await _repository.getCurrentUser();
+
+      if (response.success && response.data != null) {
+        state = AuthState.authenticated(user: response.data);
         return;
       }
 
-      // --------------------------------------------------------
-      // Access token may have expired.
+      // ------------------------------------------------------
+      // Access token expired.
       // Try refresh token.
-      // --------------------------------------------------------
+      // ------------------------------------------------------
 
-      final refreshResponse =
-          await _repository.refreshToken();
+      final refreshResponse = await _repository.refreshToken();
 
       if (!refreshResponse.success) {
         await _repository.logout();
@@ -87,18 +86,14 @@ class AuthNotifier extends Notifier<AuthState> {
         return;
       }
 
-      // --------------------------------------------------------
-      // Get current user again using new access token.
-      // --------------------------------------------------------
+      // ------------------------------------------------------
+      // Get current user using new access token.
+      // ------------------------------------------------------
 
-      final refreshedUser =
-          await _repository.getCurrentUser();
+      final refreshedUser = await _repository.getCurrentUser();
 
-      if (refreshedUser.success &&
-          refreshedUser.data != null) {
-        state = AuthState.authenticated(
-          user: refreshedUser.data,
-        );
+      if (refreshedUser.success && refreshedUser.data != null) {
+        state = AuthState.authenticated(user: refreshedUser.data);
       } else {
         await _repository.logout();
 
@@ -115,10 +110,7 @@ class AuthNotifier extends Notifier<AuthState> {
   // Login
   // ==========================================================
 
-  Future<bool> login({
-    required String email,
-    required String password,
-  }) async {
+  Future<bool> login({required String email, required String password}) async {
     state = const AuthState.checking();
 
     try {
@@ -132,29 +124,49 @@ class AuthNotifier extends Notifier<AuthState> {
         return false;
       }
 
-      // --------------------------------------------------------
-      // Load the logged-in user's profile.
-      // --------------------------------------------------------
+      // ------------------------------------------------------
+      // Load logged-in user's profile.
+      // ------------------------------------------------------
 
-      final userResponse =
-          await _repository.getCurrentUser();
+      final userResponse = await _repository.getCurrentUser();
 
-      if (userResponse.success &&
-          userResponse.data != null) {
-        state = AuthState.authenticated(
-          user: userResponse.data,
-        );
+      if (userResponse.success && userResponse.data != null) {
+        state = AuthState.authenticated(user: userResponse.data);
 
         return true;
       }
 
+      // ------------------------------------------------------
+      // Login succeeded but profile failed.
+      // ------------------------------------------------------
+
       await _repository.logout();
 
       state = const AuthState.unauthenticated();
+
       return false;
     } catch (_) {
       state = const AuthState.unauthenticated();
+
       return false;
+    }
+  }
+
+  // ==========================================================
+  // Get Admin Profile
+  // ==========================================================
+
+  Future<UserModel?> getCurrentAdmin() async {
+    try {
+      final response = await _repository.getCurrentAdmin();
+
+      if (response.success && response.data != null) {
+        return response.data;
+      }
+
+      return null;
+    } catch (_) {
+      return null;
     }
   }
 
@@ -177,12 +189,10 @@ class AuthNotifier extends Notifier<AuthState> {
       );
 
       if (response.success) {
-        // Registration does NOT automatically log the user in.
+        // Registration does not automatically
+        // authenticate the user.
         //
-        // The planned flow is:
-        //
-        // Signup → Login → Home
-        //
+        // Signup → Login → Home/Admin Dashboard
 
         state = const AuthState.unauthenticated();
 
@@ -190,9 +200,11 @@ class AuthNotifier extends Notifier<AuthState> {
       }
 
       state = const AuthState.unauthenticated();
+
       return false;
     } catch (_) {
       state = const AuthState.unauthenticated();
+
       return false;
     }
   }
@@ -208,7 +220,6 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 }
 
-final authProvider =
-    NotifierProvider<AuthNotifier, AuthState>(
+final authProvider = NotifierProvider<AuthNotifier, AuthState>(
   AuthNotifier.new,
 );

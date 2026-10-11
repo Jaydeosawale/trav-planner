@@ -5,7 +5,7 @@ from fastapi import Depends
 from fastapi import status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.common.responses.api_response import ApiResponse
+from app.common.responses.api_response import ApiResponse, success_response
 from app.database.session import get_db
 from app.modules.category.schema import (
     CategoryCreate,
@@ -28,7 +28,7 @@ async def get_categories(
 ):
     categories = await service.get_all(db)
 
-    return ApiResponse.success(
+    return success_response(
         data=categories,
         message="Categories fetched successfully.",
     )
@@ -47,7 +47,7 @@ async def get_category(
         category_id,
     )
 
-    return ApiResponse.success(
+    return success_response(
         data=category,
         message="Category fetched successfully.",
     )
@@ -67,7 +67,7 @@ async def create_category(
         payload,
     )
 
-    return ApiResponse.success(
+    return success_response(
         data=category,
         message="Category created successfully.",
     )
@@ -88,7 +88,7 @@ async def update_category(
         payload,
     )
 
-    return ApiResponse.success(
+    return success_response(
         data=category,
         message="Category updated successfully.",
     )
@@ -107,7 +107,7 @@ async def delete_category(
         category_id,
     )
 
-    return ApiResponse.success(
+    return success_response(
         message="Category deleted successfully.",
     )
 
@@ -123,7 +123,7 @@ async def get_featured_categories(
         db,
     )
 
-    return ApiResponse.success(
+    return success_response(
         data=categories,
         message="Featured categories fetched successfully.",
     )
@@ -140,7 +140,7 @@ async def get_active_categories(
         db,
     )
 
-    return ApiResponse.success(
+    return success_response(
         data=categories,
         message="Active categories fetched successfully.",
     )
@@ -157,7 +157,7 @@ async def get_root_categories(
         db,
     )
 
-    return ApiResponse.success(
+    return success_response(
         data=categories,
         message="Root categories fetched successfully.",
     )
@@ -176,7 +176,7 @@ async def get_children(
         category_id,
     )
 
-    return ApiResponse.success(
+    return success_response(
         data=categories,
         message="Child categories fetched successfully.",
     )

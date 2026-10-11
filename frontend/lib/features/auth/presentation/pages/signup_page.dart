@@ -1,3 +1,5 @@
+import 'package:trav_planner/shared/widgets/brand_logo.dart';
+import 'package:trav_planner/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_provider.dart';
@@ -31,87 +33,71 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
   }
 
   Future<void> _createAccount() async {
-  if (!_acceptedTerms) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Please accept the Terms & Privacy Policy.',
+    if (!_acceptedTerms) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please accept the Terms & Privacy Policy.'),
         ),
-      ),
-    );
-    return;
-  }
+      );
+      return;
+    }
 
-  final fullName = _nameController.text.trim();
-  final email = _emailController.text.trim();
-  final password = _passwordController.text;
-  final confirmPassword = _confirmPasswordController.text;
+    final fullName = _nameController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    final confirmPassword = _confirmPasswordController.text;
 
-  if (fullName.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Please enter your full name.'),
-      ),
-    );
-    return;
-  }
+    if (fullName.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter your full name.')),
+      );
+      return;
+    }
 
-  if (email.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Please enter your email.'),
-      ),
-    );
-    return;
-  }
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please enter your email.')));
+      return;
+    }
 
-  if (password.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Please enter a password.'),
-      ),
-    );
-    return;
-  }
+    if (password.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please enter a password.')));
+      return;
+    }
 
-  if (password != confirmPassword) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Passwords do not match.'),
-      ),
-    );
-    return;
-  }
+    if (password != confirmPassword) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Passwords do not match.')));
+      return;
+    }
 
-  final success = await ref.read(authProvider.notifier).register(
-        email: email,
-        password: password,
-        fullName: fullName,
+    final success = await ref
+        .read(authProvider.notifier)
+        .register(email: email, password: password, fullName: fullName);
+
+    if (!mounted) return;
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Account created successfully. Please log in.'),
+        ),
       );
 
-  if (!mounted) return;
+      Navigator.of(context).pop();
+      return;
+    }
 
-  if (success) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text(
-          'Account created successfully. Please log in.',
-        ),
+        content: Text('Unable to create account. Please check your details.'),
       ),
     );
-
-    Navigator.of(context).pop();
-    return;
   }
-
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(
-      content: Text(
-        'Unable to create account. Please check your details.',
-      ),
-    ),
-  );
-}
 
   InputDecoration _inputDecoration({
     required String hintText,
@@ -122,9 +108,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
       hintText: hintText,
       prefixIcon: Icon(icon),
       suffixIcon: suffixIcon,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
     );
   }
 
@@ -133,28 +117,17 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFF),
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 24,
-              vertical: 28,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
             child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxWidth: 460,
-              ),
+              constraints: const BoxConstraints(maxWidth: 460),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Center(
-                    child: Image.asset(
-                      'assets/images/branding/travplanner_symbol_1024.png',
-                      width: 78,
-                      height: 78,
-                    ),
-                  ),
+                  Center(child: const BrandLogo(size: 56)),
 
                   const SizedBox(height: 28),
 
@@ -162,16 +135,16 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                     'Create your account',
                     style: theme.textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.w800,
-                      color: const Color(0xFF172033),
+                      color: AppColors.textPrimary,
                     ),
                   ),
 
                   const SizedBox(height: 8),
 
                   Text(
-                    'Join TravPlanner and start planning smarter trips.',
+                    'Join trav. and start planning smarter trips.',
                     style: theme.textTheme.bodyLarge?.copyWith(
-                      color: const Color(0xFF697386),
+                      color: AppColors.textSecondary,
                     ),
                   ),
 
@@ -291,8 +264,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                       suffixIcon: IconButton(
                         onPressed: () {
                           setState(() {
-                            _obscureConfirmPassword =
-                                !_obscureConfirmPassword;
+                            _obscureConfirmPassword = !_obscureConfirmPassword;
                           });
                         },
                         icon: Icon(
@@ -331,9 +303,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
-                                const TextSpan(
-                                  text: ' and ',
-                                ),
+                                const TextSpan(text: ' and '),
                                 TextSpan(
                                   text: 'Privacy Policy',
                                   style: TextStyle(
@@ -381,7 +351,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                         child: Text(
                           'OR',
                           style: theme.textTheme.labelMedium?.copyWith(
-                            color: const Color(0xFF8A93A3),
+                            color: AppColors.textSecondary,
                             fontWeight: FontWeight.w600,
                           ),
                         ),

@@ -64,6 +64,14 @@ class User(
         nullable=False,
     )
 
+    role: Mapped[str] = mapped_column(
+        String(30),
+        default="user",
+        server_default="user",
+        nullable=False,
+        index=True,
+    )
+
     # ==========================================================
     # Representation
     # ==========================================================

@@ -13,7 +13,18 @@ from app.api.v1.state.router import router as state_router
 from app.api.v1.city.router import router as city_router
 from app.api.v1.auth.router import router as auth_router
 from app.api.v1.destination.router import router as destination_router
-
+from app.api.v1.admin.router import router as admin_router
+from app.api.v1.destination_photo.router import (
+    router as destination_photo_router,
+)
+from app.api.v1.place.router import router as place_router
+from app.api.v1.admin.place.router import (router as admin_place_router,
+)
+from app.api.v1.user.router import router as user_router
+from app.api.v1.search.router import router as search_router
+from app.api.v1.trips.router import router as trips_router
+from app.api.v1.itinerary.router import router as itinerary_router
+from app.api.v1.ai.router import router as ai_router
 
 api_router = APIRouter()
 
@@ -70,4 +81,51 @@ api_router.include_router(
     destination_router,
     prefix="/destinations",
     tags=["Destinations"],
+)
+
+api_router.include_router(
+    admin_router,
+    prefix="/admin",
+    tags=["Admin"],
+)
+
+api_router.include_router(
+    destination_photo_router,
+    prefix="/destination-photos",
+)
+
+api_router.include_router(
+    place_router,
+    prefix="/places",
+    tags=["Places"],
+)
+
+api_router.include_router(
+    user_router,
+    prefix="/user",
+    tags=["User"],
+)
+
+api_router.include_router(
+    search_router,
+    prefix="/search",
+    tags=["Search"],
+)
+
+api_router.include_router(
+    trips_router,
+    prefix="/trips",
+    tags=["Trips"],
+)
+
+api_router.include_router(
+    itinerary_router,
+    prefix="/itinerary",
+    tags=["Itinerary"],
+)
+
+api_router.include_router(
+    ai_router,
+    prefix="/ai",
+    tags=["AI"],
 )

@@ -1,5 +1,10 @@
+"""
+City Repository.
+"""
+
 from __future__ import annotations
 
+from sqlalchemy import func
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,12 +20,19 @@ class CityRepository(BaseRepository[City]):
     def __init__(self) -> None:
         super().__init__(City)
 
+    # ==========================================================
+    # Get All Cities
+    # ==========================================================
+
     async def get_all(
         self,
         db: AsyncSession,
     ) -> list[City]:
         """
         Return all cities.
+
+        Kept for existing API compatibility.
+        Prefer search() for Admin/AI use.
         """
 
         result = await db.execute(
@@ -35,12 +47,18 @@ class CityRepository(BaseRepository[City]):
 
         return list(result.scalars().all())
 
+    # ==========================================================
+    # Get Active Cities
+    # ==========================================================
+
     async def get_active(
         self,
         db: AsyncSession,
     ) -> list[City]:
         """
         Return active cities.
+
+        Kept for existing API compatibility.
         """
 
         result = await db.execute(
@@ -55,6 +73,10 @@ class CityRepository(BaseRepository[City]):
         )
 
         return list(result.scalars().all())
+
+    # ==========================================================
+    # Get Cities By Country
+    # ==========================================================
 
     async def get_by_country(
         self,
@@ -78,6 +100,10 @@ class CityRepository(BaseRepository[City]):
 
         return list(result.scalars().all())
 
+    # ==========================================================
+    # Get Cities By State
+    # ==========================================================
+
     async def get_by_state(
         self,
         db: AsyncSession,
@@ -100,6 +126,103 @@ class CityRepository(BaseRepository[City]):
 
         return list(result.scalars().all())
 
+    # ==========================================================
+    # Search / Pagination
+    # ==========================================================
+
+    async def search(
+        self,
+        db: AsyncSession,
+        *,
+        page: int = 1,
+        size: int = 50,
+        search: str | None = None,
+        country_id: str | None = None,
+        state_id: str | None = None,
+    ) -> tuple[list[City], int]:
+        """
+        Search and paginate cities.
+
+        Designed for:
+        - Admin CMS
+        - Search UI
+        - Future AI retrieval
+        """
+
+        filters = [
+            City.is_deleted.is_(False),
+        ]
+
+        # ------------------------------------------------------
+        # Name Search
+        # ------------------------------------------------------
+
+        if search:
+            search_value = search.strip()
+
+            if search_value:
+                filters.append(
+                    City.name.ilike(
+                        f"%{search_value}%"
+                    )
+                )
+
+        # ------------------------------------------------------
+        # Country Filter
+        # ------------------------------------------------------
+
+        if country_id:
+            filters.append(
+                City.country_id == country_id,
+            )
+
+        # ------------------------------------------------------
+        # State Filter
+        # ------------------------------------------------------
+
+        if state_id:
+            filters.append(
+                City.state_id == state_id,
+            )
+
+        # ------------------------------------------------------
+        # Total Count
+        # ------------------------------------------------------
+
+        count_result = await db.execute(
+            select(func.count())
+            .select_from(City)
+            .where(*filters)
+        )
+
+        total = count_result.scalar_one()
+
+        # ------------------------------------------------------
+        # Pagination
+        # ------------------------------------------------------
+
+        offset = (page - 1) * size
+
+        result = await db.execute(
+            select(City)
+            .where(*filters)
+            .order_by(
+                City.name,
+            )
+            .offset(offset)
+            .limit(size)
+        )
+
+        cities = list(
+            result.scalars().all()
+        )
+
+        return cities, total
+
+    # ==========================================================
+    # Exists By Name
+    # ==========================================================
+
     async def exists_by_name(
         self,
         db: AsyncSession,
@@ -119,4 +242,7 @@ class CityRepository(BaseRepository[City]):
             )
         )
 
-        return result.scalar_one_or_none() is not None
+        return (
+            result.scalar_one_or_none()
+            is not None
+        )

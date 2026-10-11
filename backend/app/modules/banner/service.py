@@ -17,14 +17,39 @@ class BannerService(BaseService[Banner]):
     def __init__(self) -> None:
         super().__init__(BannerRepository())
 
+    @property
+    def banner_repository(self) -> BannerRepository:
+        return self.repository
+
+    # ==========================================================
+    # User Home
+    # ==========================================================
+
+    async def get_active_for_home(
+        self,
+        db: AsyncSession,
+    ) -> list[Banner]:
+        return await self.banner_repository.get_active_for_home(
+            db
+        )
+
+    # ==========================================================
+    # Admin
+    # ==========================================================
+
+    async def get_all_admin(
+        self,
+        db: AsyncSession,
+    ) -> list[Banner]:
+        return await self.banner_repository.get_all_admin(
+            db
+        )
+
     async def create(
         self,
         db: AsyncSession,
         payload: BannerCreate,
     ) -> Banner:
-        """
-        Create banner.
-        """
 
         banner = Banner(
             **payload.model_dump()
@@ -41,9 +66,6 @@ class BannerService(BaseService[Banner]):
         banner_id: str,
         payload: BannerUpdate,
     ) -> Banner | None:
-        """
-        Update banner.
-        """
 
         banner = await self.repository.get_by_id(
             db,
@@ -56,6 +78,7 @@ class BannerService(BaseService[Banner]):
         for key, value in payload.model_dump(
             exclude_unset=True,
         ).items():
+
             setattr(
                 banner,
                 key,
@@ -72,9 +95,6 @@ class BannerService(BaseService[Banner]):
         db: AsyncSession,
         banner_id: str,
     ) -> bool:
-        """
-        Soft delete banner.
-        """
 
         banner = await self.repository.get_by_id(
             db,

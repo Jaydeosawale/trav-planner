@@ -1,10 +1,10 @@
-
 class UserModel {
   final String id;
   final String email;
   final String fullName;
   final bool isActive;
   final DateTime createdAt;
+  final String role;
 
   const UserModel({
     required this.id,
@@ -12,7 +12,12 @@ class UserModel {
     required this.fullName,
     required this.isActive,
     required this.createdAt,
+    required this.role,
   });
+
+  bool get isAdmin => role.toLowerCase() == 'admin';
+
+  bool get isUser => role.toLowerCase() == 'user';
 
   factory UserModel.fromJson(
     Map<String, dynamic> json,
@@ -25,6 +30,7 @@ class UserModel {
       createdAt: DateTime.parse(
         json['created_at'] as String,
       ),
+      role: json['role'] as String? ?? 'user',
     );
   }
 }

@@ -80,3 +80,29 @@ class CityListResponse(BaseModel):
     name: str
 
     is_active: bool
+
+
+# ==========================================================
+# Paginated Response
+# ==========================================================
+
+class CityPaginatedResponse(BaseModel):
+    """
+    Paginated city response.
+
+    Used by Admin CMS and future AI search/retrieval.
+    """
+
+    model_config = ConfigDict(
+        from_attributes=True,
+    )
+
+    items: list[CityListResponse]
+
+    total: int
+
+    page: int
+
+    size: int
+
+    pages: int

@@ -8,7 +8,7 @@ from fastapi import APIRouter
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.common.responses.api_response import ApiResponse
+from app.common.responses.api_response import ApiResponse, success_response
 from app.database.session import get_db
 from app.modules.country.schema import (
     CountryListResponse,
@@ -34,7 +34,7 @@ async def get_countries(
 ):
     countries = await service.get_all(db)
 
-    return ApiResponse.success(
+    return success_response(
         data=countries,
         message="Countries fetched successfully.",
     )
@@ -53,7 +53,7 @@ async def get_active_countries(
 ):
     countries = await service.get_active(db)
 
-    return ApiResponse.success(
+    return success_response(
         data=countries,
         message="Active countries fetched successfully.",
     )
@@ -76,7 +76,7 @@ async def get_country(
         country_id,
     )
 
-    return ApiResponse.success(
+    return success_response(
         data=country,
         message="Country fetched successfully.",
     )
@@ -99,7 +99,7 @@ async def get_country_by_iso2(
         iso2,
     )
 
-    return ApiResponse.success(
+    return success_response(
         data=country,
         message="Country fetched successfully.",
     )
@@ -122,7 +122,7 @@ async def get_country_by_iso3(
         iso3,
     )
 
-    return ApiResponse.success(
+    return success_response(
         data=country,
         message="Country fetched successfully.",
     )

@@ -1,24 +1,29 @@
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
 # Python
-backend/.venv/
-backend/__pycache__/
-backend/**/*.pyc
-backend/.env
-
-# Flutter
-app/.dart_tool/
-app/build/
-app/.flutter-plugins
-app/.flutter-plugins-dependencies
-
-# macOS
+**/.venv/
+**/__pycache__/
+**/*.pyc
+**/.pytest_cache/
+*.log
+backend/logs/
+backend/uploads/
+# Flutter and deployment build output
+**/.dart_tool/
+**/build/
+**/.flutter-plugins*
+**/.vercel/
+**/Pods/
+**/.symlinks/
+**/ephemeral/
+# Editor and backups
 .DS_Store
-
-# IDE
 .idea/
 .vscode/
-
-# Misc
-*.loggit add .
-# Environment / secrets
-backend/.env.development
-backend/.env.*
+*.backup
+*.broken

@@ -1,3 +1,4 @@
+import 'package:trav_planner/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 
 import 'destination_card.dart';
@@ -13,30 +14,19 @@ class DestinationCarousel extends StatelessWidget {
       children: [
         Row(
           children: [
-            const Expanded(
-              child: SectionTitle(
-                title: "Popular Destinations",
-              ),
-            ),
+            const Expanded(child: SectionTitle(title: "Popular Destinations")),
 
             TextButton(
               onPressed: () {},
-              style: TextButton.styleFrom(
-                foregroundColor: const Color(0xFF2563EB),
-              ),
+              style: TextButton.styleFrom(foregroundColor: AppColors.primary),
               child: const Row(
                 children: [
                   Text(
                     "See all",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.w700),
                   ),
                   SizedBox(width: 4),
-                  Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 14,
-                  ),
+                  Icon(Icons.arrow_forward_ios_rounded, size: 14),
                 ],
               ),
             ),
@@ -48,7 +38,7 @@ class DestinationCarousel extends StatelessWidget {
         Text(
           "Handpicked places loved by travellers around the world",
           style: TextStyle(
-            color: Colors.grey.shade600,
+            color: AppColors.textSecondary,
             fontSize: 15,
             height: 1.4,
             fontWeight: FontWeight.w500,
@@ -60,10 +50,7 @@ class DestinationCarousel extends StatelessWidget {
         SizedBox(
           height: 405,
           child: ListView(
-            padding: const EdgeInsets.only(
-              left: 6,
-              right: 24,
-            ),
+            padding: const EdgeInsets.only(left: 6, right: 24),
             physics: const BouncingScrollPhysics(),
             scrollDirection: Axis.horizontal,
             children: const [
