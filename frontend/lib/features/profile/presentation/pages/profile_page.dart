@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../auth/presentation/pages/login_page.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../saved/presentation/pages/saved_page.dart';
+import 'travel_preferences_page.dart';
 
 class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
@@ -166,7 +167,11 @@ class ProfilePage extends ConsumerWidget {
               icon: Icons.travel_explore_rounded,
               title: 'Travel Preferences',
               subtitle: 'Customize your travel experience',
-              onTap: () {},
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const TravelPreferencesPage(),
+                ),
+              ),
             ),
 
             const SizedBox(height: 30),

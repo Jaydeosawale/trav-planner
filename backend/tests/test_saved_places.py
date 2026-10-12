@@ -25,7 +25,7 @@ async def api():
     @event.listens_for(engine.sync_engine, 'connect')
     def foreign_keys(connection, record):
         connection.execute('PRAGMA foreign_keys=ON')
-    tables = [Base.metadata.tables[name] for name in ['users', 'countries', 'states', 'cities', 'categories', 'places', 'user_place_saves', 'user_place_likes']]
+    tables = [Base.metadata.tables[name] for name in ['users', 'countries', 'states', 'cities', 'categories', 'places', 'user_place_saves', 'user_place_likes', 'user_travel_profiles']]
     async with engine.begin() as connection:
         await connection.run_sync(lambda sync: Base.metadata.create_all(sync, tables=tables))
     sessions = async_sessionmaker(engine, expire_on_commit=False)
@@ -116,3 +116,21 @@ async def test_save_requires_authentication(api):
     client, _, _ = api
     app.dependency_overrides.pop(get_current_user)
     assert (await client.get('/api/v1/user/saved-places')).status_code in (401, 403)
+
+
+@pytest.mark.asyncio
+async def test_travel_preferences_create_update_clear_and_isolate_accounts(api):
+    client, current, _ = api
+    assert (await client.get('/api/v1/user/profile')).json()['data'] is None
+    created = await client.put('/api/v1/user/profile', json={'budget_level': 'Comfort', 'interests': 'Nature, Culture', 'other_preferences': '{"trav_preferences_version":1,"mood":"Relaxed","notes":"Slow pace"}'})
+    assert created.status_code == 200, created.text
+    identifier = created.json()['data']['id']
+    current.id = 'bob'
+    assert (await client.get('/api/v1/user/profile')).json()['data'] is None
+    await client.put('/api/v1/user/profile', json={'travel_style': 'Solo'})
+    current.id = 'alice'
+    profile = (await client.get('/api/v1/user/profile')).json()['data']
+    assert profile['id'] == identifier and profile['budget_level'] == 'Comfort'
+    update = await client.put('/api/v1/user/profile', json={'budget_level': None, 'interests': None, 'other_preferences': None})
+    assert update.json()['data']['id'] == identifier
+    assert update.json()['data']['budget_level'] is None
