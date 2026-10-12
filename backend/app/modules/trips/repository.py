@@ -19,6 +19,18 @@ class TripRepository:
     Database operations for trips.
     """
 
+    async def update(self, db: AsyncSession, trip: Trip, values: dict) -> Trip:
+        for field, value in values.items():
+            setattr(trip, field, value)
+        await db.commit()
+        await db.refresh(trip)
+        return trip
+
+    async def delete(self, db: AsyncSession, trip: Trip) -> None:
+        trip.is_deleted = True
+        trip.deleted_at = func.now()
+        await db.commit()
+
     # ==========================================================
     # Create
     # ==========================================================
@@ -164,48 +176,3 @@ class TripRepository:
         return list(
             result.scalars().all()
         )
-
-    # ==========================================================
-    # Update
-    # ==========================================================
-
-    # ==========================================================
-# Update
-# ==========================================================
-
-async def update(
-    self,
-    db: AsyncSession,
-    trip: Trip,
-    values: dict,
-) -> Trip:
-
-    for field, value in values.items():
-        setattr(
-            trip,
-            field,
-            value,
-        )
-
-    await db.commit()
-    await db.refresh(trip)
-
-    return trip
-
-
-
-
-    # ==========================================================
-    # Soft Delete
-    # ==========================================================
-
-    async def delete(
-        self,
-        db: AsyncSession,
-        trip: Trip,
-    ) -> None:
-
-        trip.is_deleted = True
-        trip.deleted_at = func.now()
-
-        await db.commit()

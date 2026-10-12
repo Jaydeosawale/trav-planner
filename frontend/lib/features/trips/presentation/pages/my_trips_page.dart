@@ -1,12 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/network/api_client.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../ai/presentation/pages/ai_search_page.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
+import 'trip_editor_page.dart';
+import 'trip_details_page.dart';
+
+final tripPageProvider = StateProvider<int>((ref) {
+  ref.watch(authProvider.select((auth) => auth.user?.id));
+  return 1;
+});
+final tripPagesProvider = StateProvider<int>((ref) => 1);
 
 final myTripsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
-  final response = await ApiClient.dio.get('/trips/');
-  final data = response.data['data'] as Map<String, dynamic>;
+  final user = ref.watch(authProvider.select((auth) => auth.user?.id));
+  if (user == null) return [];
+  final page = ref.watch(tripPageProvider);
+  final data = await ref.watch(tripsApiProvider).list(page);
+  ref.read(tripPagesProvider.notifier).state =
+      (data['pages'] as num?)?.toInt() ?? 1;
   return (data['items'] as List)
       .map((item) => Map<String, dynamic>.from(item))
       .toList();
@@ -35,9 +47,26 @@ class MyTripsPage extends ConsumerWidget {
             style: TextStyle(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 24),
+          FilledButton.icon(
+            onPressed: () async {
+              final created = await Navigator.of(context)
+                  .push<Map<String, dynamic>>(
+                    MaterialPageRoute(builder: (_) => const TripEditorPage()),
+                  );
+              if (created != null) {
+                ref.read(tripPageProvider.notifier).state = 1;
+                ref.invalidate(myTripsProvider);
+              }
+            },
+            icon: const Icon(Icons.add_rounded),
+            label: const Text('Create a trip'),
+          ),
+          const SizedBox(height: 20),
           ref
               .watch(myTripsProvider)
               .when(
+                skipLoadingOnReload: false,
+                skipLoadingOnRefresh: false,
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (_, _) => Card(
                   child: Padding(
@@ -100,6 +129,16 @@ class MyTripsPage extends ConsumerWidget {
                                 padding: const EdgeInsets.only(bottom: 16),
                                 child: Card(
                                   child: ListTile(
+                                    onTap: () async {
+                                      await Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (_) => TripDetailsPage(
+                                            id: trip['id'].toString(),
+                                          ),
+                                        ),
+                                      );
+                                      ref.invalidate(myTripsProvider);
+                                    },
                                     contentPadding: const EdgeInsets.all(20),
                                     leading: Container(
                                       padding: const EdgeInsets.all(14),
@@ -127,6 +166,28 @@ class MyTripsPage extends ConsumerWidget {
                             .toList(),
                       ),
               ),
+          const SizedBox(height: 20),
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            spacing: 12,
+            runSpacing: 8,
+            children: [
+              TextButton(
+                onPressed: ref.watch(tripPageProvider) > 1
+                    ? () => ref.read(tripPageProvider.notifier).state--
+                    : null,
+                child: const Text('Previous'),
+              ),
+              Text('Page ${ref.watch(tripPageProvider)}'),
+              TextButton(
+                onPressed:
+                    ref.watch(tripPageProvider) < ref.watch(tripPagesProvider)
+                    ? () => ref.read(tripPageProvider.notifier).state++
+                    : null,
+                child: const Text('Next'),
+              ),
+            ],
+          ),
         ],
       ),
     ),

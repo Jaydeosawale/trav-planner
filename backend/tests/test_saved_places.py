@@ -25,7 +25,7 @@ async def api():
     @event.listens_for(engine.sync_engine, 'connect')
     def foreign_keys(connection, record):
         connection.execute('PRAGMA foreign_keys=ON')
-    tables = [Base.metadata.tables[name] for name in ['users', 'countries', 'states', 'cities', 'categories', 'places', 'user_place_saves', 'user_place_likes', 'user_travel_profiles']]
+    tables = [Base.metadata.tables[name] for name in ['users', 'countries', 'states', 'cities', 'categories', 'places', 'user_place_saves', 'user_place_likes', 'user_travel_profiles', 'destinations', 'planners', 'trips', 'itinerary_days', 'itinerary_items']]
     async with engine.begin() as connection:
         await connection.run_sync(lambda sync: Base.metadata.create_all(sync, tables=tables))
     sessions = async_sessionmaker(engine, expire_on_commit=False)
@@ -134,3 +134,26 @@ async def test_travel_preferences_create_update_clear_and_isolate_accounts(api):
     update = await client.put('/api/v1/user/profile', json={'budget_level': None, 'interests': None, 'other_preferences': None})
     assert update.json()['data']['id'] == identifier
     assert update.json()['data']['budget_level'] is None
+
+
+@pytest.mark.asyncio
+async def test_worldwide_city_trip_crud_validation_and_ownership(api):
+    client, current, _ = api
+    payload = {'title': 'City escape', 'city_id': 'city', 'start_date': '2026-11-01', 'end_date': '2026-11-03', 'travelers': 2}
+    created = await client.post('/api/v1/trips/', json=payload)
+    assert created.status_code == 200, created.text
+    trip = created.json()['data']
+    assert trip['city_id'] == 'city' and trip['destination_id'] is None
+    assert (await client.get('/api/v1/trips/')).json()['data']['total'] == 1
+    assert (await client.put('/api/v1/trips/'+trip['id'], json={'title': 'Updated escape', 'budget_amount': '15000'})).status_code == 200
+    assert (await client.put('/api/v1/trips/'+trip['id'], json={'end_date': '2026-10-01'})).status_code == 422
+    assert (await client.put('/api/v1/trips/'+trip['id'], json={'title': None})).status_code == 422
+    current.id = 'bob'
+    assert (await client.get('/api/v1/trips/'+trip['id'])).status_code == 404
+    assert (await client.put('/api/v1/trips/'+trip['id'], json={'title': 'Not mine'})).status_code == 404
+    assert (await client.delete('/api/v1/trips/'+trip['id'])).status_code == 404
+    assert (await client.get('/api/v1/trips/')).json()['data']['total'] == 0
+    current.id = 'alice'
+    assert (await client.delete('/api/v1/trips/'+trip['id'])).status_code == 200
+    assert (await client.get('/api/v1/trips/')).json()['data']['total'] == 0
+    assert (await client.post('/api/v1/trips/', json={**payload, 'city_id': 'missing'})).status_code == 404

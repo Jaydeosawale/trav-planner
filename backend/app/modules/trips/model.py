@@ -89,11 +89,13 @@ class Trip(
     # Destination
     # ==========================================================
 
-    destination_id: Mapped[str] = mapped_column(
+    destination_id: Mapped[str | None] = mapped_column(
         ForeignKey("destinations.id"),
-        nullable=False,
+        nullable=True,
         index=True,
     )
+
+    city_id: Mapped[str | None] = mapped_column(ForeignKey('cities.id'), nullable=True, index=True)
 
     destination: Mapped["Destination"] = relationship(
         "Destination",

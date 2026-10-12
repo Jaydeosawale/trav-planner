@@ -11,6 +11,7 @@ from decimal import Decimal
 from pydantic import BaseModel
 from pydantic import ConfigDict
 from pydantic import Field
+from pydantic import model_validator
 
 
 # ==========================================================
@@ -22,7 +23,14 @@ class TripCreate(BaseModel):
     Create a user trip.
     """
 
-    destination_id: str
+    destination_id: str | None = None
+    city_id: str | None = None
+
+    @model_validator(mode='after')
+    def location_required(self):
+        if not self.destination_id and not self.city_id:
+            raise ValueError('Choose a destination or city.')
+        return self
 
     planner_id: str | None = None
 
@@ -69,6 +77,7 @@ class TripUpdate(BaseModel):
     """
 
     destination_id: str | None = None
+    city_id: str | None = None
 
     planner_id: str | None = None
 
@@ -130,7 +139,8 @@ class TripResponse(BaseModel):
 
     planner_id: str | None
 
-    destination_id: str
+    destination_id: str | None
+    city_id: str | None
 
     title: str
 
@@ -172,7 +182,8 @@ class TripListResponse(BaseModel):
 
     planner_id: str | None
 
-    destination_id: str
+    destination_id: str | None
+    city_id: str | None
 
     title: str
 

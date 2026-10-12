@@ -5,6 +5,7 @@ Trip business logic.
 from __future__ import annotations
 
 from datetime import date
+from fastapi import HTTPException
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -13,6 +14,9 @@ from app.modules.trips.model import Trip
 from app.modules.trips.repository import TripRepository
 from app.modules.trips.schema import TripCreate
 from app.modules.trips.schema import TripUpdate
+from app.modules.city.model import City
+from app.modules.destination.model import Destination
+from app.modules.planner.model import Planner
 
 
 class TripService:
@@ -39,9 +43,12 @@ class TripService:
             payload.end_date,
         )
 
+        values = payload.model_dump()
+        values['city_id'] = await self._validate_location(db, values.get('destination_id'), values.get('city_id'))
+        await self._validate_planner(db, user_id, values.get('planner_id'))
         trip = Trip(
             user_id=user_id,
-            **payload.model_dump(),
+            **values,
         )
 
         return await self.repository.create(
@@ -146,6 +153,8 @@ class TripService:
         values = payload.model_dump(
             exclude_unset=True,
         )
+        if any(values.get(field) is None for field in ('title', 'start_date', 'end_date', 'travelers', 'budget_currency', 'status') if field in values):
+            raise HTTPException(422, 'Required trip fields cannot be empty.')
 
         start_date = values.get(
             "start_date",
@@ -161,6 +170,18 @@ class TripService:
             start_date,
             end_date,
         )
+
+        if 'city_id' in values or 'destination_id' in values:
+            destination_id = values.get('destination_id', trip.destination_id)
+            if 'city_id' in values and 'destination_id' not in values and values['city_id'] != trip.city_id:
+                destination_id = None
+            values['destination_id'] = destination_id
+            city_id = values.get('city_id', None if 'destination_id' in values else trip.city_id)
+            values['city_id'] = await self._validate_location(db, destination_id, city_id)
+        if 'planner_id' in values:
+            await self._validate_planner(db, user_id, values['planner_id'])
+        if values.get('status') is not None and values['status'] not in {'draft', 'planned', 'ongoing', 'completed', 'cancelled'}:
+            raise HTTPException(422, 'Choose a valid trip status.')
 
         return await self.repository.update(
             db,
@@ -200,7 +221,26 @@ class TripService:
         end_date: date,
     ) -> None:
 
-        if end_date < start_date:
-            raise ValueError(
-                "End date cannot be before start date.",
-            )
+        if start_date is None or end_date is None or end_date < start_date:
+            raise HTTPException(422, 'End date must be on or after the start date.')
+
+    @staticmethod
+    async def _validate_location(db, destination_id, city_id):
+        if destination_id:
+            destination = await db.get(Destination, destination_id)
+            if destination is None or destination.is_deleted or not destination.is_active:
+                raise HTTPException(404, 'Destination unavailable.')
+            if city_id and city_id != destination.city_id:
+                raise HTTPException(422, 'Destination and city do not match.')
+            city_id = destination.city_id
+        city = await db.get(City, city_id) if city_id else None
+        if city is None or city.is_deleted or not city.is_active:
+            raise HTTPException(404, 'City unavailable. Choose another city.')
+        return city_id
+
+    @staticmethod
+    async def _validate_planner(db, user_id, planner_id):
+        if planner_id:
+            planner = await db.get(Planner, planner_id)
+            if planner is None or planner.user_id != user_id or planner.is_deleted:
+                raise HTTPException(404, 'Planner unavailable.')
