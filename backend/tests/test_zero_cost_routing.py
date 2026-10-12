@@ -234,8 +234,10 @@ async def test_groq_tool_continuation_retains_the_trip_request():
     create=AsyncMock(return_value=reply)
     provider._client=SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=create)))
     await provider.continue_with_tool_results(response=previous,tool_results=[{'tool_call_id':'call-1','result':{'items':[]}}],tools=[],system_prompt='Planner')
-    assert create.call_args.kwargs['tool_choice']=='none'
+    assert 'tools' not in create.call_args.kwargs
+    assert 'tool_choice' not in create.call_args.kwargs
     messages=create.call_args.kwargs['messages']
+    assert 'Only label places actually returned' in messages[-1]['content']
     assert messages[1] == {'role':'user','content':'A relaxed one-day Paris trip'}
     assert messages[2]['tool_calls'][0]['id']=='call-1'
     assert messages[3]['tool_call_id']=='call-1'

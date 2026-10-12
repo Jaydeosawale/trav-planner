@@ -771,9 +771,21 @@ class GroqProvider(LLMProvider):
                 }
             )
 
-        groq_tools = self._build_tools(
-            tools
-        )
+        # This agent completes one bounded tool round. Stop advertising tools
+        # during synthesis: GPT-OSS can otherwise emit another tool call even
+        # with tool_choice="none", which Groq rejects with HTTP 400.
+        messages.append({
+            "role": "user",
+            "content": (
+                "The available tool searches are complete. Now answer my original "
+                "request using the results above; do not call more tools. "
+                "Only label places actually returned by the tools as Trav catalogue "
+                "places. Clearly label any other ideas as general suggestions, "
+                "with availability, prices and opening hours unverified. "
+                "Use a relaxed, practical pace and avoid claiming travel times "
+                "or distances that were not verified."
+            ),
+        })
 
         try:
 
@@ -781,8 +793,6 @@ class GroqProvider(LLMProvider):
                 await self._client.chat.completions.create(
                     model=self._model,
                     messages=messages,
-                    tools=groq_tools,
-                    tool_choice="none",
                     temperature=temperature,
                     **self._generation_options(max_output_tokens),
                 )
