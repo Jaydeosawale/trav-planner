@@ -5,6 +5,7 @@ User travel profile and behavior repository.
 from __future__ import annotations
 
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.modules.place.model import Place
@@ -190,8 +191,17 @@ class UserRepository:
         save: UserPlaceSave,
     ) -> UserPlaceSave:
 
+        user_id, place_id = save.user_id, save.place_id
         db.add(save)
-        await db.commit()
+        try:
+            await db.commit()
+        except IntegrityError:
+            # Simultaneous saves from two devices share the unique user/place key.
+            await db.rollback()
+            existing = await self.get_save(db, user_id, place_id)
+            if existing is None:
+                raise
+            return existing
         await db.refresh(save)
 
         return save
@@ -220,6 +230,7 @@ class UserRepository:
             .where(
                 UserPlaceSave.user_id == user_id,
                 Place.is_deleted.is_(False),
+                Place.is_active.is_(True),
             )
             .order_by(
                 UserPlaceSave.created_at.desc(),

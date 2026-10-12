@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../auth/presentation/pages/login_page.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../saved/presentation/pages/saved_page.dart';
 
 class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
@@ -107,6 +108,15 @@ class ProfilePage extends ConsumerWidget {
             ),
 
             const SizedBox(height: 12),
+
+            _ProfileMenuItem(
+              icon: Icons.bookmark_border_rounded,
+              title: 'Saved places',
+              subtitle: 'Keep inspiration for your next trip',
+              onTap: () => Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const SavedPage())),
+            ),
 
             _ProfileMenuItem(
               icon: Icons.person_outline_rounded,
@@ -297,25 +307,35 @@ class _ProfileMenuItem extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.border),
       ),
-      child: Material(color: Colors.transparent, borderRadius: BorderRadius.circular(18), child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 5),
-        leading: Container(
-          width: 46,
-          height: 46,
-          decoration: BoxDecoration(
-            color: AppColors.surfaceVariant,
-            borderRadius: BorderRadius.circular(14),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(18),
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 18,
+            vertical: 5,
           ),
-          child: Icon(icon, color: AppColors.primary),
+          leading: Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              color: AppColors.surfaceVariant,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(icon, color: AppColors.primary),
+          ),
+          title: Text(
+            title,
+            style: const TextStyle(fontWeight: FontWeight.w700),
+          ),
+          subtitle: Text(
+            subtitle,
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+          ),
+          trailing: const Icon(Icons.chevron_right_rounded),
+          onTap: onTap,
         ),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
-        subtitle: Text(
-          subtitle,
-          style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
-        ),
-        trailing: const Icon(Icons.chevron_right_rounded),
-        onTap: onTap,
-      )),
+      ),
     );
   }
 }

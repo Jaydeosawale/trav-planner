@@ -6,11 +6,13 @@ import '../../../core/theme/app_colors.dart';
 import '../../maps/places_map.dart';
 import '../data/place.dart';
 import '../data/places_provider.dart';
+import '../../saved/presentation/save_place_button.dart';
 
 class DestinationDetailsPage extends ConsumerStatefulWidget {
   final String cityId, name;
   final String? description, imageUrl;
   final LatLng? center;
+  final TravelPlace? initialPlace;
   const DestinationDetailsPage({
     super.key,
     required this.cityId,
@@ -18,6 +20,7 @@ class DestinationDetailsPage extends ConsumerStatefulWidget {
     this.description,
     this.imageUrl,
     this.center,
+    this.initialPlace,
   });
 
   @override
@@ -30,6 +33,16 @@ class _DestinationDetailsPageState
   String _filter = 'All';
   TravelPlace? _selected;
   bool _mapMode = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialPlace != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _showPlace(widget.initialPlace!);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -246,7 +259,7 @@ class _DestinationDetailsPageState
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right),
+            SavePlaceButton(place: place, compact: true),
           ],
         ),
       ),
@@ -289,6 +302,8 @@ class _DestinationDetailsPageState
                 ),
               if (place.address?.isNotEmpty == true) Text(place.address!),
               const SizedBox(height: 20),
+              SavePlaceButton(place: place),
+              const SizedBox(height: 12),
               if (place.point != null)
                 Wrap(
                   spacing: 12,

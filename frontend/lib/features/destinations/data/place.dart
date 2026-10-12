@@ -18,6 +18,7 @@ LatLng? validCoordinates(dynamic latitude, dynamic longitude) {
 
 class TravelPlace {
   final String id, name, type;
+  final String? cityId;
   final String? description, address, imageUrl;
   final LatLng? point;
   final bool featured;
@@ -27,6 +28,7 @@ class TravelPlace {
     required this.id,
     required this.name,
     required this.type,
+    this.cityId,
     this.description,
     this.address,
     this.imageUrl,
@@ -37,6 +39,7 @@ class TravelPlace {
 
   factory TravelPlace.fromJson(Map<String, dynamic> json) => TravelPlace(
     id: json['id'].toString(),
+    cityId: json['city_id']?.toString(),
     name: json['name']?.toString() ?? 'Place',
     type: json['place_type']?.toString() ?? 'attraction',
     description: (json['description'] ?? json['short_description'])?.toString(),

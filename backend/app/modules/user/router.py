@@ -13,6 +13,7 @@ from app.common.responses.api_response import success_response
 from app.database.session import get_db
 from app.dependencies.current_user import get_current_user
 from app.modules.auth.model import User
+from app.modules.place.schema import PlaceResponse
 from app.modules.user.schema import (
     UserPlaceInteractionResponse,
     UserPlaceViewResponse,
@@ -178,11 +179,7 @@ async def like_place(
     )
 
     return success_response(
-        data=UserPlaceInteractionResponse(
-            success=True,
-            place_id=place_id,
-            action="liked",
-        ),
+        data=UserPlaceInteractionResponse.model_validate(like),
         message="Place liked successfully",
     )
 
@@ -229,7 +226,7 @@ async def get_liked_places(
     )
 
     return success_response(
-        data=places,
+        data=[PlaceResponse.model_validate(place) for place in places],
         message="Liked places retrieved successfully",
     )
 
@@ -260,11 +257,7 @@ async def save_place(
     )
 
     return success_response(
-        data=UserPlaceInteractionResponse(
-            success=True,
-            place_id=place_id,
-            action="saved",
-        ),
+        data=UserPlaceInteractionResponse.model_validate(save),
         message="Place saved successfully",
     )
 
@@ -311,7 +304,7 @@ async def get_saved_places(
     )
 
     return success_response(
-        data=places,
+        data=[PlaceResponse.model_validate(place) for place in places],
         message="Saved places retrieved successfully",
     )
 
