@@ -52,7 +52,7 @@ async def run(method, *, forced_provider=None, **arguments):
             )
             await record(name, error=str(status) if status else "request_error")
             retryable = (
-                status in (401, 403, 408, 429, 500, 502, 503, 504)
+                status in (401, 403, 404, 408, 429, 500, 502, 503, 504)
                 or isinstance(exc, (httpx.TimeoutException, httpx.NetworkError))
                 or type(exc).__name__
                 in (

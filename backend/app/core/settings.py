@@ -112,7 +112,7 @@ class Settings(BaseSettings):
     GEMINI_MODEL: str = "gemini-3.5-flash"
 
     GROQ_API_KEY: str = ""
-    GROQ_MODEL: str = ""
+    GROQ_MODEL: str = "openai/gpt-oss-20b"
 
     ANTHROPIC_API_KEY: str = ""
     CLAUDE_MODEL: str = ""

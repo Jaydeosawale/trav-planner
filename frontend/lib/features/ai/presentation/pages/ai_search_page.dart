@@ -5,7 +5,8 @@ import '../../data/datasources/ai_api.dart';
 import '../../data/models/ai_response_model.dart';
 
 class AISearchPage extends StatefulWidget {
-  const AISearchPage({super.key});
+  const AISearchPage({super.key, this.api});
+  final AIApi? api;
 
   @override
   State<AISearchPage> createState() => _AISearchPageState();
@@ -13,7 +14,7 @@ class AISearchPage extends StatefulWidget {
 
 class _AISearchPageState extends State<AISearchPage> {
   final TextEditingController _controller = TextEditingController();
-  final AIApi _api = AIApi();
+  late final AIApi _api = widget.api ?? AIApi();
 
   bool _loading = false;
   String? _error;
@@ -50,7 +51,14 @@ class _AISearchPageState extends State<AISearchPage> {
       }
 
       setState(() {
-        _response = response;
+        if (response.success) {
+          _response = response;
+        } else {
+          _error = response.content.isNotEmpty
+              ? response.content
+              : response.message ??
+                    'AI is temporarily unavailable. Please try again.';
+        }
       });
     } catch (error) {
       if (!mounted) {
@@ -87,10 +95,7 @@ class _AISearchPageState extends State<AISearchPage> {
           children: [
             Icon(Icons.auto_awesome_rounded, color: AppColors.primary),
             SizedBox(width: 8),
-            Text(
-              'AI Planner',
-              style: TextStyle(fontWeight: FontWeight.w800),
-            ),
+            Text('AI Planner', style: TextStyle(fontWeight: FontWeight.w800)),
           ],
         ),
         elevation: 0,

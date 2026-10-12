@@ -47,7 +47,7 @@ class GroqProvider(LLMProvider):
         )
 
         self._model = (
-            model or settings.GROQ_MODEL
+            model or settings.GROQ_MODEL or "openai/gpt-oss-20b"
         )
 
         self._quota_manager = quota_manager

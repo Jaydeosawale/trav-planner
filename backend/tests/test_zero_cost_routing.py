@@ -189,3 +189,10 @@ def test_routing_migration_preserves_existing_tables():
             == "Keep my trip"
         )
     engine.dispose()
+
+
+def test_groq_blank_model_uses_a_supported_default(monkeypatch):
+    from app.integrations.llm import groq
+    monkeypatch.setattr(groq, 'get_settings', lambda: SimpleNamespace(GROQ_API_KEY='test-only', GROQ_MODEL=''))
+    provider = groq.GroqProvider()
+    assert provider.model_name == 'openai/gpt-oss-20b'
