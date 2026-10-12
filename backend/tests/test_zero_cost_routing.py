@@ -196,3 +196,27 @@ def test_groq_blank_model_uses_a_supported_default(monkeypatch):
     monkeypatch.setattr(groq, 'get_settings', lambda: SimpleNamespace(GROQ_API_KEY='test-only', GROQ_MODEL=''))
     provider = groq.GroqProvider()
     assert provider.model_name == 'openai/gpt-oss-20b'
+
+@pytest.mark.asyncio
+async def test_usage_writer_matches_the_deployed_migration(monkeypatch):
+    import importlib.util
+    from pathlib import Path
+    from sqlalchemy import text
+    from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+    from alembic.migration import MigrationContext
+    from alembic.operations import Operations
+    path=Path(__file__).parents[1]/'alembic/versions/f92c48e6bd35_ai_routing.py'
+    spec=importlib.util.spec_from_file_location('deployed_routing_migration',path)
+    migration=importlib.util.module_from_spec(spec);spec.loader.exec_module(migration)
+    engine=create_async_engine('sqlite+aiosqlite:///:memory:')
+    def create_schema(connection):
+        with Operations.context(MigrationContext.configure(connection)):
+            migration.upgrade()
+    async with engine.begin() as connection:
+        await connection.run_sync(create_schema)
+    sessions=async_sessionmaker(engine,expire_on_commit=False)
+    monkeypatch.setattr(free_runtime,'SessionLocal',sessions)
+    await free_runtime.record('groq',response=LLMResponse(content='Plan',provider='groq',model='test'))
+    async with sessions() as db:
+        assert (await db.execute(text('SELECT count(*) FROM ai_usage_records'))).scalar()==1
+    await engine.dispose()

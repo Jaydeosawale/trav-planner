@@ -83,11 +83,15 @@ async def run(method, *, forced_provider=None, **arguments):
 async def record(provider, *, response=None, error=None):
     from app.services.ai.routing import AIUsageRecord
 
+    from datetime import datetime, timezone
+    now = datetime.now(timezone.utc)
     usage = response.usage if response else None
     try:
         async with SessionLocal() as db:
             db.add(
                 AIUsageRecord(
+                    created_at=now,
+                    updated_at=now,
                     provider=provider,
                     model=response.model if response else None,
                     succeeded=response is not None,
