@@ -648,6 +648,11 @@ class GroqProvider(LLMProvider):
                 }
             )
 
+        original_prompt = kwargs.get("original_prompt")
+        if not original_prompt:
+            raise ValueError("The original request is required for tool continuation.")
+        messages.append({"role": "user", "content": original_prompt})
+
         original_response = (
             response.raw_response
         )
