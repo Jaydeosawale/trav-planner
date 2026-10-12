@@ -4,6 +4,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../destinations/presentation/destination_details_page.dart';
 import 'trip_editor_page.dart';
+import '../../../itinerary/presentation/pages/itinerary_page.dart';
 
 final tripDetailsProvider = FutureProvider.family<Map<String, dynamic>, String>(
   (ref, id) async {
@@ -84,6 +85,15 @@ class TripDetailsPage extends ConsumerWidget {
                         spacing: 12,
                         runSpacing: 12,
                         children: [
+                          FilledButton.icon(
+                            onPressed: () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => ItineraryPage(tripId: id),
+                              ),
+                            ),
+                            icon: const Icon(Icons.view_timeline_outlined),
+                            label: const Text('Day-by-day plan'),
+                          ),
                           FilledButton.icon(
                             onPressed: () async {
                               final updated = await Navigator.of(context)

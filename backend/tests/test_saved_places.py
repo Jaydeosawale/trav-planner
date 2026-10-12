@@ -157,3 +157,38 @@ async def test_worldwide_city_trip_crud_validation_and_ownership(api):
     assert (await client.delete('/api/v1/trips/'+trip['id'])).status_code == 200
     assert (await client.get('/api/v1/trips/')).json()['data']['total'] == 0
     assert (await client.post('/api/v1/trips/', json={**payload, 'city_id': 'missing'})).status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_itinerary_days_activities_reorder_and_ownership(api):
+    client, current, _ = api
+    trip = (await client.post('/api/v1/trips/', json={'title':'Day plan','city_id':'city','start_date':'2026-11-01','end_date':'2026-11-03'})).json()['data']
+    day_path = '/api/v1/itinerary/trips/'+trip['id']+'/days'
+    day_payload = {'day_number':1,'date':'2026-11-01','title':'First day'}
+    day_response = await client.post(day_path, json=day_payload)
+    assert day_response.status_code == 200, day_response.text
+    day = day_response.json()['data']
+    assert day['items'] == []
+    assert (await client.post(day_path, json=day_payload)).status_code == 409
+    assert (await client.post(day_path, json={'day_number':2,'date':'2026-12-01'})).status_code == 422
+    items_path = '/api/v1/itinerary/days/'+day['id']+'/items'
+    first = (await client.post(items_path,json={'title':'Visit landmark','place_id':'place'})).json()['data']
+    second = (await client.post(items_path,json={'title':'Quiet afternoon'})).json()['data']
+    assert second['sequence'] == 2
+    assert (await client.put('/api/v1/itinerary/items/'+first['id'],json={'title':None})).status_code == 422
+    assert (await client.put('/api/v1/itinerary/days/'+day['id'],json={'day_number':None})).status_code == 422
+    assert (await client.post(items_path,json={'title':'Invalid location','latitude':91,'longitude':1})).status_code == 422
+    assert (await client.post(items_path,json={'title':'Invalid times','start_time':'15:00','end_time':'14:00'})).status_code == 422
+    order_path = '/api/v1/itinerary/days/'+day['id']+'/order'
+    reordered = await client.put(order_path,json={'item_ids':[second['id'],first['id']]})
+    assert reordered.status_code == 200, reordered.text
+    assert reordered.json()['data']['items'][0]['id'] == second['id']
+    assert (await client.put(order_path,json={'item_ids':['missing']})).status_code == 409
+    current.id = 'bob'
+    assert (await client.get('/api/v1/itinerary/trips/'+trip['id'])).status_code == 404
+    assert (await client.delete('/api/v1/itinerary/items/'+first['id'])).status_code == 404
+    assert (await client.put(order_path,json={'item_ids':[second['id'],first['id']]})).status_code == 404
+    current.id = 'alice'
+    assert (await client.delete('/api/v1/itinerary/items/'+first['id'])).status_code == 200
+    assert (await client.delete('/api/v1/itinerary/days/'+day['id'])).status_code == 200
+    assert (await client.get('/api/v1/itinerary/trips/'+trip['id'])).json()['data']['days'] == []

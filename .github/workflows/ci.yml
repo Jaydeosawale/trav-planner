@@ -37,5 +37,5 @@ jobs:
           python-version: '3.12'
       - run: pip install -r requirements/development.txt
         working-directory: backend
-      - run: python -m pytest tests/test_deployment.py tests/test_auth_recovery.py -q
+      - run: python -m pytest tests/test_deployment.py tests/test_auth_recovery.py tests/test_public_places.py tests/test_saved_places.py -q
         working-directory: backend

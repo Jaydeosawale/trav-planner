@@ -9,3 +9,5 @@ ruff
 mypy
 pre-commit
 ipython
+
+aiosqlite

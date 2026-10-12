@@ -116,6 +116,7 @@ class ItineraryRepository:
 
         await db.commit()
         await db.refresh(day)
+        await db.refresh(day, attribute_names=['items'])
 
         return day
 
@@ -138,6 +139,7 @@ class ItineraryRepository:
 
         await db.commit()
         await db.refresh(day)
+        await db.refresh(day, attribute_names=['items'])
 
         return day
 

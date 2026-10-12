@@ -15,10 +15,11 @@ Itinerary Item
 """
 
 from __future__ import annotations
+from fastapi import HTTPException
+from app.modules.place.model import Place
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.common.exceptions.forbidden import ForbiddenException
 from app.common.exceptions.conflict import ConflictException
 from app.common.constants.not_found import NotFoundException
 
@@ -172,11 +173,14 @@ class ItineraryService(BaseService[ItineraryDay]):
         Create a new itinerary day.
         """
 
-        await self._get_user_trip(
+        trip = await self._get_user_trip(
             db,
             trip_id,
             user_id,
         )
+
+        if not trip.start_date <= payload.date <= trip.end_date:
+            raise HTTPException(422, 'Choose a day inside the trip dates.')
 
         existing = (
             await self.repository.get_day_by_trip_and_number(
@@ -226,6 +230,13 @@ class ItineraryService(BaseService[ItineraryDay]):
         values = payload.model_dump(
             exclude_unset=True,
         )
+
+        if 'day_number' in values and values['day_number'] is None:
+            raise HTTPException(422, 'Day number cannot be empty.')
+        trip = await self._get_user_trip(db, day.trip_id, user_id)
+        selected_date = values.get('date', day.date)
+        if selected_date is None or not trip.start_date <= selected_date <= trip.end_date:
+            raise HTTPException(422, 'Choose a day inside the trip dates.')
 
         if (
             "day_number" in values
@@ -299,6 +310,7 @@ class ItineraryService(BaseService[ItineraryDay]):
         )
 
         data = payload.model_dump()
+        await self._validate_item(db, data)
 
         # ------------------------------------------------------
         # Automatically assign next sequence if default is used
@@ -350,11 +362,35 @@ class ItineraryService(BaseService[ItineraryDay]):
             exclude_unset=True,
         )
 
+        if any(field in values and values[field] is None for field in ('title', 'activity_type', 'sequence')):
+            raise HTTPException(422, 'Title, activity type and order cannot be empty.')
+        combined = {field: getattr(item, field) for field in ('place_id', 'latitude', 'longitude', 'start_time', 'end_time')}
+        combined.update(values)
+        await self._validate_item(db, combined)
+        if 'place_id' in values:
+            values['latitude'], values['longitude'] = combined['latitude'], combined['longitude']
+
         return await self.repository.update_item(
             db,
             item,
             values,
         )
+
+    @staticmethod
+    async def _validate_item(db, data):
+        if data.get('place_id'):
+            place = await db.get(Place, data['place_id'])
+            if place is None or place.is_deleted or not place.is_active:
+                raise HTTPException(404, 'Place unavailable.')
+            data['latitude'], data['longitude'] = place.latitude, place.longitude
+        lat, lon = data.get('latitude'), data.get('longitude')
+        if (lat is None) != (lon is None):
+            raise HTTPException(422, 'Add both coordinates or leave both empty.')
+        if lat is not None and (not -90 <= lat <= 90 or not -180 <= lon <= 180):
+            raise HTTPException(422, 'Coordinates are outside the valid range.')
+        start, end = data.get('start_time'), data.get('end_time')
+        if start and end and end < start:
+            raise HTTPException(422, 'End time must follow start time within the day.')
 
     # ==========================================================
     # Delete Item
@@ -380,3 +416,15 @@ class ItineraryService(BaseService[ItineraryDay]):
             db,
             item_id,
         )
+
+    async def reorder(self, db, day_id, user_id, item_ids):
+        day = await self._get_user_day(db, day_id, user_id)
+        items = {item.id: item for item in day.items}
+        if len(set(item_ids)) != len(item_ids) or set(item_ids) != set(items):
+            raise HTTPException(409, 'The day changed. Refresh it before reordering.')
+        for sequence, identifier in enumerate(item_ids, start=1):
+            items[identifier].sequence = sequence
+        await db.commit()
+        await db.refresh(day)
+        await db.refresh(day, attribute_names=['items'])
+        return day

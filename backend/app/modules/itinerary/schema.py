@@ -252,3 +252,6 @@ class ItineraryResponse(BaseModel):
     trip_id: str
 
     days: list[ItineraryDayResponse]
+
+class ItineraryOrder(BaseModel):
+    item_ids: list[str] = Field(max_length=200)

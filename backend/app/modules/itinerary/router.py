@@ -22,6 +22,7 @@ from app.modules.itinerary.schema import (
     ItineraryItemResponse,
     ItineraryItemUpdate,
     ItineraryResponse,
+    ItineraryOrder,
 )
 from app.modules.itinerary.service import ItineraryService
 
@@ -29,6 +30,11 @@ from app.modules.itinerary.service import ItineraryService
 router = APIRouter()
 
 service = ItineraryService()
+
+@router.put('/days/{day_id}/order')
+async def reorder_day(day_id: str, payload: ItineraryOrder, current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    day = await service.reorder(db, day_id, current_user.id, payload.item_ids)
+    return success_response(data=ItineraryDayResponse.model_validate(day), message='Day order saved')
 
 
 # ==========================================================
