@@ -234,7 +234,22 @@ async def test_groq_tool_continuation_retains_the_trip_request():
     create=AsyncMock(return_value=reply)
     provider._client=SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=create)))
     await provider.continue_with_tool_results(response=previous,tool_results=[{'tool_call_id':'call-1','result':{'items':[]}}],tools=[],system_prompt='Planner')
+    assert create.call_args.kwargs['tool_choice']=='none'
     messages=create.call_args.kwargs['messages']
     assert messages[1] == {'role':'user','content':'A relaxed one-day Paris trip'}
     assert messages[2]['tool_calls'][0]['id']=='call-1'
     assert messages[3]['tool_call_id']=='call-1'
+
+@pytest.mark.asyncio
+async def test_empty_answer_is_not_reported_as_a_success(monkeypatch):
+    async def config(): return RoutingUpdate(provider_order=['groq'])
+    async def record(*args,**kwargs): pass
+    class EmptyProvider:
+        async def generate(self,**kwargs): return LLMResponse(content='',provider='groq',model='test')
+    monkeypatch.setattr(free_runtime,'configuration',config)
+    monkeypatch.setattr(free_runtime,'record',record)
+    monkeypatch.setattr(free_runtime,'cooldowns',{})
+    monkeypatch.setattr(free_runtime,'connection_status',lambda:{'groq':{'eligible':True}})
+    monkeypatch.setattr(free_runtime,'get_llm_provider',lambda *args,**kwargs:EmptyProvider())
+    response, reason, attempts=await free_runtime.run('generate',prompt='Plan Paris')
+    assert response is None and reason and attempts == ['groq']

@@ -777,7 +777,7 @@ class GroqProvider(LLMProvider):
                     model=self._model,
                     messages=messages,
                     tools=groq_tools,
-                    tool_choice="auto",
+                    tool_choice="none",
                     temperature=temperature,
                     max_tokens=max_output_tokens,
                 )

@@ -42,6 +42,8 @@ async def run(method, *, forced_provider=None, **arguments):
         try:
             provider = get_llm_provider(name, quota_manager=quota_manager)
             response = await getattr(provider, method)(**arguments)
+            if not response.content.strip() and not response.tool_calls:
+                raise ValueError("Provider returned an empty response.")
             await record(name, response=response)
             return response, "", attempted
         except Exception as exc:
