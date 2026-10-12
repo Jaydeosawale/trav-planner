@@ -229,11 +229,11 @@ async def test_groq_tool_continuation_retains_the_trip_request():
     provider=GroqProvider(api_key='test-only',model='test')
     raw_call=SimpleNamespace(id='call-1',function=SimpleNamespace(name='place_search',arguments='{"search":"Paris"}'))
     raw=SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(tool_calls=[raw_call]))])
-    previous=LLMResponse(content='',provider='groq',model='test',tool_calls=[LLMToolCall(id='call-1',name='place_search',arguments={'search':'Paris'})],raw_response=raw)
+    previous=LLMResponse(content='',provider='groq',model='test',tool_calls=[LLMToolCall(id='call-1',name='place_search',arguments={'search':'Paris'})],raw_response=raw,original_prompt='A relaxed one-day Paris trip')
     reply=SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content='Paris day plan'))],usage=None)
     create=AsyncMock(return_value=reply)
     provider._client=SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=create)))
-    await provider.continue_with_tool_results(response=previous,tool_results=[{'tool_call_id':'call-1','result':{'items':[]}}],tools=[],system_prompt='Planner',original_prompt='A relaxed one-day Paris trip')
+    await provider.continue_with_tool_results(response=previous,tool_results=[{'tool_call_id':'call-1','result':{'items':[]}}],tools=[],system_prompt='Planner')
     messages=create.call_args.kwargs['messages']
     assert messages[1] == {'role':'user','content':'A relaxed one-day Paris trip'}
     assert messages[2]['tool_calls'][0]['id']=='call-1'

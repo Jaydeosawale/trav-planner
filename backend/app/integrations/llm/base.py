@@ -79,6 +79,9 @@ class LLMResponse:
 
     raw_response: Any | None = None
 
+    # Retain the user request for tool continuation; never persisted as usage.
+    original_prompt: str | None = None
+
 
 class LLMProvider(ABC):
     """
