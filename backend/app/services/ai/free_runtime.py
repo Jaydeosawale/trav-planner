@@ -52,7 +52,12 @@ async def run(method, *, forced_provider=None, **arguments):
                 or getattr(getattr(exc, "response", None), "status_code", None)
                 or getattr(exc, "code", None)
             )
-            await record(name, error=str(status) if status else "request_error")
+            import logging
+            category = str(status) if status else type(exc).__name__
+            if isinstance(exc, ValueError) and str(exc) == "Provider returned an empty response.":
+                category = "empty_response"
+            logging.getLogger(__name__).warning("AI provider failure provider=%s stage=%s status=%s category=%s", name, method, status, category)
+            await record(name, error=category)
             retryable = (
                 status in (401, 403, 404, 408, 429, 500, 502, 503, 504)
                 or isinstance(exc, (httpx.TimeoutException, httpx.NetworkError))

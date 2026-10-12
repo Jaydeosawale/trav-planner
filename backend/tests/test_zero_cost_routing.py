@@ -253,3 +253,9 @@ async def test_empty_answer_is_not_reported_as_a_success(monkeypatch):
     monkeypatch.setattr(free_runtime,'get_llm_provider',lambda *args,**kwargs:EmptyProvider())
     response, reason, attempts=await free_runtime.run('generate',prompt='Plan Paris')
     assert response is None and reason and attempts == ['groq']
+
+
+def test_reasoning_model_keeps_a_small_reasoning_budget():
+    from app.integrations.llm.groq import GroqProvider
+    provider=GroqProvider(api_key='test-only',model='openai/gpt-oss-20b')
+    assert provider._generation_options(4096)=={'max_completion_tokens':4096,'reasoning_effort':'low'}

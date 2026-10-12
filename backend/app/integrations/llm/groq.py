@@ -73,6 +73,11 @@ class GroqProvider(LLMProvider):
     def model_name(self) -> str:
         return self._model
 
+    def _generation_options(self, limit):
+        if self._model.startswith("openai/gpt-oss-"):
+            return {"max_completion_tokens": limit, "reasoning_effort": "low"}
+        return {"max_tokens": limit}
+
     # ==========================================================
     # HEADER EXTRACTION
     # ==========================================================
@@ -349,7 +354,7 @@ class GroqProvider(LLMProvider):
                     model=self._model,
                     messages=messages,
                     temperature=temperature,
-                    max_tokens=max_output_tokens,
+                    **self._generation_options(max_output_tokens),
                 )
             )
 
@@ -491,7 +496,7 @@ class GroqProvider(LLMProvider):
                     tools=groq_tools,
                     tool_choice="auto",
                     temperature=temperature,
-                    max_tokens=max_output_tokens,
+                    **self._generation_options(max_output_tokens),
                 )
             )
 
@@ -779,7 +784,7 @@ class GroqProvider(LLMProvider):
                     tools=groq_tools,
                     tool_choice="none",
                     temperature=temperature,
-                    max_tokens=max_output_tokens,
+                    **self._generation_options(max_output_tokens),
                 )
             )
 
