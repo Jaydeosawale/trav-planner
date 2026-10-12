@@ -63,14 +63,8 @@ class TravelPlanningAgent(Agent):
         else:
 
             self._gateway = AIGateway(
-                quota_manager=(
-                    quota_manager
-                    or QuotaManager()
-                ),
-                billing_policy=(
-                    billing_policy
-                    or BillingPolicy()
-                ),
+                quota_manager=quota_manager,
+                billing_policy=billing_policy,
                 free_providers=[
                     "groq",
                     "gemini",

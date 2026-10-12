@@ -49,6 +49,10 @@ def get_llm_provider(
     # Provider selection
     # ----------------------------------------------------------
 
+    if selected_provider == "openai":
+        from app.integrations.llm.openai_provider import OpenAIProvider
+        return OpenAIProvider()
+
     if selected_provider == "gemini":
 
         return GeminiProvider(

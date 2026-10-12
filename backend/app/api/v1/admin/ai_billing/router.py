@@ -308,3 +308,39 @@ async def get_ai_billing_audit_logs(
         )
         for log in logs
     ]
+
+
+# Provider selection is independent of the legacy paid billing controls.
+from app.services.ai.routing import AIRoutingSettings, RoutingUpdate, load_routing, connection_status
+import json
+
+@router.get('/routing')
+async def get_routing(current_admin: User = Depends(get_current_admin), db: AsyncSession = Depends(get_db)):
+    configuration = await load_routing(db)
+    return {**configuration.model_dump(), 'providers': connection_status(), 'cost_policy': 'zero_cost'}
+
+@router.put('/routing')
+async def update_routing(payload: RoutingUpdate, current_admin: User = Depends(get_current_admin), db: AsyncSession = Depends(get_db)):
+    row = await db.get(AIRoutingSettings, 1, with_for_update=True)
+    if row is None:
+        row = AIRoutingSettings(id=1)
+        db.add(row)
+    row.provider_order = json.dumps(payload.provider_order)
+    row.enabled = payload.enabled
+    row.updated_by = str(current_admin.id)
+    settings = await AIBillingRepository.get_settings(db)
+    if settings is None:
+        settings = await AIBillingRepository.create_settings(db)
+    await AIBillingRepository.create_audit_log(db, action='routing_update', previous_mode=settings.billing_mode, new_mode=settings.billing_mode, paid_enabled=settings.paid_enabled, paid_provider=settings.paid_provider, daily_budget=settings.daily_budget, monthly_budget=settings.monthly_budget, admin_id=str(current_admin.id), details=json.dumps(payload.model_dump()))
+    await db.commit()
+    return {**payload.model_dump(), 'providers': connection_status(), 'cost_policy': 'zero_cost'}
+
+
+@router.get('/usage')
+async def get_ai_usage(current_admin: User = Depends(get_current_admin), db: AsyncSession = Depends(get_db)):
+    from datetime import datetime, timezone, timedelta
+    from sqlalchemy import select, func
+    from app.services.ai.routing import AIUsageRecord
+    since = datetime.now(timezone.utc)-timedelta(days=1)
+    rows = (await db.execute(select(AIUsageRecord.provider,func.count().label('attempts'),func.sum(AIUsageRecord.input_tokens).label('input_tokens'),func.sum(AIUsageRecord.output_tokens).label('output_tokens'),func.sum(AIUsageRecord.total_tokens).label('total_tokens')).where(AIUsageRecord.created_at >= since).group_by(AIUsageRecord.provider))).mappings().all()
+    return {'window':'last_24_hours','providers':[dict(row) for row in rows]}

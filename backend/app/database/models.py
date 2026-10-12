@@ -35,3 +35,4 @@ __all__ = [
     "AIBillingSettings",
     "AIBillingAuditLog",
 ]
+from app.services.ai.routing import AIRoutingSettings

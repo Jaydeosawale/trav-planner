@@ -25,7 +25,7 @@ async def api():
     @event.listens_for(engine.sync_engine, 'connect')
     def foreign_keys(connection, record):
         connection.execute('PRAGMA foreign_keys=ON')
-    tables = [Base.metadata.tables[name] for name in ['users', 'countries', 'states', 'cities', 'categories', 'places', 'user_place_saves', 'user_place_likes', 'user_travel_profiles', 'destinations', 'planners', 'trips', 'itinerary_days', 'itinerary_items']]
+    tables = [Base.metadata.tables[name] for name in ['users', 'countries', 'states', 'cities', 'categories', 'places', 'user_place_saves', 'user_place_likes', 'user_travel_profiles', 'destinations', 'planners', 'trips', 'itinerary_days', 'itinerary_items', 'ai_routing_settings', 'ai_billing_settings', 'ai_billing_audit_logs', 'ai_usage_records']]
     async with engine.begin() as connection:
         await connection.run_sync(lambda sync: Base.metadata.create_all(sync, tables=tables))
     sessions = async_sessionmaker(engine, expire_on_commit=False)
@@ -192,3 +192,41 @@ async def test_itinerary_days_activities_reorder_and_ownership(api):
     assert (await client.delete('/api/v1/itinerary/items/'+first['id'])).status_code == 200
     assert (await client.delete('/api/v1/itinerary/days/'+day['id'])).status_code == 200
     assert (await client.get('/api/v1/itinerary/trips/'+trip['id'])).json()['data']['days'] == []
+
+
+@pytest.mark.asyncio
+async def test_admin_provider_order_is_persistent_audited_and_private(api):
+    from app.modules.admin.model import AIBillingAuditLog
+    from sqlalchemy import select
+    client, current, sessions = api
+    current.role = 'user'
+    path = '/api/v1/admin/ai-billing/routing'
+    assert (await client.get(path)).status_code == 403
+    assert (await client.put(path,json={'provider_order':['gemini']})).status_code == 403
+    current.role = 'admin'
+    updated = await client.put(path,json={'provider_order':['gemini','groq'], 'enabled':False})
+    assert updated.status_code == 200, updated.text
+    result = (await client.get(path)).json()
+    assert result['provider_order'] == ['gemini','groq'] and result['enabled'] is False
+    assert 'api_key' not in updated.text.lower()
+    assert (await client.put(path,json={'provider_order':['openai','openai']})).status_code == 422
+    async with sessions() as db:
+        logs = (await db.execute(select(AIBillingAuditLog))).scalars().all()
+        assert logs[-1].action == 'routing_update' and logs[-1].admin_id == 'alice'
+
+
+@pytest.mark.asyncio
+async def test_ai_usage_report_counts_reported_tokens_only(api, monkeypatch):
+    from app.services.ai import free_runtime
+    from app.integrations.llm.base import LLMResponse, LLMUsage
+    client, current, sessions = api
+    current.role = 'admin'
+    monkeypatch.setattr(free_runtime, 'SessionLocal', sessions)
+    await free_runtime.record('groq',response=LLMResponse(content='Private plan',provider='groq',model='test',usage=LLMUsage(input_tokens=10,output_tokens=5,total_tokens=15)))
+    await free_runtime.record('groq',error='429')
+    response = await client.get('/api/v1/admin/ai-billing/usage')
+    assert response.status_code == 200, response.text
+    assert response.json()['providers'] == [{'provider':'groq','attempts':2,'input_tokens':10,'output_tokens':5,'total_tokens':15}]
+    assert 'Private plan' not in response.text
+    current.role = 'user'
+    assert (await client.get('/api/v1/admin/ai-billing/usage')).status_code == 403

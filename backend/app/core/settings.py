@@ -33,6 +33,10 @@ class Settings(BaseSettings):
         "Enterprise AI Multi-Agent Travel Planner Backend"
     )
 
+    OPENAI_API_KEY: str = ""
+    OPENAI_MODEL: str = "gpt-6-luna"
+    OPENAI_FREE_ACCESS_UNTIL: str = ""
+
     APP_VERSION: str = "1.0.0"
 
     ENVIRONMENT: str = CURRENT_ENVIRONMENT.value

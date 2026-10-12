@@ -82,6 +82,7 @@ class AIGateway:
         
     ) -> None:
 
+        self._zero_cost_runtime = quota_manager is None and billing_policy is None
         self.quota_manager = (
             quota_manager
             or QuotaManager()
@@ -381,6 +382,11 @@ class AIGateway:
         Generate normal text through the selected provider.
         """
 
+        if self._zero_cost_runtime:
+            response, reason, attempts = await self._run_zero_cost('generate', prompt=prompt, system_prompt=system_prompt, temperature=temperature, max_output_tokens=max_output_tokens, **kwargs)
+            state = self._runtime_response(response, reason, attempts)
+            return state
+
         permission = await self.check_request()
 
         # ------------------------------------------------------
@@ -473,6 +479,10 @@ class AIGateway:
         The current Admin billing configuration is loaded from
         PostgreSQL before provider selection.
         """
+
+        if self._zero_cost_runtime:
+            response, reason, attempts = await self._run_zero_cost('generate_with_tools', prompt=prompt, tools=tools, system_prompt=system_prompt, temperature=temperature, max_output_tokens=max_output_tokens, **kwargs)
+            return self._runtime_response(response, reason, attempts), response
 
         permission = await self.check_request()
 
@@ -569,6 +579,10 @@ class AIGateway:
         The continuation must use the SAME provider that
         produced the original tool call.
         """
+
+        if self._zero_cost_runtime:
+            result, reason, attempts = await self._run_zero_cost('continue_with_tool_results', forced_provider=response.provider, response=response, tool_results=tool_results, tools=tools, system_prompt=system_prompt, temperature=temperature, max_output_tokens=max_output_tokens, **kwargs)
+            return self._runtime_response(result, reason, attempts), result
 
         provider_name = response.provider
 
@@ -706,3 +720,12 @@ class AIGateway:
             "by the administrator. "
             f"{reset_text}"
         )
+
+    @staticmethod
+    async def _run_zero_cost(method, **arguments):
+        from app.services.ai.free_runtime import run
+        return await run(method, **arguments)
+
+    @staticmethod
+    def _runtime_response(response, reason, attempts):
+        return AIGatewayResponse(allowed=response is not None, provider=response.provider if response else None, mode='free' if response else 'blocked', content=response.content if response else reason, reason=reason, metadata={'cost_policy':'zero_cost','providers_attempted':attempts,'model':response.model if response else None})
