@@ -41,3 +41,27 @@ Sources and policies:
 Free hosting and source services can impose further limits or change plans.
 Paid discovery calls are disabled; unlimited world coverage and permanently free
 commercial hosting cannot be promised.
+
+
+## Smaller settlement search
+
+A read-only, deployment-local GeoNames cities500 snapshot indexes 236,112 named
+settlements. It is not a complete village or POI catalogue. No provider account,
+API call or PostgreSQL bulk import is needed to search it. Names and ASCII names
+support prefix search; exact matches rank first. Results are capped at 20 and
+can be filtered by country. Queries are bounded and SQLite execution is limited
+to one second. The compressed snapshot is about 16 MiB; decompression is capped
+at 64 MiB of local disk and runs during startup.
+
+Authenticated selection resolves a trusted source record into a canonical city.
+Existing identities, admin renames and disabled locations are preserved. New
+locations pause at a total of 45,000 app cities or 200 MiB database size. The
+source index remains searchable at that cap. Smaller locations may have no
+attractions, food listings or licensed photos. Snapshot source and licence are
+stored in its metadata and attributed in Explore. Rebuild explicitly with:
+
+    python seeds/build_location_index.py <source-folder> seeds/data/geonames_towns.sqlite.gz
+
+Source: https://download.geonames.org/export/dump/readme.txt
+The cities500 source includes settlements over 500 inhabitants and some smaller
+administrative seats. Data is supplied without guarantees of completeness.

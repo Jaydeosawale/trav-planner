@@ -1,3 +1,4 @@
+import sqlite3
 from datetime import timedelta
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, Field
@@ -209,3 +210,35 @@ async def nearby_food(
         "items": sorted(result, key=lambda i: i["distance_km"])[:20],
         "message": "Straight-line distances; current menus, opening hours and availability are unverified.",
     }
+
+
+@router.get("/locations")
+async def location_search(
+    q: str = Query(min_length=2, max_length=80),
+    country: str | None = Query(default=None, pattern=r"^[A-Z]{2}$"),
+):
+    from starlette.concurrency import run_in_threadpool
+    from app.services.discovery import locations
+
+    try:
+        return {
+            "items": await run_in_threadpool(locations.search, q, country),
+            "source": "GeoNames",
+            "license": "CC-BY-4.0",
+        }
+    except (OSError, ValueError, sqlite3.Error):
+        from fastapi import HTTPException
+
+        raise HTTPException(503, "Additional locations are temporarily unavailable.")
+
+
+@router.post("/locations/{source_id}/open")
+async def open_location(
+    source_id: str, db: AsyncSession = Depends(get_db), user=Depends(get_current_user)
+):
+    from starlette.concurrency import run_in_threadpool
+    from app.services.discovery.locations import record, resolve_location
+    from app.modules.city.schema import CityListResponse
+
+    source = await run_in_threadpool(record, source_id)
+    return CityListResponse.model_validate(await resolve_location(db, source))

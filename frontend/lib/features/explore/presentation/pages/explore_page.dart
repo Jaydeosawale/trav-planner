@@ -1,3 +1,4 @@
+import 'world_locations_panel.dart';
 import '../../../destinations/presentation/destination_details_page.dart';
 import '../../../destinations/data/place.dart';
 import '../../../../shared/widgets/travel_inspiration_grid.dart';
@@ -151,6 +152,16 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
                           if (_section == 1) _buildStatesSection(isWide),
 
                           if (_section == 2) _buildCitiesSection(isWide),
+                          if (_section == 2 &&
+                              _searchQuery.length >= 2 &&
+                              _selectedState == null)
+                            WorldLocationsPanel(
+                              key: ValueKey(
+                                '${_searchQuery}_${_selectedCountry?.iso2}',
+                              ),
+                              query: _searchQuery,
+                              country: _selectedCountry?.iso2,
+                            ),
                           const SizedBox(height: 24),
                           Wrap(
                             crossAxisAlignment: WrapCrossAlignment.center,

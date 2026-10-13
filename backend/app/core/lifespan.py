@@ -13,7 +13,6 @@ from fastapi import FastAPI
 from app.core.logging import configure_logging
 from app.core.logging import get_logger
 
-
 logger = get_logger()
 
 
@@ -54,6 +53,17 @@ async def lifespan(app: FastAPI):
     # Scheduler
     # Cache
     # Workers
+
+    from starlette.concurrency import run_in_threadpool
+    from app.services.discovery.locations import prepare
+
+    try:
+        await run_in_threadpool(prepare)
+        logger.info("Offline town search index ready.")
+    except (OSError, ValueError):
+        logger.warning(
+            "Optional town search index unavailable; existing cities remain available."
+        )
 
     yield
 
