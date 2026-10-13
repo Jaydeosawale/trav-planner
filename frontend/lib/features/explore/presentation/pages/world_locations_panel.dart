@@ -71,6 +71,7 @@ class _WorldLocationsPanelState extends State<WorldLocationsPanel> {
       await Navigator.of(context).push(
         MaterialPageRoute(
           builder: (_) => DestinationDetailsPage(
+            discoveryClient: widget.client,
             cityId: city.id,
             name: city.name,
             center: validCoordinates(city.latitude, city.longitude),

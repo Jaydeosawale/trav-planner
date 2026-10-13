@@ -8,6 +8,52 @@ import 'package:trav_planner/features/destinations/data/places_provider.dart';
 import 'package:trav_planner/features/destinations/presentation/destination_details_page.dart';
 
 void main() {
+  testWidgets('empty destination automatically loads source places', (
+    tester,
+  ) async {
+    final dio = Dio();
+    var requests = 0;
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (o, h) {
+          requests++;
+          expect(o.path, '/discovery/cities/pune');
+          h.resolve(
+            Response(
+              requestOptions: o,
+              data: {
+                'items': [
+                  {
+                    'id': 'kelkar',
+                    'city_id': 'pune',
+                    'name': 'Raja Dinkar Kelkar Museum',
+                    'place_type': 'museum',
+                    'is_discovery': true,
+                  },
+                ],
+              },
+            ),
+          );
+        },
+      ),
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [cityPlacesProvider('pune').overrideWith((ref) async => [])],
+        child: MaterialApp(
+          home: DestinationDetailsPage(
+            cityId: 'pune',
+            name: 'Pune',
+            discoveryClient: dio,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(requests, 1);
+    expect(find.text('Raja Dinkar Kelkar Museum'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
   testWidgets(
     'discover source result and open details while optional photo fails',
     (tester) async {
@@ -58,6 +104,7 @@ void main() {
               cityId: 'city',
               name: 'City',
               discoveryClient: dio,
+              autoDiscover: false,
             ),
           ),
         ),

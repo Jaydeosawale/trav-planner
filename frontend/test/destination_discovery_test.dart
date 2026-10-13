@@ -56,7 +56,11 @@ void main() {
           cityPlacesProvider('pune').overrideWith((ref) async => places),
         ],
         child: const MaterialApp(
-          home: DestinationDetailsPage(cityId: 'pune', name: 'Pune'),
+          home: DestinationDetailsPage(
+            cityId: 'pune',
+            name: 'Pune',
+            autoDiscover: false,
+          ),
         ),
       ),
     );
@@ -69,7 +73,7 @@ void main() {
     await show(tester, []);
     expect(
       find.text(
-        'Places for this destination are being added. Check back soon.',
+        'No places loaded yet. Try another category or retry discovery. Free-source coverage may be incomplete.',
       ),
       findsOneWidget,
     );

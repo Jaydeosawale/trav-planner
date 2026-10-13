@@ -16,6 +16,7 @@ class DestinationDetailsPage extends ConsumerStatefulWidget {
   final LatLng? center;
   final TravelPlace? initialPlace;
   final Dio? discoveryClient;
+  final bool autoDiscover;
   const DestinationDetailsPage({
     super.key,
     required this.cityId,
@@ -25,6 +26,7 @@ class DestinationDetailsPage extends ConsumerStatefulWidget {
     this.center,
     this.initialPlace,
     this.discoveryClient,
+    this.autoDiscover = true,
   });
 
   @override
@@ -45,6 +47,20 @@ class _DestinationDetailsPageState
   @override
   void initState() {
     super.initState();
+    if (widget.autoDiscover) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        try {
+          final known = await ref.read(
+            cityPlacesProvider(widget.cityId).future,
+          );
+          if (mounted && known.isEmpty && _discovered.isEmpty) {
+            await _discover();
+          }
+        } catch (_) {
+          // The published-place error already provides a retry action.
+        }
+      });
+    }
     if (widget.initialPlace != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _showPlace(widget.initialPlace!);
@@ -205,6 +221,11 @@ class _DestinationDetailsPageState
                         ),
                       ],
                     ),
+                    if (_discovering)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 12),
+                        child: LinearProgressIndicator(),
+                      ),
                     if (_discoveryNotice != null)
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 12),
@@ -329,10 +350,12 @@ class _DestinationDetailsPageState
         ] else
           ...visible.map(_placeCard),
         if (places.isEmpty)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 24),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 24),
             child: Text(
-              'Places for this destination are being added. Check back soon.',
+              _discovering
+                  ? 'Finding places near ${widget.name}…'
+                  : 'No places loaded yet. Try another category or retry discovery. Free-source coverage may be incomplete.',
             ),
           ),
         if (_mapMode && visible.any((p) => p.point == null))

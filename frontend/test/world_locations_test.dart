@@ -15,7 +15,9 @@ void main() {
       InterceptorsWrapper(
         onRequest: (o, h) {
           calls.add(o.path);
-          if (o.method == 'GET') {
+          if (o.path.startsWith('/discovery/cities/')) {
+            h.resolve(Response(requestOptions: o, data: {'items': []}));
+          } else if (o.method == 'GET') {
             expect(o.queryParameters['q'], 'Panchgani');
             expect(o.queryParameters['country'], 'IN');
             h.resolve(
@@ -76,7 +78,11 @@ void main() {
     expect(find.text('Panchgani'), findsOneWidget);
     await tester.tap(find.text('Panchgani'));
     await tester.pumpAndSettle();
-    expect(calls, ['/discovery/locations', '/discovery/locations/123/open']);
+    expect(calls, [
+      '/discovery/locations',
+      '/discovery/locations/123/open',
+      '/discovery/cities/resolved',
+    ]);
     expect(find.text('Find your kind of Panchgani.'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
