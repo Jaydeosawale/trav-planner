@@ -209,6 +209,45 @@ async def test_source_failure_is_cached_and_photo_requires_license(monkeypatch):
 
         monkeypatch.setattr(world, "request_json", unlicensed)
         assert not (await world.photo(db, "candidate")).get("image_url")
+
+        fallback = {"id": "fallback", "city_id": "city", "wikipedia_title": "Museum"}
+        await world.cache_put(db, "fallback", "candidate", fallback, timedelta(days=1))
+        await db.commit()
+        source_calls = []
+
+        async def licensed(url, params, **kwargs):
+            source_calls.append(url)
+            if "en.wikipedia.org" in url:
+                assert params["pilicense"] == "free"
+                return {"query": {"pages": {"1": {"pageimage": "Museum.jpg"}}}}
+            return {
+                "query": {
+                    "pages": {
+                        "2": {
+                            "imageinfo": [
+                                {
+                                    "thumburl": "https://thumb.wikimedia.org/museum.jpg",
+                                    "descriptionurl": "https://commons.wikimedia.org/wiki/File:Museum.jpg",
+                                    "extmetadata": {
+                                        "LicenseShortName": {"value": "CC BY 4.0"},
+                                        "Artist": {"value": "Creator"},
+                                        "LicenseUrl": {
+                                            "value": "https://creativecommons.org/licenses/by/4.0/"
+                                        },
+                                    },
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+
+        monkeypatch.setattr(world, "request_json", licensed)
+        assert (await world.photo(db, "fallback"))["image_url"].endswith("museum.jpg")
+        await world.photo(db, "fallback")
+        assert (
+            len(source_calls) == 2
+        )  # Licensed result is cached; no repeat source calls.
     await engine.dispose()
 
 

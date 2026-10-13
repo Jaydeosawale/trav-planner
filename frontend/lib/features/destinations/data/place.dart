@@ -44,6 +44,22 @@ class TravelPlace {
     this.imageCredit,
   });
 
+  TravelPlace withPhoto(TravelPlace photo) => TravelPlace(
+    id: id,
+    name: name,
+    type: type,
+    cityId: cityId,
+    description: description,
+    address: address,
+    imageUrl: photo.imageUrl ?? imageUrl,
+    point: point,
+    featured: featured,
+    discovered: discovered,
+    source: source,
+    visitingNotes: visitingNotes,
+    imageCredit: photo.imageCredit ?? imageCredit,
+  );
+
   factory TravelPlace.fromJson(Map<String, dynamic> json) => TravelPlace(
     id: json['id'].toString(),
     cityId: json['city_id']?.toString(),

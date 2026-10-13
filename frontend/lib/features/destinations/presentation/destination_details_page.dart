@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import '../../../core/network/api_client.dart';
@@ -36,6 +37,14 @@ class DestinationDetailsPage extends ConsumerStatefulWidget {
 
 class _DestinationDetailsPageState
     extends ConsumerState<DestinationDetailsPage> {
+  final ScrollController _scroll = ScrollController();
+  final Map<String, GlobalKey> _cardKeys = {};
+  final Map<String, TravelPlace> _photoResults = {};
+  final Map<String, Future<TravelPlace>> _photoRequests = {};
+  final Set<String> _previewAttempted = {};
+  Timer? _photoDebounce;
+  bool _previewRunning = false;
+
   String _filter = 'All';
   String _discoveryKind = 'attraction';
   bool _discovering = false;
@@ -47,6 +56,7 @@ class _DestinationDetailsPageState
   @override
   void initState() {
     super.initState();
+    _scroll.addListener(_schedulePhotos);
     if (widget.autoDiscover) {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         try {
@@ -65,6 +75,42 @@ class _DestinationDetailsPageState
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _showPlace(widget.initialPlace!);
       });
+    }
+  }
+
+  @override
+  void dispose() {
+    _photoDebounce?.cancel();
+    _scroll.dispose();
+    super.dispose();
+  }
+
+  void _schedulePhotos() {
+    _photoDebounce?.cancel();
+    _photoDebounce = Timer(const Duration(milliseconds: 180), _previewPhotos);
+  }
+
+  Future<void> _previewPhotos() async {
+    if (!mounted || _previewRunning || _mapMode) return;
+    _previewRunning = true;
+    try {
+      final height = MediaQuery.sizeOf(context).height;
+      for (final place in _discovered) {
+        if (!mounted) break;
+        if (!place.discovered ||
+            place.imageUrl != null ||
+            _previewAttempted.contains(place.id)) {
+          continue;
+        }
+        final box = _cardKeys[place.id]?.currentContext?.findRenderObject();
+        if (box is! RenderBox || !box.hasSize) continue;
+        final y = box.localToGlobal(Offset.zero).dy;
+        if (y + box.size.height < 0 || y > height) continue;
+        _previewAttempted.add(place.id);
+        await _loadPhoto(place);
+      }
+    } finally {
+      _previewRunning = false;
     }
   }
 
@@ -115,6 +161,7 @@ class _DestinationDetailsPageState
           await ref.read(cityPlacesProvider(widget.cityId).future);
         },
         child: ListView(
+          controller: _scroll,
           padding: const EdgeInsets.all(20),
           children: [
             Center(
@@ -273,6 +320,9 @@ class _DestinationDetailsPageState
   }
 
   Widget _buildPlaces(List<TravelPlace> places) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _schedulePhotos();
+    });
     final types = places.map((p) => p.type).toSet().toList()..sort();
     final visible = places
         .where((p) => _filter == 'All' || p.type == _filter)
@@ -371,58 +421,89 @@ class _DestinationDetailsPageState
     );
   }
 
-  Widget _placeCard(TravelPlace place) => Card(
-    margin: const EdgeInsets.only(bottom: 12),
-    clipBehavior: Clip.antiAlias,
-    child: InkWell(
-      onTap: () => _showPlace(place),
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Row(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: SizedBox(
-                width: 82,
-                child: _PlaceImage(url: place.imageUrl, height: 82),
+  Widget _placeCard(TravelPlace original) {
+    final place =
+        original.discovered &&
+            original.imageUrl == null &&
+            _photoResults.containsKey(original.id)
+        ? original.withPhoto(_photoResults[original.id]!)
+        : original;
+    return Card(
+      key: _cardKeys.putIfAbsent(place.id, GlobalKey.new),
+      margin: const EdgeInsets.only(bottom: 12),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => _showPlace(place),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: SizedBox(
+                  width: 82,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      _PlaceImage(url: place.imageUrl, height: 82),
+                      if (_photoRequests.containsKey(place.id) &&
+                          !_photoResults.containsKey(place.id))
+                        const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                    ],
+                  ),
+                ),
               ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    place.name,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 16,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    place.type.replaceAll('_', ' '),
-                    style: const TextStyle(color: AppColors.secondary),
-                  ),
-                  if (place.address?.isNotEmpty == true)
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Text(
-                      place.address!,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                      place.name,
                       style: const TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 16,
                       ),
                     ),
-                ],
+                    const SizedBox(height: 4),
+                    Text(
+                      place.type.replaceAll('_', ' '),
+                      style: const TextStyle(color: AppColors.secondary),
+                    ),
+                    if (place.imageCredit != null)
+                      Text(
+                        'Photo: ${place.imageCredit!['author']} · ${place.imageCredit!['license']}',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 10,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    if (place.address?.isNotEmpty == true)
+                      Text(
+                        place.address!,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 12,
+                        ),
+                      ),
+                  ],
+                ),
               ),
-            ),
-            SavePlaceButton(place: place, compact: true),
-          ],
+              SavePlaceButton(place: place, compact: true),
+            ],
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 
   Future<void> _nearbyFood(TravelPlace place, BuildContext sheetContext) async {
     try {
@@ -479,17 +560,27 @@ class _DestinationDetailsPageState
     }
   }
 
-  Future<TravelPlace> _loadPhoto(TravelPlace place) async {
-    if (!place.discovered || place.imageUrl != null) return place;
+  Future<TravelPlace> _loadPhoto(TravelPlace place) {
+    if (!place.discovered || place.imageUrl != null) return Future.value(place);
+    return _photoRequests.putIfAbsent(place.id, () => _fetchPhoto(place));
+  }
+
+  Future<TravelPlace> _fetchPhoto(TravelPlace place) async {
+    if (mounted) setState(() {});
+    var result = place;
     try {
       final response = await (widget.discoveryClient ?? ApiClient.dio).get(
         '/discovery/places/${place.id}/photo',
         options: Options(receiveTimeout: const Duration(seconds: 75)),
       );
-      return TravelPlace.fromJson(Map<String, dynamic>.from(response.data));
+      result = place.withPhoto(
+        TravelPlace.fromJson(Map<String, dynamic>.from(response.data)),
+      );
     } catch (_) {
-      return place;
+      // Missing/limited photos leave the verified place and map available.
     }
+    if (mounted) setState(() => _photoResults[place.id] = result);
+    return result;
   }
 
   void _showPlace(TravelPlace initialPlace) {
@@ -704,6 +795,7 @@ class _PlaceImage extends StatelessWidget {
             height: height,
             width: double.infinity,
             fit: BoxFit.cover,
+            webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
             errorBuilder: (_, _, _) => fallback,
           )
         : fallback;

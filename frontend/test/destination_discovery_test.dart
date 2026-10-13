@@ -133,7 +133,13 @@ void main() {
     ]);
     await tester.tap(find.text('Museum'));
     await tester.pumpAndSettle();
-    expect(find.text('Photo: Photographer · CC BY 4.0'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(BottomSheet),
+        matching: find.text('Photo: Photographer · CC BY 4.0'),
+      ),
+      findsOneWidget,
+    );
     expect(find.text('Photo source'), findsOneWidget);
     expect(find.text('Photo licence'), findsOneWidget);
     expect(find.text('Plan your visit'), findsOneWidget);

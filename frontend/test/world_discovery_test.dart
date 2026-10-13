@@ -8,6 +8,79 @@ import 'package:trav_planner/features/destinations/data/places_provider.dart';
 import 'package:trav_planner/features/destinations/presentation/destination_details_page.dart';
 
 void main() {
+  testWidgets(
+    'visible source card loads licensed photo without opening details',
+    (tester) async {
+      tester.view.physicalSize = const Size(400, 1200);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final dio = Dio();
+      var photoCalls = 0;
+      final place = {
+        'id': 'preview',
+        'city_id': 'city',
+        'name': 'Museum',
+        'place_type': 'museum',
+        'is_discovery': true,
+      };
+      dio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (o, h) {
+            if (o.path.endsWith('/photo')) {
+              photoCalls++;
+              h.resolve(
+                Response(
+                  requestOptions: o,
+                  data: {
+                    ...place,
+                    'image_url': 'https://example.com/licensed.jpg',
+                    'image_credit': {
+                      'author': 'Creator',
+                      'license': 'CC BY 4.0',
+                    },
+                  },
+                ),
+              );
+            } else {
+              h.resolve(
+                Response(
+                  requestOptions: o,
+                  data: {
+                    'items': [place],
+                  },
+                ),
+              );
+            }
+          },
+        ),
+      );
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            cityPlacesProvider('city').overrideWith((ref) async => []),
+          ],
+          child: MaterialApp(
+            home: DestinationDetailsPage(
+              cityId: 'city',
+              name: 'City',
+              discoveryClient: dio,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 250));
+      await tester.pumpAndSettle();
+      expect(photoCalls, 1);
+      expect(find.text('Photo: Creator · CC BY 4.0'), findsOneWidget);
+      await tester.tap(find.text('Museum'));
+      await tester.pumpAndSettle();
+      expect(photoCalls, 1);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
   testWidgets('empty destination automatically loads source places', (
     tester,
   ) async {
@@ -16,6 +89,10 @@ void main() {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (o, h) {
+          if (o.path.endsWith('/photo')) {
+            h.reject(DioException(requestOptions: o));
+            return;
+          }
           requests++;
           expect(o.path, '/discovery/cities/pune');
           h.resolve(

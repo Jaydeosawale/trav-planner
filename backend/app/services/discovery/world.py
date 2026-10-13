@@ -222,7 +222,7 @@ async def wikidata(city_id, lat, lon, kind):
                 "action": "wbgetentities",
                 "format": "json",
                 "ids": "|".join(ids),
-                "props": "labels|descriptions|claims|info",
+                "props": "labels|descriptions|claims|info|sitelinks",
                 "languages": "en",
                 "maxlag": 5,
             },
@@ -280,6 +280,9 @@ async def wikidata(city_id, lat, lon, kind):
                 "is_discovery": True,
                 "source_revision": entity.get("lastrevid"),
                 "image_filename": filename,
+                "wikipedia_title": entity.get("sitelinks", {})
+                .get("enwiki", {})
+                .get("title"),
                 "image_url": None,
                 "image_credit": None,
                 "visiting_notes": "Source data may be incomplete. Check current access, hours and ticket arrangements before visiting.",
@@ -568,21 +571,70 @@ async def photo(db, ident):
 
             return PlaceResponse.model_validate(existing).model_dump(mode="json")
     row, item = await candidate(db, ident)
-    if item.get("image_url") or item.get("photo_checked") == now().date().isoformat():
-        return item
-    filename = item.get("image_filename")
-    item["photo_checked"] = now().date().isoformat()
-    if (
-        not isinstance(filename, str)
-        or len(filename) > 250
-        or "|" in filename
-        or not filename.lower().endswith((".jpg", ".jpeg", ".png"))
+    if item.get("image_url") or (
+        item.get("photo_checked") == now().date().isoformat()
+        and item.get("photo_lookup_version") == 2
     ):
         return item
+    filename = item.get("image_filename")
     if _lock.locked():
         return {**item, "photo_checked": False}
     async with _lock:
         try:
+            if not filename:
+                title = item.get("wikipedia_title")
+                qid = item.get("external_place_id", "")
+                if (
+                    not title
+                    and item.get("provider") == "wikidata"
+                    and re.fullmatch(r"Q[1-9][0-9]*", qid)
+                ):
+                    entity = (
+                        (
+                            await request_json(
+                                "https://www.wikidata.org/w/api.php",
+                                {
+                                    "action": "wbgetentities",
+                                    "format": "json",
+                                    "ids": qid,
+                                    "props": "sitelinks",
+                                    "maxlag": 5,
+                                },
+                            )
+                        )
+                        .get("entities", {})
+                        .get(qid, {})
+                    )
+                    title = entity.get("sitelinks", {}).get("enwiki", {}).get("title")
+                    item["wikipedia_title"] = title
+                if isinstance(title, str) and 0 < len(title) <= 250:
+                    article = await request_json(
+                        "https://en.wikipedia.org/w/api.php",
+                        {
+                            "action": "query",
+                            "format": "json",
+                            "titles": title,
+                            "prop": "pageimages",
+                            "piprop": "name",
+                            "pilicense": "free",
+                            "maxlag": 5,
+                        },
+                    )
+                    filename = next(
+                        iter(article.get("query", {}).get("pages", {}).values()), {}
+                    ).get("pageimage")
+                    item["image_filename"] = filename
+            item["photo_checked"] = now().date().isoformat()
+            item["photo_lookup_version"] = 2
+            if (
+                not isinstance(filename, str)
+                or len(filename) > 250
+                or "|" in filename
+                or not filename.lower().endswith((".jpg", ".jpeg", ".png"))
+            ):
+                await cache_put(db, ident, "candidate", item, timedelta(days=30))
+                await db.commit()
+                return item
             data = await request_json(
                 "https://commons.wikimedia.org/w/api.php",
                 {
@@ -629,7 +681,10 @@ async def photo(db, ident):
                 )
                 and isinstance(url, str)
                 and len(url) <= 500
-                and url.startswith("https://upload.wikimedia.org/")
+                and (
+                    url.startswith("https://upload.wikimedia.org/")
+                    or url.startswith("https://thumb.wikimedia.org/")
+                )
             ):
                 item["image_url"] = url
                 item["image_credit"] = json.dumps(
@@ -644,7 +699,11 @@ async def photo(db, ident):
                     }
                 )
         except Exception:
-            pass
+            # Temporary quota/cooldown errors must not hide a photo for a whole day.
+            item.pop("photo_checked", None)
+        if existing is not None and existing.is_discovery and item.get("image_url"):
+            existing.image_url = item["image_url"]
+            existing.image_credit = item["image_credit"]
         await cache_put(db, ident, "candidate", item, timedelta(days=30))
         await db.commit()
     return item
