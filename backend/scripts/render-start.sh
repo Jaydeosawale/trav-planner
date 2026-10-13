@@ -3,4 +3,5 @@ set -euo pipefail
 alembic upgrade head
 python -m seeds.bootstrap_catalogue
 python -m seeds.bootstrap_geography
+python -m seeds.bootstrap_osm
 exec uvicorn app.main:app --host 0.0.0.0 --port "${PORT:-10000}" --proxy-headers

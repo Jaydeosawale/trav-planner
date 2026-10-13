@@ -49,6 +49,8 @@ class PlaceSearchTool(Tool):
         Search places using the existing PlaceService.
         """
 
+        size = max(1, min(20, size)) if isinstance(size, int) else 10
+        page = max(1, min(1000, page)) if isinstance(page, int) else 1
         places, total = await self._service.search(
             db=db,
             search=search,
@@ -61,7 +63,52 @@ class PlaceSearchTool(Tool):
             size=size,
         )
 
-        return {
+        # Add only already-cached source records; background discovery is
+        # requested by the user in Explore, not an unbounded model tool loop.
+        from app.services.discovery.world import DiscoveryCache, now, visible
+        from sqlalchemy import select
+        from app.modules.city.model import City
+        import json
+
+        selected_city = city_id
+        if not selected_city and search:
+            matches = (
+                await db.scalars(
+                    select(City)
+                    .where(
+                        City.name.ilike(search.strip()),
+                        City.is_active.is_(True),
+                        City.is_deleted.is_(False),
+                    )
+                    .limit(2)
+                )
+            ).all()
+            if len(matches) == 1:
+                selected_city = matches[0].id
+        cached = []
+        if selected_city:
+            rows = (
+                await db.scalars(
+                    select(DiscoveryCache)
+                    .where(
+                        DiscoveryCache.city_id == selected_city,
+                        DiscoveryCache.kind == "candidate",
+                        DiscoveryCache.expires_at > now(),
+                    )
+                    .limit(100)
+                )
+            ).all()
+            known = {str(place.id) for place in places}
+            cached = await visible(
+                db, [json.loads(row.value) for row in rows], selected_city
+            )
+            cached = [
+                item
+                for item in cached
+                if item["id"] not in known
+                and (not place_type or item["place_type"] == place_type)
+            ][:20]
+        result = {
             "items": [
                 {
                     "id": str(place.id),
@@ -73,37 +120,49 @@ class PlaceSearchTool(Tool):
                     "address": place.address,
                     "locality": place.locality,
                     "latitude": (
-                        float(place.latitude)
-                        if place.latitude is not None
-                        else None
+                        float(place.latitude) if place.latitude is not None else None
                     ),
                     "longitude": (
-                        float(place.longitude)
-                        if place.longitude is not None
-                        else None
+                        float(place.longitude) if place.longitude is not None else None
                     ),
                     "image_url": place.image_url,
                     "rating": (
-                        float(place.rating)
-                        if place.rating is not None
-                        else None
+                        float(place.rating) if place.rating is not None else None
                     ),
                     "price_level": place.price_level,
                     "is_featured": place.is_featured,
-                    "city": (
-                        place.city.name
-                        if place.city is not None
-                        else None
-                    ),
+                    "city": (place.city.name if place.city is not None else None),
                     "category": (
-                        place.category.name
-                        if place.category is not None
-                        else None
+                        place.category.name if place.category is not None else None
                     ),
                 }
                 for place in places
             ],
-            "total": total,
+            "total": total + len(cached),
             "page": page,
             "size": size,
         }
+
+        allowance = max(0, min(size, 10) - len(places))
+        for item in cached[:allowance]:
+            compact = {
+                key: item.get(key)
+                for key in [
+                    "id",
+                    "name",
+                    "city_id",
+                    "place_type",
+                    "latitude",
+                    "longitude",
+                    "provider",
+                    "external_place_id",
+                    "is_discovery",
+                ]
+            }
+            compact["description"] = (item.get("description") or "")[:500]
+            compact["visiting_notes"] = (item.get("visiting_notes") or "")[:400]
+            result["items"].append(compact)
+        result["source_note"] = (
+            "Cached source data may be incomplete; hours, availability and prices are unverified."
+        )
+        return result

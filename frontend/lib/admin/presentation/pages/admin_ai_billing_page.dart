@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../data/datasources/admin_ai_billing_api.dart';
 import '../../data/models/admin_ai_billing_model.dart';
 import 'admin_ai_routing_panel.dart';
+import 'admin_discovery_panel.dart';
 
 class AdminAIBillingPage extends StatefulWidget {
   const AdminAIBillingPage({super.key});
@@ -234,6 +235,8 @@ class _AdminAIBillingPageState extends State<AdminAIBillingPage> {
             const SizedBox(height: 24),
 
             const AdminAIRoutingPanel(),
+            const SizedBox(height: 20),
+            const AdminDiscoveryPanel(),
             const SizedBox(height: 24),
             const Text(
               'Paid requests are blocked in the current zero-cost release.',

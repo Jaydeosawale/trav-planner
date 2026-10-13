@@ -163,6 +163,10 @@ class Place(
     # External Provider
     # ==========================================================
 
+    @property
+    def is_discovery(self):
+        return self.content_revision == 'discovery-v1'
+
     image_credit: Mapped[str | None] = mapped_column(Text, nullable=True)
     visiting_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     content_revision: Mapped[str | None] = mapped_column(String(30), nullable=True)

@@ -23,6 +23,7 @@ class TravelPlace {
   final String? description, address, imageUrl;
   final LatLng? point;
   final bool featured;
+  final bool discovered;
   final String? visitingNotes;
   final Map<String, dynamic>? imageCredit;
   final Uri? source;
@@ -37,6 +38,7 @@ class TravelPlace {
     this.imageUrl,
     this.point,
     this.featured = false,
+    this.discovered = false,
     this.source,
     this.visitingNotes,
     this.imageCredit,
@@ -52,6 +54,7 @@ class TravelPlace {
     imageUrl: json['image_url']?.toString(),
     point: validCoordinates(json['latitude'], json['longitude']),
     featured: json['is_featured'] == true,
+    discovered: json['is_discovery'] == true,
     visitingNotes: json['visiting_notes']?.toString(),
     imageCredit: _credits(json['image_credit']),
     source:
@@ -60,6 +63,11 @@ class TravelPlace {
               r'^Q[1-9][0-9]*$',
             ).hasMatch(json['external_place_id']?.toString() ?? '')
         ? Uri.https('www.wikidata.org', '/wiki/${json['external_place_id']}')
+        : json['provider'] == 'osm' &&
+              RegExp(
+                r'^(node|way|relation)/[0-9]+$',
+              ).hasMatch(json['external_place_id']?.toString() ?? '')
+        ? Uri.https('www.openstreetmap.org', '/${json['external_place_id']}')
         : null,
   );
 }

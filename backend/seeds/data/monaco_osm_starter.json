@@ -1,0 +1,618 @@
+{
+  "checked_on": "2026-10-13",
+  "source": "https://download.geofabrik.de/europe/monaco.html",
+  "pack": {
+    "city_id": "1a395f24-7dfc-568a-aba6-6879d318737b",
+    "license": "ODbL-1.0",
+    "items": [
+      {
+        "external_id": "node/10680529469",
+        "name": "La Note Bleue",
+        "place_type": "restaurant",
+        "latitude": 43.7464607,
+        "longitude": 7.4334174,
+        "description": ""
+      },
+      {
+        "external_id": "node/10866925159",
+        "name": "Pizza Tony",
+        "place_type": "restaurant",
+        "latitude": 43.7310119,
+        "longitude": 7.421811,
+        "description": ""
+      },
+      {
+        "external_id": "node/11432838280",
+        "name": "Giacomo's",
+        "place_type": "restaurant",
+        "latitude": 43.747163,
+        "longitude": 7.4351973,
+        "description": ""
+      },
+      {
+        "external_id": "node/11432871166",
+        "name": "L'Oliveraie",
+        "place_type": "restaurant",
+        "latitude": 43.7453233,
+        "longitude": 7.4295494,
+        "description": ""
+      },
+      {
+        "external_id": "node/11948972461",
+        "name": "Malizia Mar",
+        "place_type": "restaurant",
+        "latitude": 43.7336628,
+        "longitude": 7.4289259,
+        "description": ""
+      },
+      {
+        "external_id": "node/11961565194",
+        "name": "Taera",
+        "place_type": "restaurant",
+        "latitude": 43.7386547,
+        "longitude": 7.4271209,
+        "description": ""
+      },
+      {
+        "external_id": "node/11961629796",
+        "name": "Em Sherif Monte-Carlo",
+        "place_type": "restaurant",
+        "latitude": 43.7386539,
+        "longitude": 7.4276485,
+        "description": ""
+      },
+      {
+        "external_id": "node/11961668228",
+        "name": "Amazónico Monte-Carlo",
+        "place_type": "restaurant",
+        "latitude": 43.7397598,
+        "longitude": 7.4277378,
+        "description": ""
+      },
+      {
+        "external_id": "node/12246240603",
+        "name": "Pasta Roca",
+        "place_type": "restaurant",
+        "latitude": 43.7309338,
+        "longitude": 7.4227429,
+        "description": ""
+      },
+      {
+        "external_id": "node/12324219717",
+        "name": "Smashie",
+        "place_type": "restaurant",
+        "latitude": 43.7334042,
+        "longitude": 7.4211571,
+        "description": ""
+      },
+      {
+        "external_id": "node/12324219719",
+        "name": "Amore Mio",
+        "place_type": "restaurant",
+        "latitude": 43.7334521,
+        "longitude": 7.4213755,
+        "description": ""
+      },
+      {
+        "external_id": "node/12371341049",
+        "name": "L'intempo",
+        "place_type": "restaurant",
+        "latitude": 43.7481754,
+        "longitude": 7.4360388,
+        "description": ""
+      },
+      {
+        "external_id": "node/12413143995",
+        "name": "Les Ambassadeurs by Christophe Cussac",
+        "place_type": "restaurant",
+        "latitude": 43.7404539,
+        "longitude": 7.427872,
+        "description": ""
+      },
+      {
+        "external_id": "node/12413997216",
+        "name": "99 Sushi Bar",
+        "place_type": "restaurant",
+        "latitude": 43.7409958,
+        "longitude": 7.4313547,
+        "description": ""
+      },
+      {
+        "external_id": "node/12413997298",
+        "name": "Marlow",
+        "place_type": "restaurant",
+        "latitude": 43.7414225,
+        "longitude": 7.4315436,
+        "description": ""
+      },
+      {
+        "external_id": "node/10866925160",
+        "name": "San Remo",
+        "place_type": "cafe",
+        "latitude": 43.7309264,
+        "longitude": 7.4223638,
+        "description": ""
+      },
+      {
+        "external_id": "node/11148544236",
+        "name": "Veuve Clicquot Lounge Solaire",
+        "place_type": "cafe",
+        "latitude": 43.7386275,
+        "longitude": 7.4261764,
+        "description": ""
+      },
+      {
+        "external_id": "node/12323440740",
+        "name": "Le Calypso",
+        "place_type": "cafe",
+        "latitude": 43.7478291,
+        "longitude": 7.4327557,
+        "description": ""
+      },
+      {
+        "external_id": "node/12802966710",
+        "name": "Woo",
+        "place_type": "cafe",
+        "latitude": 43.7330475,
+        "longitude": 7.4192941,
+        "description": ""
+      },
+      {
+        "external_id": "node/12809349937",
+        "name": "Superboba",
+        "place_type": "cafe",
+        "latitude": 43.7330637,
+        "longitude": 7.4193771,
+        "description": ""
+      },
+      {
+        "external_id": "node/13926140672",
+        "name": "Angel Cakes",
+        "place_type": "cafe",
+        "latitude": 43.7411253,
+        "longitude": 7.4309295,
+        "description": ""
+      },
+      {
+        "external_id": "node/5517953021",
+        "name": "Le Corner",
+        "place_type": "cafe",
+        "latitude": 43.7325751,
+        "longitude": 7.4200926,
+        "description": ""
+      },
+      {
+        "external_id": "node/6431087292",
+        "name": "Da Caterina",
+        "place_type": "cafe",
+        "latitude": 43.7465173,
+        "longitude": 7.4336016,
+        "description": ""
+      },
+      {
+        "external_id": "node/7778339678",
+        "name": "Bistrot des Pêcheurs",
+        "place_type": "cafe",
+        "latitude": 43.7326094,
+        "longitude": 7.4244014,
+        "description": ""
+      },
+      {
+        "external_id": "node/7822143687",
+        "name": "Costa",
+        "place_type": "cafe",
+        "latitude": 43.7422509,
+        "longitude": 7.4265681,
+        "description": ""
+      },
+      {
+        "external_id": "node/11339077004",
+        "name": "Hôtel de Paris",
+        "place_type": "hotel",
+        "latitude": 43.7390094,
+        "longitude": 7.4274682,
+        "description": ""
+      },
+      {
+        "external_id": "node/11554321878",
+        "name": "Odalys Les Hauts de la Principauté",
+        "place_type": "hotel",
+        "latitude": 43.7452757,
+        "longitude": 7.4282433,
+        "description": ""
+      },
+      {
+        "external_id": "way/94399684",
+        "name": "Les Caravelles",
+        "place_type": "hotel",
+        "latitude": 43.73615954,
+        "longitude": 7.4209755799999995,
+        "description": " Approximate feature centre, not a confirmed entrance."
+      },
+      {
+        "external_id": "way/94400040",
+        "name": "Novotel",
+        "place_type": "hotel",
+        "latitude": 43.73900042857143,
+        "longitude": 7.4218214428571425,
+        "description": " Approximate feature centre, not a confirmed entrance."
+      },
+      {
+        "external_id": "way/94400205",
+        "name": "Le Bristol",
+        "place_type": "hotel",
+        "latitude": 43.736299583333334,
+        "longitude": 7.421049116666667,
+        "description": " Approximate feature centre, not a confirmed entrance."
+      },
+      {
+        "external_id": "way/94452823",
+        "name": "Le Méridien Beach Plaza",
+        "place_type": "hotel",
+        "latitude": 43.748144582857144,
+        "longitude": 7.435983511428572,
+        "description": " Approximate feature centre, not a confirmed entrance."
+      },
+      {
+        "external_id": "way/373918253",
+        "name": "La Frégate",
+        "place_type": "hotel",
+        "latitude": 43.73488575714286,
+        "longitude": 7.4198059857142855,
+        "description": " Approximate feature centre, not a confirmed entrance."
+      },
+      {
+        "external_id": "way/572948281",
+        "name": "Monte-Carlo Bay Hotel & Resort",
+        "place_type": "hotel",
+        "latitude": 43.748706296,
+        "longitude": 7.438614652,
+        "description": " Approximate feature centre, not a confirmed entrance."
+      },
+      {
+        "external_id": "node/7781812079",
+        "name": "de France",
+        "place_type": "hotel",
+        "latitude": 43.7333426,
+        "longitude": 7.418317,
+        "description": ""
+      },
+      {
+        "external_id": "node/7841214120",
+        "name": "Port Palace",
+        "place_type": "hotel",
+        "latitude": 43.737152,
+        "longitude": 7.424119,
+        "description": ""
+      },
+      {
+        "external_id": "node/9952646938",
+        "name": "Monaco - Monte Carlo",
+        "place_type": "station",
+        "latitude": 43.7382624,
+        "longitude": 7.4194983,
+        "description": ""
+      },
+      {
+        "external_id": "node/10688011472",
+        "name": "Plages",
+        "place_type": "bus_stop",
+        "latitude": 43.7468168,
+        "longitude": 7.433647,
+        "description": ""
+      },
+      {
+        "external_id": "node/10688011479",
+        "name": "Grimaldi Forum",
+        "place_type": "bus_stop",
+        "latitude": 43.7442247,
+        "longitude": 7.4311553,
+        "description": ""
+      },
+      {
+        "external_id": "node/11407697330",
+        "name": "Auditorium Rainier III",
+        "place_type": "bus_stop",
+        "latitude": 43.7377446,
+        "longitude": 7.4280623,
+        "description": ""
+      },
+      {
+        "external_id": "node/11449581671",
+        "name": "Grimaldi Forum/Villa Sauber",
+        "place_type": "bus_stop",
+        "latitude": 43.7440396,
+        "longitude": 7.4313156,
+        "description": ""
+      },
+      {
+        "external_id": "node/11449581672",
+        "name": "Ostende",
+        "place_type": "bus_stop",
+        "latitude": 43.7374639,
+        "longitude": 7.4245414,
+        "description": ""
+      },
+      {
+        "external_id": "node/11449697671",
+        "name": "Citronniers",
+        "place_type": "bus_stop",
+        "latitude": 43.7410294,
+        "longitude": 7.4285575,
+        "description": ""
+      },
+      {
+        "external_id": "node/11449741816",
+        "name": "Square Beaumarchais",
+        "place_type": "bus_stop",
+        "latitude": 43.7389736,
+        "longitude": 7.4260632,
+        "description": ""
+      },
+      {
+        "external_id": "node/11449741817",
+        "name": "Moneghetti",
+        "place_type": "bus_stop",
+        "latitude": 43.7366543,
+        "longitude": 7.4164346,
+        "description": ""
+      },
+      {
+        "external_id": "node/11449741818",
+        "name": "Moneghetti",
+        "place_type": "bus_stop",
+        "latitude": 43.7369696,
+        "longitude": 7.4165588,
+        "description": ""
+      },
+      {
+        "external_id": "node/11449887672",
+        "name": "Pasteur",
+        "place_type": "bus_stop",
+        "latitude": 43.7305966,
+        "longitude": 7.4136365,
+        "description": ""
+      },
+      {
+        "external_id": "way/785351109",
+        "name": "Parking des Abeilles",
+        "place_type": "parking",
+        "latitude": 43.72570592857143,
+        "longitude": 7.416463057142857,
+        "description": " Approximate feature centre, not a confirmed entrance."
+      },
+      {
+        "external_id": "way/1001561435",
+        "name": "Parking des Salines",
+        "place_type": "parking",
+        "latitude": 43.73154334736842,
+        "longitude": 7.41298497368421,
+        "description": " Approximate feature centre, not a confirmed entrance."
+      },
+      {
+        "external_id": "way/1365209991",
+        "name": "Livraisons",
+        "place_type": "parking",
+        "latitude": 43.72755176,
+        "longitude": 7.42215678,
+        "description": " Approximate feature centre, not a confirmed entrance."
+      },
+      {
+        "external_id": "way/1416847328",
+        "name": "Parking de la Gare",
+        "place_type": "parking",
+        "latitude": 43.73905259166667,
+        "longitude": 7.418372316666667,
+        "description": " Approximate feature centre, not a confirmed entrance."
+      },
+      {
+        "external_id": "node/5601806434",
+        "name": "d'Ostende",
+        "place_type": "parking",
+        "latitude": 43.73736,
+        "longitude": 7.4235868,
+        "description": ""
+      },
+      {
+        "external_id": "node/6459866601",
+        "name": "Dépose minute",
+        "place_type": "parking",
+        "latitude": 43.7326017,
+        "longitude": 7.4142938,
+        "description": "parking surement utilisé pour l'école"
+      },
+      {
+        "external_id": "node/8734568222",
+        "name": "Parking Hôpital Monaco (CHPG)",
+        "place_type": "parking",
+        "latitude": 43.7291401,
+        "longitude": 7.4101653,
+        "description": ""
+      },
+      {
+        "external_id": "node/25191432",
+        "name": "Parking du Chemin des Pêcheurs",
+        "place_type": "parking",
+        "latitude": 43.7312758,
+        "longitude": 7.4271083,
+        "description": ""
+      },
+      {
+        "external_id": "node/25239191",
+        "name": "Parking du centre commercial",
+        "place_type": "parking",
+        "latitude": 43.7308982,
+        "longitude": 7.4179212,
+        "description": ""
+      },
+      {
+        "external_id": "node/267898764",
+        "name": "Metropole",
+        "place_type": "parking",
+        "latitude": 43.7413692,
+        "longitude": 7.4287882,
+        "description": ""
+      },
+      {
+        "external_id": "node/10943813051",
+        "name": "Seagnature",
+        "place_type": "shop",
+        "latitude": 43.7293293,
+        "longitude": 7.4142188,
+        "description": ""
+      },
+      {
+        "external_id": "node/11148498419",
+        "name": "for pets only",
+        "place_type": "shop",
+        "latitude": 43.7395436,
+        "longitude": 7.4254323,
+        "description": ""
+      },
+      {
+        "external_id": "node/11148572565",
+        "name": "Harry Winston",
+        "place_type": "shop",
+        "latitude": 43.7390284,
+        "longitude": 7.4268317,
+        "description": ""
+      },
+      {
+        "external_id": "node/11432871168",
+        "name": "Forty - One",
+        "place_type": "shop",
+        "latitude": 43.7448678,
+        "longitude": 7.4290537,
+        "description": ""
+      },
+      {
+        "external_id": "node/11961565186",
+        "name": "Chopard",
+        "place_type": "shop",
+        "latitude": 43.738772,
+        "longitude": 7.4269154,
+        "description": ""
+      },
+      {
+        "external_id": "node/11961661061",
+        "name": "Tiffany & Company",
+        "place_type": "shop",
+        "latitude": 43.7394694,
+        "longitude": 7.4281417,
+        "description": ""
+      },
+      {
+        "external_id": "node/12007151404",
+        "name": "Intermarché",
+        "place_type": "shop",
+        "latitude": 43.7348316,
+        "longitude": 7.4143322,
+        "description": ""
+      },
+      {
+        "external_id": "node/12187944202",
+        "name": "Godot & Fils",
+        "place_type": "shop",
+        "latitude": 43.7443727,
+        "longitude": 7.4291016,
+        "description": ""
+      },
+      {
+        "external_id": "node/12323438465",
+        "name": "Dolce & Gabbana",
+        "place_type": "shop",
+        "latitude": 43.7411851,
+        "longitude": 7.4264094,
+        "description": ""
+      },
+      {
+        "external_id": "node/12324219718",
+        "name": "Pressing Pure Laundry Spa",
+        "place_type": "shop",
+        "latitude": 43.7330231,
+        "longitude": 7.4208535,
+        "description": ""
+      },
+      {
+        "external_id": "way/23715051",
+        "name": "Musée Océanographique",
+        "place_type": "museum",
+        "latitude": 43.73075946666666,
+        "longitude": 7.4255275166666665,
+        "description": " Approximate feature centre, not a confirmed entrance."
+      },
+      {
+        "external_id": "way/161885377",
+        "name": "Salle d'Exposition",
+        "place_type": "museum",
+        "latitude": 43.732525808,
+        "longitude": 7.424456232,
+        "description": " Approximate feature centre, not a confirmed entrance."
+      },
+      {
+        "external_id": "node/5589249921",
+        "name": "Musée naval",
+        "place_type": "museum",
+        "latitude": 43.7302075,
+        "longitude": 7.4166803,
+        "description": ""
+      },
+      {
+        "external_id": "node/5919288520",
+        "name": "Musée des Timbres et des Monnaies",
+        "place_type": "museum",
+        "latitude": 43.7308722,
+        "longitude": 7.4175837,
+        "description": "A museum about the postal history of the principality. It contains a display of Monegasque money dating back to 1640."
+      },
+      {
+        "external_id": "node/7932373267",
+        "name": "Musée de la Chapelle de la Visitation",
+        "place_type": "museum",
+        "latitude": 43.7314596,
+        "longitude": 7.4254171,
+        "description": ""
+      },
+      {
+        "external_id": "way/25723255",
+        "name": "Square Beaumarchais",
+        "place_type": "park",
+        "latitude": 43.73867639,
+        "longitude": 7.42603256,
+        "description": " Approximate feature centre, not a confirmed entrance."
+      },
+      {
+        "external_id": "way/157719659",
+        "name": "Jardins de la Petite Afrique",
+        "place_type": "park",
+        "latitude": 43.74038271333334,
+        "longitude": 7.42684898,
+        "description": " Approximate feature centre, not a confirmed entrance."
+      },
+      {
+        "external_id": "way/157719660",
+        "name": "Le Parc Spélugues",
+        "place_type": "park",
+        "latitude": 43.74043407,
+        "longitude": 7.428665646,
+        "description": " Approximate feature centre, not a confirmed entrance."
+      },
+      {
+        "external_id": "way/159170538",
+        "name": "Square Théodore Gastaud",
+        "place_type": "park",
+        "latitude": 43.73394762727273,
+        "longitude": 7.420461718181818,
+        "description": " Approximate feature centre, not a confirmed entrance."
+      },
+      {
+        "external_id": "way/221351810",
+        "name": "Parc Princesse Antoinette",
+        "place_type": "park",
+        "latitude": 43.73346965142857,
+        "longitude": 7.4148552714285705,
+        "description": " Approximate feature centre, not a confirmed entrance."
+      }
+    ]
+  }
+}

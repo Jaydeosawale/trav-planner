@@ -17,6 +17,10 @@ class SavedPlacesApi {
         .toList();
   }
 
+  Future<void> resolve(String id) async {
+    await _client.post('/discovery/places/${Uri.encodeComponent(id)}/resolve');
+  }
+
   Future<void> save(String id) async {
     await _client.post('/user/places/${Uri.encodeComponent(id)}/save');
   }

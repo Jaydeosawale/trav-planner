@@ -209,6 +209,7 @@ class PlaceResponse(BaseModel):
 
     image_url: str | None
 
+    is_discovery: bool = False
     image_credit: str | None = None
     visiting_notes: str | None = None
 

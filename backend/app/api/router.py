@@ -129,3 +129,6 @@ api_router.include_router(
     prefix="/ai",
     tags=["AI"],
 )
+
+from app.services.discovery.router import router as discovery_router
+api_router.include_router(discovery_router, prefix='/discovery', tags=['Worldwide discovery'])

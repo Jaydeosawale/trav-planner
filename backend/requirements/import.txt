@@ -1,0 +1,2 @@
+# Local/offline regional processing only; not required by Render.
+osmium==4.3.1

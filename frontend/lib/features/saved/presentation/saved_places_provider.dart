@@ -41,6 +41,7 @@ class SavedPlacesController extends AsyncNotifier<List<TravelPlace>> {
       if (saved) {
         await api.remove(place.id);
       } else {
+        if (place.discovered) await api.resolve(place.id);
         await api.save(place.id);
       }
       if (ref.read(authProvider).user?.id != account) return;
