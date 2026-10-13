@@ -454,6 +454,8 @@ async def discover(db, city_id, kind="attraction"):
                 "status": "paused",
                 "message": "External discovery is paused.",
             }
+        # Release cleanup locks before a source cooldown may be written by another session.
+        await db.commit()
         try:
             items = await wikidata(city_id, lat, lon, kind)
             excluded = set()
