@@ -202,6 +202,7 @@ class PlaceRepository(BaseRepository[Place]):
 
                 filters.append(
     or_(
+        Place.city.has(City.name.ilike(search_pattern)),
         Place.name.ilike(
             search_pattern,
         ),

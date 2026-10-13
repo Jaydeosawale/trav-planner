@@ -41,7 +41,7 @@ def test_restarts_preserve_edits_deleted_places_and_stable_city_ids():
         entries = read_manifest()
         async with session() as db:
             additions = await bootstrap(db, entries)
-            assert additions == dict(countries=7, states=7, cities=7, destinations=7, places=7)
+            assert additions == dict(countries=7, states=7, cities=7, destinations=7, places=10)
             city = await db.scalar(select(City).where(City.name == 'Mumbai'))
             city.name = 'Mumbai edited'
             destination = await db.scalar(select(Destination).where(Destination.slug == 'mumbai'))
@@ -54,7 +54,7 @@ def test_restarts_preserve_edits_deleted_places_and_stable_city_ids():
             assert destination.description == 'Admin description'
             assert place.is_deleted
             assert city.name == 'Mumbai edited'
-            assert await db.scalar(select(func.count()).select_from(Place)) == 7
+            assert await db.scalar(select(func.count()).select_from(Place)) == 10
         await engine.dispose()
     asyncio.run(check())
 
@@ -71,5 +71,32 @@ def test_inactive_country_does_not_receive_new_children():
             db.add(Country(**entry['country'], is_active=False))
             await db.commit()
             assert all(value == 0 for value in (await bootstrap(db, [entry])).values())
+        await engine.dispose()
+    asyncio.run(check())
+
+
+def test_photo_provenance_and_enrichment_preserve_admin_changes():
+    entries=read_manifest()
+    photos=[p['photo'] for e in entries for p in e['places'] if p.get('photo')]
+    assert len(photos)==9
+    assert all(photo['author'] and photo['license_url'] and photo['source_url'] for photo in photos)
+    async def check():
+        engine=create_async_engine('sqlite+aiosqlite:///:memory:')
+        async with engine.begin() as conn:
+            for table in [Country.__table__,State.__table__,City.__table__,Destination.__table__,Place.__table__]:
+                await conn.run_sync(lambda connection,table=table:table.create(connection))
+        sessions=async_sessionmaker(engine,expire_on_commit=False)
+        async with sessions() as db:
+            await bootstrap(db,entries)
+            place=await db.scalar(select(Place).where(Place.slug=='eiffel-tower'))
+            place.content_revision=None;place.description=next(p for e in entries for p in e['places'] if p['slug']=='eiffel-tower')['previous_description'];place.image_url=None;place.image_credit=None
+            await db.commit();await bootstrap(db,entries)
+            assert place.image_url and place.image_credit
+            place.description='Admin custom text';place.image_url=None
+            await db.commit();await bootstrap(db,entries)
+            assert place.description=='Admin custom text' and place.image_url is None
+            from app.modules.place.repository import PlaceRepository
+            places,total=await PlaceRepository().search(db,search='Paris')
+            assert total==4
         await engine.dispose()
     asyncio.run(check())

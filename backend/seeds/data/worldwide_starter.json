@@ -1,6 +1,6 @@
 {
-  "version": 1,
-  "note": "Small starter coverage; city time zones are used as country display defaults, not complete country time-zone lists. Coordinates are sourced from CC0 Wikidata structured records. Photos remain unset until licensed assets are reviewed.",
+  "version": 2,
+  "note": "Small reviewed starter coverage. Coordinates are sourced from CC0 Wikidata. Individual photo licences, authors and sources are recorded. Live prices and opening hours are not included.",
   "destinations": [
     {
       "country": {
@@ -42,7 +42,9 @@
           "checked_on": "2026-10-11",
           "slug": "gateway-of-india",
           "type": "heritage",
-          "description": "A waterfront monument in Mumbai’s Colaba area."
+          "description": "The Gateway of India stands on the waterfront in Mumbai’s Colaba area. Its arch and harbour setting make it a natural stop for a waterfront walk.",
+          "previous_description": "A waterfront monument in Mumbai’s Colaba area.",
+          "visiting_notes": "Explore the waterfront and surrounding Colaba streets at your own pace. Check official arrangements before adding a ferry journey; this listing does not confirm departures or tickets."
         }
       ]
     },
@@ -86,7 +88,98 @@
           "checked_on": "2026-10-11",
           "slug": "eiffel-tower",
           "type": "landmark",
-          "description": "Paris’s landmark tower beside the Champ de Mars."
+          "description": "The Eiffel Tower is a landmark beside the Champ de Mars in Paris. A visit can focus on the surrounding gardens and views from ground level, or on a separately arranged tower visit.",
+          "photo": {
+            "url": "https://jaydeo-trav-planner.vercel.app/catalogue/photos/Q243.jpg",
+            "author": "Benh LIEU SONG",
+            "attribution": "",
+            "license": "Public domain",
+            "license_url": "https://creativecommons.org/publicdomain/mark/1.0/",
+            "source_url": "https://commons.wikimedia.org/wiki/File:Tour_Eiffel_Wikimedia_Commons.jpg",
+            "filename": "Tour Eiffel Wikimedia Commons.jpg",
+            "checked_on": "2026-10-13",
+            "changes": "Wikimedia thumbnail; resized and cropped for display"
+          },
+          "previous_description": "Paris’s landmark tower beside the Champ de Mars.",
+          "visiting_notes": "Choose a garden walk or tower visit before building the rest of your day. Check current entry rules, ticket availability and opening hours with the attraction."
+        },
+        {
+          "name": "Louvre Museum",
+          "wikidata_id": "Q19675",
+          "latitude": 48.861111111111114,
+          "longitude": 2.3358333333333334,
+          "source_revision": 2555868515,
+          "source_url": "https://www.wikidata.org/wiki/Q19675",
+          "source_license": "CC0-1.0",
+          "checked_on": "2026-10-13",
+          "slug": "louvre-museum",
+          "type": "museum",
+          "description": "The Louvre Museum in Paris houses art and archaeology collections in the Louvre palace. Visitors can choose between the exterior courtyards and a museum visit focused on selected galleries.",
+          "photo": {
+            "url": "https://jaydeo-trav-planner.vercel.app/catalogue/photos/Q19675.jpg",
+            "author": "Benh LIEU SONG",
+            "attribution": "",
+            "license": "CC BY 2.5",
+            "license_url": "https://creativecommons.org/licenses/by/2.5",
+            "source_url": "https://commons.wikimedia.org/wiki/File:Cour_Napol%C3%A9on_at_night_-_Louvre.jpg",
+            "filename": "Cour Napoléon at night - Louvre.jpg",
+            "checked_on": "2026-10-13",
+            "changes": "Wikimedia thumbnail; resized and cropped for display"
+          },
+          "previous_description": "An art and archaeology museum in Paris, with collections housed in the Louvre palace.",
+          "visiting_notes": "Choose a small set of galleries or an outdoor visit to keep the day manageable. Verify the current entry arrangements, tickets and museum hours before travel."
+        },
+        {
+          "name": "Musée d'Orsay",
+          "wikidata_id": "Q23402",
+          "latitude": 48.859972,
+          "longitude": 2.326527,
+          "source_revision": 2544021779,
+          "source_url": "https://www.wikidata.org/wiki/Q23402",
+          "source_license": "CC0-1.0",
+          "checked_on": "2026-10-13",
+          "slug": "musee-dorsay",
+          "type": "museum",
+          "description": "The Musée d’Orsay in Paris occupies a former railway station beside the Seine. It is known for its nineteenth-century art collections and the character of the station building.",
+          "photo": {
+            "url": "https://jaydeo-trav-planner.vercel.app/catalogue/photos/Q23402.jpg",
+            "author": "Sanchezn",
+            "attribution": "I, Sanchezn",
+            "license": "CC BY-SA 3.0",
+            "license_url": "http://creativecommons.org/licenses/by-sa/3.0/",
+            "source_url": "https://commons.wikimedia.org/wiki/File:MuseeDOrsay.jpg",
+            "filename": "MuseeDOrsay.jpg",
+            "checked_on": "2026-10-13",
+            "changes": "Wikimedia thumbnail; resized and cropped for display"
+          },
+          "previous_description": "An art museum on the Seine, housed in a former railway station and known for its nineteenth-century collections.",
+          "visiting_notes": "Allow time for the collections that interest you rather than combining too many museums in one day. Check current exhibition details, entry rules and hours with the museum."
+        },
+        {
+          "name": "Notre-Dame de Paris",
+          "wikidata_id": "Q2981",
+          "latitude": 48.853,
+          "longitude": 2.3498,
+          "source_revision": 2541783077,
+          "source_url": "https://www.wikidata.org/wiki/Q2981",
+          "source_license": "CC0-1.0",
+          "checked_on": "2026-10-13",
+          "slug": "notre-dame-de-paris",
+          "type": "heritage",
+          "description": "Notre-Dame de Paris is a Gothic cathedral on the Île de la Cité. Its riverside setting makes it a useful landmark when exploring the historic centre of Paris.",
+          "photo": {
+            "url": "https://jaydeo-trav-planner.vercel.app/catalogue/photos/Q2981.jpg",
+            "author": "P e z i",
+            "attribution": "Peter Haas",
+            "license": "CC BY-SA 3.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+            "source_url": "https://commons.wikimedia.org/wiki/File:Notre-Dame_de_Paris_2013-07-24.jpg",
+            "filename": "Notre-Dame de Paris 2013-07-24.jpg",
+            "checked_on": "2026-10-13",
+            "changes": "Wikimedia thumbnail; resized and cropped for display"
+          },
+          "previous_description": "A Gothic cathedral on the Île de la Cité in central Paris.",
+          "visiting_notes": "Check current visitor access and reservation requirements with the cathedral. Distinguish an exterior walk from any interior or separately ticketed visit when planning your day."
         }
       ]
     },
@@ -130,7 +223,20 @@
           "checked_on": "2026-10-11",
           "slug": "senso-ji",
           "type": "heritage",
-          "description": "A Buddhist temple in Tokyo’s Asakusa district."
+          "description": "Sensō-ji is a Buddhist temple in Tokyo’s Asakusa district. The temple approach and surrounding streets offer a distinctive stop for visitors exploring this part of the city.",
+          "photo": {
+            "url": "https://jaydeo-trav-planner.vercel.app/catalogue/photos/Q615183.jpg",
+            "author": "Akonnchiroll",
+            "attribution": "",
+            "license": "CC0",
+            "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+            "source_url": "https://commons.wikimedia.org/wiki/File:Sensoji_2023.jpg",
+            "filename": "Sensoji 2023.jpg",
+            "checked_on": "2026-10-13",
+            "changes": "Wikimedia thumbnail; resized and cropped for display"
+          },
+          "previous_description": "A Buddhist temple in Tokyo’s Asakusa district.",
+          "visiting_notes": "Treat worship areas respectfully and check any current visitor restrictions. Leave room for a walk around Asakusa rather than treating the temple as a quick photo stop."
         }
       ]
     },
@@ -174,7 +280,20 @@
           "checked_on": "2026-10-11",
           "slug": "statue-of-liberty",
           "type": "landmark",
-          "description": "The landmark statue on Liberty Island in New York Harbor."
+          "description": "The Statue of Liberty is a landmark on Liberty Island in New York Harbor. Viewing it from the waterfront and visiting the island are different experiences that require different plans.",
+          "photo": {
+            "url": "https://jaydeo-trav-planner.vercel.app/catalogue/photos/Q9202.jpg",
+            "author": "Christian David",
+            "attribution": "",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+            "source_url": "https://commons.wikimedia.org/wiki/File:Statue_of_Liberty_and_a_sightseeing_boat,_Liberty_Island,_New_York.jpg",
+            "filename": "Statue of Liberty and a sightseeing boat, Liberty Island, New York.jpg",
+            "checked_on": "2026-10-13",
+            "changes": "Wikimedia thumbnail; resized and cropped for display"
+          },
+          "previous_description": "The landmark statue on Liberty Island in New York Harbor.",
+          "visiting_notes": "Confirm the authorised ferry, security procedures and the type of access included in a ticket. This catalogue entry does not include a ferry reservation."
         }
       ]
     },
@@ -218,7 +337,20 @@
           "checked_on": "2026-10-11",
           "slug": "sydney-opera-house",
           "type": "culture",
-          "description": "A performing arts venue on Sydney Harbour’s Bennelong Point."
+          "description": "The Sydney Opera House stands on Bennelong Point beside Sydney Harbour. Its distinctive roof forms and waterfront setting can be enjoyed from outside, while tours and performances require separate planning.",
+          "photo": {
+            "url": "https://jaydeo-trav-planner.vercel.app/catalogue/photos/Q45178.jpg",
+            "author": "W. Bulach",
+            "attribution": "",
+            "license": "CC BY-SA 4.0",
+            "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+            "source_url": "https://commons.wikimedia.org/wiki/File:00_1375_Sydney_Opera_House_(Australia).jpg",
+            "filename": "00 1375 Sydney Opera House (Australia).jpg",
+            "checked_on": "2026-10-13",
+            "changes": "Wikimedia thumbnail; resized and cropped for display"
+          },
+          "previous_description": "A performing arts venue on Sydney Harbour’s Bennelong Point.",
+          "visiting_notes": "Decide whether you want a waterfront walk, an interior tour or a performance. Check the official programme and availability before adding a paid activity."
         }
       ]
     },
@@ -262,7 +394,20 @@
           "checked_on": "2026-10-11",
           "slug": "table-mountain",
           "type": "nature",
-          "description": "The flat-topped mountain overlooking Cape Town. This pin marks the mountain, not a trailhead or road entrance."
+          "description": "Table Mountain overlooks Cape Town and forms a prominent part of its landscape. Views, walking routes and access options depend on the route and conditions chosen.",
+          "photo": {
+            "url": "https://jaydeo-trav-planner.vercel.app/catalogue/photos/Q213360.jpg",
+            "author": "Danie van der Merwe from Cape Town, South Africa",
+            "attribution": "",
+            "license": "CC BY 2.0",
+            "license_url": "https://creativecommons.org/licenses/by/2.0",
+            "source_url": "https://commons.wikimedia.org/wiki/File:Table_Mountain_DanieVDM.jpg",
+            "filename": "Table Mountain DanieVDM.jpg",
+            "checked_on": "2026-10-13",
+            "changes": "Wikimedia thumbnail; resized and cropped for display"
+          },
+          "previous_description": "The flat-topped mountain overlooking Cape Town. This pin marks the mountain, not a trailhead or road entrance.",
+          "visiting_notes": "Check current weather, route conditions and any cableway operating information before setting out. Choose a route that suits your experience; a map pin alone is not a hiking route."
         }
       ]
     },
@@ -306,7 +451,20 @@
           "checked_on": "2026-10-11",
           "slug": "christ-the-redeemer",
           "type": "landmark",
-          "description": "The Christ the Redeemer statue on Corcovado in Rio de Janeiro."
+          "description": "Christ the Redeemer stands on Corcovado above Rio de Janeiro. A visit combines the monument with views over the surrounding city and landscape.",
+          "photo": {
+            "url": "https://jaydeo-trav-planner.vercel.app/catalogue/photos/Q79961.jpg",
+            "author": "Arne Müseler",
+            "attribution": "Arne Müseler / www.arne-mueseler.com",
+            "license": "CC BY-SA 3.0 de",
+            "license_url": "https://creativecommons.org/licenses/by-sa/3.0/de/deed.en",
+            "source_url": "https://commons.wikimedia.org/wiki/File:Christ_the_Redeemer_-_Cristo_Redentor.jpg",
+            "filename": "Christ the Redeemer - Cristo Redentor.jpg",
+            "checked_on": "2026-10-13",
+            "changes": "Wikimedia thumbnail; resized and cropped for display"
+          },
+          "previous_description": "The Christ the Redeemer statue on Corcovado in Rio de Janeiro.",
+          "visiting_notes": "Check official access options, ticket arrangements and current conditions. Leave time for the journey to and from the monument rather than scheduling only the viewpoint."
         }
       ]
     }

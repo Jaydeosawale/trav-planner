@@ -163,6 +163,10 @@ class Place(
     # External Provider
     # ==========================================================
 
+    image_credit: Mapped[str | None] = mapped_column(Text, nullable=True)
+    visiting_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    content_revision: Mapped[str | None] = mapped_column(String(30), nullable=True)
+
     provider: Mapped[str | None] = mapped_column(
         String(50),
         nullable=True,

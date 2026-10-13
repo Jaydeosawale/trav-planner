@@ -69,6 +69,7 @@ class PlaceSearchTool(Tool):
                     "place_type": place.place_type,
                     "short_description": place.short_description,
                     "description": place.description,
+                    "visiting_notes": place.visiting_notes,
                     "address": place.address,
                     "locality": place.locality,
                     "latitude": (

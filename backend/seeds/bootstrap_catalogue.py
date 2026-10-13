@@ -41,6 +41,9 @@ def read_manifest(path: Path = MANIFEST) -> list[dict]:
                 raise ValueError('Catalogue source required')
             if record.get('source_license') != 'CC0-1.0':
                 raise ValueError('Reviewed catalogue licence required')
+            photo = record.get('photo')
+            if photo and (not photo.get('author') or not photo.get('license') or not photo.get('source_url', '').startswith('https://commons.wikimedia.org/') or not photo.get('url', '').startswith('https://jaydeo-trav-planner.vercel.app/catalogue/photos/')):
+                raise ValueError('Reviewed photo attribution required')
         for slug in [entry['slug'], *(p['slug'] for p in entry['places'])]:
             if slug in slugs:
                 raise ValueError('Duplicate catalogue slug')
@@ -108,11 +111,22 @@ async def bootstrap(db: AsyncSession, entries: list[dict]) -> dict[str, int]:
                     (Place.id == place_id) | (Place.slug == item['slug']) |
                     ((Place.provider == 'wikidata') & (Place.external_place_id == item['wikidata_id']))))
                 if place is not None:
+                    if not place.is_deleted and place.is_active and place.provider == 'wikidata' and place.content_revision is None:
+                        if place.description == item.get('previous_description'):
+                            place.description = item['description']
+                            place.visiting_notes = item.get('visiting_notes')
+                        if place.image_url is None and item.get('photo'):
+                            place.image_url = item['photo']['url']
+                            place.image_credit = json.dumps(item['photo'], ensure_ascii=False)
+                        place.content_revision = '2026-10-13'
                     continue
                 db.add(Place(id=place_id, city_id=city.id, name=item['name'], slug=item['slug'],
                     place_type=item['type'], short_description=item['description'],
                     description=item['description'], latitude=item['latitude'], longitude=item['longitude'],
                     provider='wikidata', external_place_id=item['wikidata_id'],
+                    visiting_notes=item.get('visiting_notes'), content_revision='2026-10-13',
+                    image_url=item.get('photo', {}).get('url'),
+                    image_credit=json.dumps(item['photo'], ensure_ascii=False) if item.get('photo') else None,
                     is_active=True, is_featured=True))
                 await db.flush()
                 counts['places'] += 1

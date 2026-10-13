@@ -282,6 +282,48 @@ class _DestinationDetailsPageState
                 borderRadius: BorderRadius.circular(20),
                 child: _PlaceImage(url: place.imageUrl, height: 190),
               ),
+              if (place.imageCredit != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  'Photo: ${place.imageCredit!['author']} · ${place.imageCredit!['license']}',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                if (place.imageCredit!['attribution']?.toString().isNotEmpty ==
+                    true)
+                  Text(
+                    place.imageCredit!['attribution'].toString(),
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                Text(
+                  place.imageCredit!['changes']?.toString() ?? '',
+                  style: const TextStyle(fontSize: 12),
+                ),
+                Wrap(
+                  children: [
+                    for (final item in {
+                      'Photo source': 'source_url',
+                      'Photo licence': 'license_url',
+                    }.entries)
+                      TextButton(
+                        onPressed: () {
+                          final uri = Uri.tryParse(
+                            place.imageCredit![item.value]?.toString() ?? '',
+                          );
+                          if (uri?.scheme == 'https') {
+                            launchUrl(
+                              uri!,
+                              mode: LaunchMode.externalApplication,
+                            );
+                          }
+                        },
+                        child: Text(item.key),
+                      ),
+                  ],
+                ),
+              ],
               const SizedBox(height: 16),
               Text(
                 place.name,
@@ -300,6 +342,15 @@ class _DestinationDetailsPageState
                     style: const TextStyle(height: 1.5),
                   ),
                 ),
+              if (place.visitingNotes?.isNotEmpty == true) ...[
+                const Text(
+                  'Plan your visit',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 8),
+                Text(place.visitingNotes!, style: const TextStyle(height: 1.5)),
+                const SizedBox(height: 12),
+              ],
               if (place.address?.isNotEmpty == true) Text(place.address!),
               const SizedBox(height: 20),
               SavePlaceButton(place: place),

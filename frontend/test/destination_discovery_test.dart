@@ -110,4 +110,30 @@ void main() {
     expect(find.text('Fort'), findsNothing);
     expect(tester.takeException(), isNull);
   });
+  testWidgets('place details show visiting notes and photo provenance', (
+    tester,
+  ) async {
+    await show(tester, const [
+      TravelPlace(
+        id: 'museum',
+        name: 'Museum',
+        type: 'museum',
+        visitingNotes: 'Check current entry arrangements.',
+        imageCredit: {
+          'author': 'Photographer',
+          'license': 'CC BY 4.0',
+          'license_url': 'https://creativecommons.org/licenses/by/4.0/',
+          'source_url': 'https://commons.wikimedia.org/wiki/File:Example.jpg',
+        },
+      ),
+    ]);
+    await tester.tap(find.text('Museum'));
+    await tester.pumpAndSettle();
+    expect(find.text('Photo: Photographer · CC BY 4.0'), findsOneWidget);
+    expect(find.text('Photo source'), findsOneWidget);
+    expect(find.text('Photo licence'), findsOneWidget);
+    expect(find.text('Plan your visit'), findsOneWidget);
+    expect(find.text('Check current entry arrangements.'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }

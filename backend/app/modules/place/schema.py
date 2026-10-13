@@ -71,6 +71,9 @@ class PlaceCreate(BaseModel):
         max_length=500,
     )
 
+    image_credit: str | None = Field(default=None, max_length=6000)
+    visiting_notes: str | None = Field(default=None, max_length=3000)
+
     provider: str | None = Field(
         default=None,
         max_length=50,
@@ -150,6 +153,9 @@ class PlaceUpdate(BaseModel):
         max_length=500,
     )
 
+    image_credit: str | None = Field(default=None, max_length=6000)
+    visiting_notes: str | None = Field(default=None, max_length=3000)
+
     provider: str | None = Field(
         default=None,
         max_length=50,
@@ -202,6 +208,9 @@ class PlaceResponse(BaseModel):
     longitude: Decimal | None
 
     image_url: str | None
+
+    image_credit: str | None = None
+    visiting_notes: str | None = None
 
     provider: str | None
     external_place_id: str | None

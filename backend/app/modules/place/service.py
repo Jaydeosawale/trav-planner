@@ -131,6 +131,9 @@ class PlaceService(BaseService[Place]):
             exclude_unset=True,
         )
 
+        if 'image_url' in data and data['image_url'] != place.image_url and 'image_credit' not in data:
+            data['image_credit'] = None
+
         # ------------------------------------------------------
         # Name
         # ------------------------------------------------------

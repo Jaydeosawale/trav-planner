@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:latlong2/latlong.dart';
 
 LatLng? validCoordinates(dynamic latitude, dynamic longitude) {
@@ -22,6 +23,8 @@ class TravelPlace {
   final String? description, address, imageUrl;
   final LatLng? point;
   final bool featured;
+  final String? visitingNotes;
+  final Map<String, dynamic>? imageCredit;
   final Uri? source;
 
   const TravelPlace({
@@ -35,6 +38,8 @@ class TravelPlace {
     this.point,
     this.featured = false,
     this.source,
+    this.visitingNotes,
+    this.imageCredit,
   });
 
   factory TravelPlace.fromJson(Map<String, dynamic> json) => TravelPlace(
@@ -47,6 +52,8 @@ class TravelPlace {
     imageUrl: json['image_url']?.toString(),
     point: validCoordinates(json['latitude'], json['longitude']),
     featured: json['is_featured'] == true,
+    visitingNotes: json['visiting_notes']?.toString(),
+    imageCredit: _credits(json['image_credit']),
     source:
         json['provider'] == 'wikidata' &&
             RegExp(
@@ -55,4 +62,13 @@ class TravelPlace {
         ? Uri.https('www.wikidata.org', '/wiki/${json['external_place_id']}')
         : null,
   );
+}
+
+Map<String, dynamic>? _credits(dynamic value) {
+  try {
+    final decoded = value is String ? jsonDecode(value) : value;
+    return decoded is Map ? Map<String, dynamic>.from(decoded) : null;
+  } catch (_) {
+    return null;
+  }
 }
