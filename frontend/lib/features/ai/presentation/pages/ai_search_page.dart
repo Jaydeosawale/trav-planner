@@ -1,5 +1,10 @@
 import 'package:trav_planner/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/widgets/travel_markdown.dart';
+import '../../../trips/presentation/pages/trip_editor_page.dart';
+import '../../../trips/presentation/pages/trip_details_page.dart';
+import '../../../trips/presentation/pages/my_trips_page.dart';
 
 import '../../data/datasources/ai_api.dart';
 import '../../data/models/ai_response_model.dart';
@@ -17,6 +22,8 @@ class _AISearchPageState extends State<AISearchPage> {
   late final AIApi _api = widget.api ?? AIApi();
 
   bool _loading = false;
+  String? _savedTripId;
+  bool _reviewing = false;
   String? _error;
   String? _lastMessage;
   AIResponseModel? _response;
@@ -41,6 +48,7 @@ class _AISearchPageState extends State<AISearchPage> {
       _lastMessage = message;
       _error = null;
       _response = null;
+      _savedTripId = null;
     });
 
     try {
@@ -74,6 +82,37 @@ class _AISearchPageState extends State<AISearchPage> {
           _loading = false;
         });
       }
+    }
+  }
+
+  Future<void> _reviewPlan() async {
+    if (_reviewing || _response == null) return;
+    if (_savedTripId != null) {
+      await Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => TripDetailsPage(id: _savedTripId!)),
+      );
+      return;
+    }
+    setState(() => _reviewing = true);
+    try {
+      final trip = await Navigator.of(context).push<Map<String, dynamic>>(
+        MaterialPageRoute(
+          builder: (_) => TripEditorPage(
+            draftNotes:
+                'AI travel draft — check details before travel.\n\n${_response!.content}',
+          ),
+        ),
+      );
+      if (!mounted || trip == null) return;
+      final container = ProviderScope.containerOf(context, listen: false);
+      container.read(tripPageProvider.notifier).state = 1;
+      container.invalidate(myTripsProvider);
+      setState(() => _savedTripId = trip['id'].toString());
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Draft saved to My Trips.')));
+    } finally {
+      if (mounted) setState(() => _reviewing = false);
     }
   }
 
@@ -240,7 +279,28 @@ class _AISearchPageState extends State<AISearchPage> {
                 if (_error != null)
                   _ErrorCard(message: _error!, onRetry: _askAI),
 
-                if (_response != null) _ResponseCard(response: _response!),
+                if (_response != null) ...[
+                  _ResponseCard(response: _response!),
+                  const SizedBox(height: 16),
+                  FilledButton.icon(
+                    onPressed: _reviewing ? null : _reviewPlan,
+                    icon: Icon(
+                      _savedTripId == null
+                          ? Icons.bookmark_add_outlined
+                          : Icons.luggage_outlined,
+                    ),
+                    label: Text(
+                      _savedTripId == null
+                          ? 'Review & save to My Trips'
+                          : 'Open saved trip',
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'AI suggestions are a starting point. Check opening hours, prices and travel details before you go.',
+                    style: TextStyle(color: AppColors.textSecondary),
+                  ),
+                ],
               ],
             ),
           ),
@@ -372,14 +432,7 @@ class _ResponseCard extends StatelessWidget {
 
           const SizedBox(height: 16),
 
-          SelectableText(
-            response.content,
-            style: const TextStyle(
-              fontSize: 15,
-              height: 1.5,
-              color: AppColors.textPrimary,
-            ),
-          ),
+          TravelMarkdown(content: response.content),
         ],
       ),
     );

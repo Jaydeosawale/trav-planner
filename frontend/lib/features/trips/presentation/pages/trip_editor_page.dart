@@ -6,8 +6,9 @@ import '../../data/trips_api.dart';
 final tripsApiProvider = Provider<TripsApi>((ref) => TripsApi());
 
 class TripEditorPage extends ConsumerStatefulWidget {
-  const TripEditorPage({super.key, this.trip});
+  const TripEditorPage({super.key, this.trip, this.draftNotes});
   final Map<String, dynamic>? trip;
+  final String? draftNotes;
   @override
   ConsumerState<TripEditorPage> createState() => _TripEditorPageState();
 }
@@ -34,7 +35,7 @@ class _TripEditorPageState extends ConsumerState<TripEditorPage> {
     _travelers.text = (trip['travelers'] ?? 1).toString();
     _budget.text = trip['budget_amount']?.toString() ?? '';
     _currency.text = trip['budget_currency']?.toString() ?? 'INR';
-    _notes.text = trip['notes']?.toString() ?? '';
+    _notes.text = trip['notes']?.toString() ?? widget.draftNotes ?? '';
     _start = DateTime.tryParse(trip['start_date']?.toString() ?? '');
     _end = DateTime.tryParse(trip['end_date']?.toString() ?? '');
     _status = trip['status']?.toString() ?? 'planned';
@@ -149,7 +150,13 @@ class _TripEditorPageState extends ConsumerState<TripEditorPage> {
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
-      title: Text(widget.trip == null ? 'Create a trip' : 'Edit trip'),
+      title: Text(
+        widget.draftNotes != null
+            ? 'Review AI draft'
+            : widget.trip == null
+            ? 'Create a trip'
+            : 'Edit trip',
+      ),
     ),
     body: SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -162,9 +169,17 @@ class _TripEditorPageState extends ConsumerState<TripEditorPage> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  'Make room for adventure.',
+                  widget.draftNotes != null
+                      ? 'Make this plan yours.'
+                      : 'Make room for adventure.',
                   style: Theme.of(context).textTheme.headlineMedium,
                 ),
+                if (widget.draftNotes != null) ...[
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Review the draft notes below, then choose a destination and dates. This saves the suggestion to My Trips; day-by-day activities can be added separately.',
+                  ),
+                ],
                 const SizedBox(height: 24),
                 if (_error != null) ...[
                   Semantics(
@@ -319,11 +334,15 @@ class _TripEditorPageState extends ConsumerState<TripEditorPage> {
                   ),
                 const SizedBox(height: 18),
                 TextFormField(
+                  key: const ValueKey('trip-notes'),
                   controller: _notes,
                   enabled: !_saving,
                   minLines: 2,
                   maxLines: 4,
-                  maxLength: 2000,
+                  maxLength: 30000,
+                  validator: (value) => (value?.length ?? 0) > 30000
+                      ? 'Shorten the notes to 30,000 characters before saving.'
+                      : null,
                   decoration: const InputDecoration(labelText: 'Trip notes'),
                 ),
                 const SizedBox(height: 20),

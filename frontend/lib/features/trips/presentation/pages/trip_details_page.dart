@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../core/widgets/travel_markdown.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
@@ -74,7 +75,9 @@ class TripDetailsPage extends ConsumerWidget {
                               if (trip['notes']?.toString().isNotEmpty ==
                                   true) ...[
                                 const SizedBox(height: 12),
-                                SelectableText(trip['notes'].toString()),
+                                TravelMarkdown(
+                                  content: trip['notes'].toString(),
+                                ),
                               ],
                             ],
                           ),
