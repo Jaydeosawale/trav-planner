@@ -36,3 +36,5 @@ __all__ = [
     "AIBillingAuditLog",
 ]
 from app.services.ai.routing import AIRoutingSettings
+
+from app.services.ai.conversations import PlannerConversation

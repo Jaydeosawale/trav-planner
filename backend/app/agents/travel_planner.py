@@ -363,6 +363,7 @@ Return a concise and useful response.
                 },
             )
 
+        planner_request = context.data.get("planner_prompt", request)
         tools = self._get_tool_schemas()
 
         temperature = kwargs.get(
@@ -381,7 +382,7 @@ Return a concise and useful response.
 
         gateway_response, response = (
             await self._gateway.generate_with_tools(
-                request,
+                planner_request,
                 tools=tools,
                 system_prompt=self.system_prompt,
                 temperature=temperature,
@@ -493,7 +494,7 @@ Return a concise and useful response.
                 system_prompt=self.system_prompt,
                 temperature=temperature,
                 max_output_tokens=max_output_tokens,
-                original_prompt=request,
+                original_prompt=planner_request,
             )
 
         except Exception as exc:

@@ -2,6 +2,7 @@ import 'package:trav_planner/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/widgets/travel_markdown.dart';
+import 'trip_brief_page.dart';
 import '../../../trips/presentation/pages/trip_editor_page.dart';
 import '../../../trips/presentation/pages/trip_details_page.dart';
 import '../../../trips/presentation/pages/my_trips_page.dart';
@@ -23,6 +24,7 @@ class _AISearchPageState extends State<AISearchPage> {
 
   bool _loading = false;
   String? _savedTripId;
+  Map<String, dynamic>? _session;
   bool _reviewing = false;
   String? _error;
   String? _lastMessage;
@@ -52,7 +54,16 @@ class _AISearchPageState extends State<AISearchPage> {
     });
 
     try {
-      final response = await _api.chat(message: message);
+      final response = await _api.chat(
+        message: message,
+        sessionId: _session?['id']?.toString(),
+      );
+      Map<String, dynamic>? refreshed;
+      if (response.success && _session != null) {
+        try {
+          refreshed = await _api.session(_session!['id'].toString());
+        } catch (_) {}
+      }
 
       if (!mounted) {
         return;
@@ -61,6 +72,7 @@ class _AISearchPageState extends State<AISearchPage> {
       setState(() {
         if (response.success) {
           _response = response;
+          if (refreshed != null) _session = refreshed;
         } else {
           _error = response.content.isNotEmpty
               ? response.content
@@ -81,6 +93,129 @@ class _AISearchPageState extends State<AISearchPage> {
         setState(() {
           _loading = false;
         });
+      }
+    }
+  }
+
+  Future<void> _editBrief({bool newPlan = false}) async {
+    if (_loading) return;
+    final result = await Navigator.of(context).push<Map<String, dynamic>>(
+      MaterialPageRoute(
+        builder: (_) =>
+            TripBriefPage(api: _api, session: newPlan ? null : _session),
+      ),
+    );
+    if (mounted && result != null) {
+      setState(() {
+        _session = result;
+        if (newPlan) {
+          _response = null;
+          _lastMessage = null;
+          _savedTripId = null;
+          _controller.clear();
+        }
+        _error = null;
+      });
+    }
+  }
+
+  Future<void> _recentPlans() async {
+    if (_loading) return;
+    try {
+      final plans = await _api.sessions();
+      if (!mounted) return;
+      final id = await showDialog<String>(
+        context: context,
+        builder: (context) => SimpleDialog(
+          title: const Text('Recent plans'),
+          children: plans.isEmpty
+              ? [
+                  const Padding(
+                    padding: EdgeInsets.all(24),
+                    child: Text('Save a trip brief to start a conversation.'),
+                  ),
+                ]
+              : plans
+                    .map(
+                      (plan) => SimpleDialogOption(
+                        onPressed: () =>
+                            Navigator.pop(context, plan['id'].toString()),
+                        child: Text(plan['title'].toString()),
+                      ),
+                    )
+                    .toList(),
+        ),
+      );
+      if (id == null) return;
+      final saved = await _api.session(id);
+      if (!mounted) return;
+      final turns = saved['turns'] as List? ?? [];
+      setState(() {
+        _session = saved;
+        _savedTripId = null;
+        _error = null;
+        _controller.clear();
+        _lastMessage = turns.length >= 2
+            ? turns[turns.length - 2]['content'].toString()
+            : null;
+        _response = turns.isNotEmpty
+            ? AIResponseModel(
+                success: true,
+                content: turns.last['content'].toString(),
+                agent: 'travel_planning',
+                data: {},
+                metadata: {},
+              )
+            : null;
+      });
+    } catch (_) {
+      if (mounted) {
+        setState(
+          () => _error = 'Couldn’t reopen your plans. Please try again.',
+        );
+      }
+    }
+  }
+
+  Future<void> _forgetPlan() async {
+    if (_session == null || _loading) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Forget this conversation?'),
+        content: const Text(
+          'This permanently removes its saved brief and recent messages. Trips already saved to My Trips stay available.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Keep'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Forget'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    try {
+      await _api.forgetSession(_session!['id'].toString());
+      if (mounted) {
+        setState(() {
+          _session = null;
+          _response = null;
+          _lastMessage = null;
+          _savedTripId = null;
+          _controller.clear();
+          _error = null;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(
+          () => _error = 'Couldn’t forget this conversation. Please try again.',
+        );
       }
     }
   }
@@ -185,6 +320,50 @@ class _AISearchPageState extends State<AISearchPage> {
 
                 const SizedBox(height: 28),
 
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    OutlinedButton.icon(
+                      onPressed: _loading
+                          ? null
+                          : () => _editBrief(newPlan: true),
+                      icon: const Icon(Icons.add),
+                      label: const Text('New plan'),
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: _loading ? null : _recentPlans,
+                      icon: const Icon(Icons.history),
+                      label: const Text('Recent plans'),
+                    ),
+                    if (_session != null)
+                      OutlinedButton.icon(
+                        onPressed: _loading ? null : _editBrief,
+                        icon: const Icon(Icons.tune),
+                        label: const Text('Edit brief'),
+                      ),
+                    if (_session != null)
+                      TextButton(
+                        onPressed: _loading ? null : _forgetPlan,
+                        child: const Text('Forget conversation'),
+                      ),
+                  ],
+                ),
+                if (_session != null) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    _session!['title'].toString(),
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  Text(
+                    (_session!['brief'] as Map).entries
+                        .where((e) => e.value.toString().isNotEmpty)
+                        .map((e) => '${e.key}: ${e.value}')
+                        .join(' · '),
+                    style: const TextStyle(color: AppColors.textSecondary),
+                  ),
+                ],
+                const SizedBox(height: 16),
                 TextField(
                   controller: _controller,
                   enabled: !_loading,
