@@ -195,6 +195,9 @@ class GeminiProvider(LLMProvider):
             ),
         )
 
+        if kwargs.get("json_mode"):
+            config.response_mime_type = "application/json"
+
         if system_prompt:
             config.system_instruction = system_prompt
 

@@ -354,6 +354,7 @@ class GroqProvider(LLMProvider):
                     model=self._model,
                     messages=messages,
                     temperature=temperature,
+                    **({"response_format": {"type": "json_object"}} if kwargs.get("json_mode") else {}),
                     **self._generation_options(max_output_tokens),
                 )
             )

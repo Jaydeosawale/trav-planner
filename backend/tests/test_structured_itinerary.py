@@ -313,3 +313,32 @@ def test_additive_draft_migration_preserves_existing_trips(monkeypatch):
             == "Keep me"
         )
     engine.dispose()
+
+
+@pytest.mark.asyncio
+async def test_json_mode_is_opt_in_on_existing_free_providers():
+    from app.integrations.llm.groq import GroqProvider
+    from app.integrations.llm.gemini import GeminiProvider
+    groq = object.__new__(GroqProvider)
+    groq._model = 'llama-3.3-70b-versatile'
+    groq._quota_manager = None
+    seen = []
+    async def completion(**kwargs):
+        seen.append(kwargs)
+        return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content='{}'))])
+    groq._client = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=completion)))
+    await groq.generate('Return JSON', json_mode=True)
+    assert seen[-1]['response_format'] == {'type': 'json_object'}
+    await groq.generate('Plain chat')
+    assert 'response_format' not in seen[-1]
+    gemini = object.__new__(GeminiProvider)
+    gemini._model = 'gemini-3-flash-preview'
+    gemini._quota_manager = None
+    async def content(**kwargs):
+        seen.append(kwargs)
+        return SimpleNamespace(text='{}', candidates=[])
+    gemini._client = SimpleNamespace(aio=SimpleNamespace(models=SimpleNamespace(generate_content=content)))
+    await gemini.generate('Return JSON', json_mode=True)
+    assert seen[-1]['config'].response_mime_type == 'application/json'
+    await gemini.generate('Plain chat')
+    assert seen[-1]['config'].response_mime_type is None
