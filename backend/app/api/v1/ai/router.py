@@ -122,3 +122,6 @@ async def forget_session(session_id: str, current_user: User = Depends(get_curre
     await db.delete(row)
     await db.commit()
     return {'forgotten': True}
+
+from .structured_router import router as structured_router
+router.include_router(structured_router)

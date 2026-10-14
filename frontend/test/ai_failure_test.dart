@@ -24,6 +24,8 @@ void main() {
   ) async {
     await tester.pumpWidget(MaterialApp(home: AISearchPage(api: FailedAI())));
     await tester.enterText(find.byType(TextField), 'Plan Paris');
+    await tester.ensureVisible(find.byTooltip('Send message'));
+    await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('Send message'));
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('AI request failed'));

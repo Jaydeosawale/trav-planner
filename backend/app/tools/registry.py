@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from app.tools.nearby_places import NearbyPlacesTool
 from app.tools.base import Tool
 from app.tools.map_routing import MapRoutingTool
 from app.tools.place_search import PlaceSearchTool
@@ -22,9 +23,7 @@ class ToolRegistry:
         """
 
         if tool.name in self._tools:
-            raise ValueError(
-                f"Tool '{tool.name}' is already registered."
-            )
+            raise ValueError(f"Tool '{tool.name}' is already registered.")
 
         self._tools[tool.name] = tool
 
@@ -36,9 +35,7 @@ class ToolRegistry:
         try:
             return self._tools[name]
         except KeyError as exc:
-            raise KeyError(
-                f"Tool '{name}' is not registered."
-            ) from exc
+            raise KeyError(f"Tool '{name}' is not registered.") from exc
 
     def has(self, name: str) -> bool:
         """Return whether a tool is registered."""
@@ -63,12 +60,9 @@ def create_default_tool_registry() -> ToolRegistry:
 
     registry = ToolRegistry()
 
-    registry.register(
-        PlaceSearchTool()
-    )
+    registry.register(PlaceSearchTool())
 
-    registry.register(
-        MapRoutingTool()
-    )
+    registry.register(MapRoutingTool())
 
+    registry.register(NearbyPlacesTool())
     return registry

@@ -69,23 +69,16 @@ class TravelPlanningAgent(Agent):
                     "groq",
                     "gemini",
                 ],
-                paid_provider=(
-                    provider
-                    or self._settings.AI_PROVIDER
-                ),
+                paid_provider=(provider or self._settings.AI_PROVIDER),
             )
 
         # ------------------------------------------------------
         # TOOLS
         # ------------------------------------------------------
 
-        self._tool_registry = (
-            create_default_tool_registry()
-        )
+        self._tool_registry = create_default_tool_registry()
 
-        self._tool_executor = ToolExecutor(
-            self._tool_registry
-        )
+        self._tool_executor = ToolExecutor(self._tool_registry)
 
         self._orchestrator = TravelAIOrchestrator()
 
@@ -143,7 +136,7 @@ Important rules:
 
 5. Produce practical travel plans instead of generic descriptions.
 
-6. Use place_search when the user needs places.
+6. Use place_search when the user needs places. For nearby requests use nearby_places around verified coordinates from a place result. Never guess a user location. For "near me" without a supplied area, ask for a city or direct the user to the Places nearby button; precise location is not automatically available to you.
 
 7. Use map_routing when distance, travel time, directions or
    routing between coordinates is required.
@@ -176,11 +169,23 @@ Return a concise and useful response.
     ) -> list[dict[str, Any]]:
 
         return [
-
+            {
+                "name": "nearby_places",
+                "description": "Find stored places around verified coordinates from a place or user-selected location. Never guess the user location; ask for a city or direct the user to Places nearby.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "latitude": {"type": "number"},
+                        "longitude": {"type": "number"},
+                        "radius_km": {"type": "number"},
+                        "kind": {"type": "string"},
+                    },
+                    "required": ["latitude", "longitude"],
+                },
+            },
             # ==================================================
             # PLACE SEARCH
             # ==================================================
-
             {
                 "name": "place_search",
                 "description": (
@@ -230,19 +235,15 @@ Return a concise and useful response.
                         },
                         "size": {
                             "type": "integer",
-                            "description": (
-                                "Number of results to return."
-                            ),
+                            "description": ("Number of results to return."),
                             "default": 10,
                         },
                     },
                 },
             },
-
             # ==================================================
             # MAP ROUTING
             # ==================================================
-
             {
                 "name": "map_routing",
                 "description": (
@@ -256,27 +257,19 @@ Return a concise and useful response.
                     "properties": {
                         "origin_latitude": {
                             "type": "number",
-                            "description": (
-                                "Latitude of the starting location."
-                            ),
+                            "description": ("Latitude of the starting location."),
                         },
                         "origin_longitude": {
                             "type": "number",
-                            "description": (
-                                "Longitude of the starting location."
-                            ),
+                            "description": ("Longitude of the starting location."),
                         },
                         "destination_latitude": {
                             "type": "number",
-                            "description": (
-                                "Latitude of the destination."
-                            ),
+                            "description": ("Latitude of the destination."),
                         },
                         "destination_longitude": {
                             "type": "number",
-                            "description": (
-                                "Longitude of the destination."
-                            ),
+                            "description": ("Longitude of the destination."),
                         },
                     },
                     "required": [
@@ -312,42 +305,29 @@ Return a concise and useful response.
             "intent_confidence": orchestration.query.confidence,
             "agents": orchestration.agent_plan.agents,
             "tools": orchestration.agent_plan.tools,
-            "response_type": (
-                orchestration.agent_plan.response_type.value
-            ),
+            "response_type": (orchestration.agent_plan.response_type.value),
             "retrieval": {
                 "use_postgres": orchestration.retrieval.use_postgres,
                 "use_vector": orchestration.retrieval.use_vector,
                 "use_bm25": orchestration.retrieval.use_bm25,
                 "use_reranker": orchestration.retrieval.use_reranker,
-                "use_google_places": (
-                    orchestration.retrieval.use_google_places
-                ),
+                "use_google_places": (orchestration.retrieval.use_google_places),
                 "use_osm": orchestration.retrieval.use_osm,
                 "use_maps": orchestration.retrieval.use_maps,
                 "use_weather": orchestration.retrieval.use_weather,
-                "use_official_sources": (
-                    orchestration.retrieval.use_official_sources
-                ),
-                "must_be_fresh": (
-                    orchestration.retrieval.must_be_fresh
-                ),
+                "use_official_sources": (orchestration.retrieval.use_official_sources),
+                "must_be_fresh": (orchestration.retrieval.must_be_fresh),
             },
             "missing_slots": orchestration.query.missing_slots,
         }
 
-        if (
-            orchestration.query.intent
-            == Intent.BOOKING_ACTION
-            and not kwargs.get("confirmed")
+        if orchestration.query.intent == Intent.BOOKING_ACTION and not kwargs.get(
+            "confirmed"
         ):
             return AgentResponse(
                 content=(
                     orchestration.agent_plan.clarification_question
-                    or (
-                        "Please confirm the exact booking action "
-                        "before I continue."
-                    )
+                    or ("Please confirm the exact booking action " "before I continue.")
                 ),
                 agent=self.name,
                 success=False,
@@ -356,9 +336,7 @@ Return a concise and useful response.
                 },
                 metadata={
                     **orchestration_metadata,
-                    "action_status": (
-                        "blocked_pending_confirmation"
-                    ),
+                    "action_status": ("blocked_pending_confirmation"),
                     "tools_used": [],
                 },
             )
@@ -380,14 +358,12 @@ Return a concise and useful response.
         # FIRST LLM CALL THROUGH GATEWAY
         # ======================================================
 
-        gateway_response, response = (
-            await self._gateway.generate_with_tools(
-                planner_request,
-                tools=tools,
-                system_prompt=self.system_prompt,
-                temperature=temperature,
-                max_output_tokens=max_output_tokens,
-            )
+        gateway_response, response = await self._gateway.generate_with_tools(
+            planner_request,
+            tools=tools,
+            system_prompt=self.system_prompt,
+            temperature=temperature,
+            max_output_tokens=max_output_tokens,
         )
 
         # ======================================================
@@ -403,19 +379,11 @@ Return a concise and useful response.
                 data={},
                 metadata={
                     "mode": gateway_response.mode,
-                    "provider": (
-                        gateway_response.provider
-                    ),
+                    "provider": (gateway_response.provider),
                     "reason": gateway_response.reason,
-                    "reset_provider": (
-                        gateway_response.reset_provider
-                    ),
-                    "reset_minutes": (
-                        gateway_response.reset_minutes
-                    ),
-                    "billing_enabled": (
-                        self._gateway.billing_policy.paid_enabled
-                    ),
+                    "reset_provider": (gateway_response.reset_provider),
+                    "reset_minutes": (gateway_response.reset_minutes),
+                    "billing_enabled": (self._gateway.billing_policy.paid_enabled),
                     "tools_used": [],
                     "orchestration": orchestration_metadata,
                 },
@@ -427,8 +395,7 @@ Return a concise and useful response.
 
             return AgentResponse(
                 content=(
-                    "The AI provider was selected, but "
-                    "no response was returned."
+                    "The AI provider was selected, but " "no response was returned."
                 ),
                 agent=self.name,
                 success=False,
@@ -505,10 +472,7 @@ Return a concise and useful response.
             # Quota / provider exhaustion
             # --------------------------------------------------
 
-            if (
-                "429" in error_message
-                or "RESOURCE_EXHAUSTED" in error_message
-            ):
+            if "429" in error_message or "RESOURCE_EXHAUSTED" in error_message:
 
                 return AgentResponse(
                     content=(
@@ -525,10 +489,7 @@ Return a concise and useful response.
                     metadata={
                         "provider": response.provider,
                         "model": response.model,
-                        "tools_used": [
-                            call.name
-                            for call in response.tool_calls
-                        ],
+                        "tools_used": [call.name for call in response.tool_calls],
                         "error": "LLM_QUOTA_EXCEEDED",
                         "orchestration": orchestration_metadata,
                     },
@@ -551,20 +512,11 @@ Return a concise and useful response.
                 },
                 metadata={
                     "mode": final_gateway_response.mode,
-                    "provider": (
-                        final_gateway_response.provider
-                    ),
+                    "provider": (final_gateway_response.provider),
                     "reason": final_gateway_response.reason,
-                    "reset_provider": (
-                        final_gateway_response.reset_provider
-                    ),
-                    "reset_minutes": (
-                        final_gateway_response.reset_minutes
-                    ),
-                    "tools_used": [
-                        call.name
-                        for call in response.tool_calls
-                    ],
+                    "reset_provider": (final_gateway_response.reset_provider),
+                    "reset_minutes": (final_gateway_response.reset_minutes),
+                    "tools_used": [call.name for call in response.tool_calls],
                     "orchestration": orchestration_metadata,
                 },
             )
@@ -572,10 +524,7 @@ Return a concise and useful response.
         if final_response is None:
 
             return AgentResponse(
-                content=(
-                    "The AI provider did not return "
-                    "a final response."
-                ),
+                content=("The AI provider did not return " "a final response."),
                 agent=self.name,
                 success=False,
                 data={
@@ -604,10 +553,7 @@ Return a concise and useful response.
                 "provider": final_response.provider,
                 "model": final_response.model,
                 "mode": final_gateway_response.mode,
-                "tools_used": [
-                    call.name
-                    for call in response.tool_calls
-                ],
+                "tools_used": [call.name for call in response.tool_calls],
                 "orchestration": orchestration_metadata,
             },
         )

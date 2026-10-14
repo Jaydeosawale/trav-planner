@@ -1,0 +1,365 @@
+import 'package:url_launcher/url_launcher.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:latlong2/latlong.dart';
+import '../../../../core/network/api_client.dart';
+import '../../../trips/data/trips_api.dart';
+import '../../../destinations/data/place.dart';
+import '../../../destinations/presentation/destination_details_page.dart';
+import '../../../maps/places_map.dart';
+
+class NearbyPlacesPage extends StatefulWidget {
+  const NearbyPlacesPage({super.key, this.client});
+  final Dio? client;
+  @override
+  State<NearbyPlacesPage> createState() => _NearbyPlacesPageState();
+}
+
+class _NearbyPlacesPageState extends State<NearbyPlacesPage> {
+  final _query = TextEditingController();
+  List<Map<String, dynamic>> _cities = [];
+  List<Map<String, dynamic>>? _items;
+  LatLng? _origin;
+  String _location = '';
+  String _kind = 'all';
+  double _radius = 5;
+  bool _busy = false, _map = false;
+  String? _notice;
+  Dio get _client => widget.client ?? ApiClient.dio;
+  @override
+  void dispose() {
+    _query.dispose();
+    super.dispose();
+  }
+
+  Future<void> _citiesSearch() async {
+    if (_query.text.trim().length < 2) return;
+    setState(() {
+      _busy = true;
+      _notice = null;
+    });
+    try {
+      var rows = await TripsApi(client: _client).cities(_query.text.trim());
+      if (rows.isEmpty) {
+        final r = await _client.get(
+          '/discovery/locations',
+          queryParameters: {'q': _query.text.trim()},
+        );
+        rows = (r.data['items'] as List)
+            .map(
+              (e) => {
+                ...Map<String, dynamic>.from(e),
+                'source_id': e['id'],
+                'country': e['country_name'],
+              },
+            )
+            .toList();
+      }
+      if (mounted) setState(() => _cities = rows);
+    } catch (_) {
+      if (mounted) {
+        setState(() => _notice = 'Couldn’t find locations. Please try again.');
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _choose(Map<String, dynamic> c) async {
+    if (c['source_id'] != null) {
+      try {
+        c = Map<String, dynamic>.from(
+          (await _client.post(
+            '/discovery/locations/${c['source_id']}/open',
+          )).data,
+        );
+      } catch (_) {
+        if (mounted) setState(() => _notice = 'Couldn’t open this location.');
+        return;
+      }
+    }
+    final point = validCoordinates(c['latitude'], c['longitude']);
+    if (point == null) {
+      setState(() => _notice = 'This location needs verified coordinates.');
+      return;
+    }
+    setState(() {
+      _origin = point;
+      _location = c['name'].toString();
+      _cities = [];
+    });
+    await _search();
+  }
+
+  Future<void> _gps() async {
+    if (_busy) return;
+    setState(() {
+      _busy = true;
+      _notice = null;
+    });
+    try {
+      if (!await Geolocator.isLocationServiceEnabled()) throw Exception();
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        throw Exception();
+      }
+      final p = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.medium,
+          timeLimit: Duration(seconds: 20),
+        ),
+      );
+      if (!mounted) return;
+      setState(() {
+        _origin = LatLng(p.latitude, p.longitude);
+        _location = 'Your selected current location';
+        _cities = [];
+      });
+      await _search();
+    } catch (_) {
+      if (mounted) {
+        setState(
+          () => _notice =
+              'Location is unavailable or permission was declined. Search a city instead.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _search() async {
+    if (_origin == null) return;
+    setState(() {
+      _busy = true;
+      _notice = null;
+    });
+    try {
+      final r = await _client.post(
+        '/discovery/nearby',
+        data: {
+          'latitude': _origin!.latitude,
+          'longitude': _origin!.longitude,
+          'radius_km': _radius,
+          'kind': _kind,
+        },
+        options: Options(receiveTimeout: const Duration(seconds: 75)),
+      );
+      if (mounted) {
+        setState(() {
+          _items = (r.data['items'] as List)
+              .map((e) => Map<String, dynamic>.from(e))
+              .toList();
+          _notice = '${r.data['message']}\n${r.data['distance_note']}';
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(
+          () =>
+              _notice = 'Nearby search is unavailable. Sign in and try again.',
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _maps() async {
+    final target = _location == 'Your selected current location'
+        ? '${_origin!.latitude.toStringAsFixed(3)}, ${_origin!.longitude.toStringAsFixed(3)}'
+        : _location;
+    final query =
+        '${_kind == 'all'
+            ? 'places'
+            : _kind == 'hotel'
+            ? 'hotels'
+            : _kind} near $target';
+    try {
+      if (!await launchUrl(
+        Uri.https('www.google.com', '/maps/search/', {
+          'api': '1',
+          'query': query,
+        }),
+        mode: LaunchMode.externalApplication,
+      )) {
+        throw Exception();
+      }
+    } catch (_) {
+      if (mounted) setState(() => _notice = 'Couldn’t open Google Maps.');
+    }
+  }
+
+  void _open(Map<String, dynamic> item) {
+    final p = TravelPlace.fromJson(item);
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => DestinationDetailsPage(
+          cityId: p.cityId!,
+          name: item['city_name']?.toString() ?? p.name,
+          center: p.point,
+          initialPlace: p,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: const Text('Places nearby')),
+    body: ListView(
+      padding: const EdgeInsets.all(20),
+      children: [
+        Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 850),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  'A little closer to you.',
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Choose a city or use your location for this search. Trav does not save your search coordinates or add them to AI conversations.',
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _query,
+                  decoration: const InputDecoration(labelText: 'City or area'),
+                  onSubmitted: (_) => _citiesSearch(),
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  children: [
+                    OutlinedButton.icon(
+                      onPressed: _busy ? null : _citiesSearch,
+                      icon: const Icon(Icons.search),
+                      label: const Text('Find location'),
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: _busy ? null : _gps,
+                      icon: const Icon(Icons.my_location),
+                      label: const Text('Use my location'),
+                    ),
+                  ],
+                ),
+                for (final c in _cities)
+                  ListTile(
+                    title: Text(c['name'].toString()),
+                    subtitle: Text(
+                      '${c['country'] ?? ''} · ${c['latitude']}, ${c['longitude']}',
+                    ),
+                    onTap: _busy ? null : () => _choose(c),
+                  ),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                  initialValue: _kind,
+                  decoration: const InputDecoration(labelText: 'Looking for'),
+                  items:
+                      const {
+                            'all': 'All places',
+                            'attraction': 'Attractions',
+                            'museum': 'Museums',
+                            'park': 'Parks',
+                            'restaurant': 'Restaurants',
+                            'cafe': 'Cafés',
+                            'hotel': 'Stays',
+                            'station': 'Stations',
+                          }.entries
+                          .map(
+                            (e) => DropdownMenuItem(
+                              value: e.key,
+                              child: Text(e.value),
+                            ),
+                          )
+                          .toList(),
+                  onChanged: _busy ? null : (v) => setState(() => _kind = v!),
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<double>(
+                  initialValue: _radius,
+                  decoration: const InputDecoration(labelText: 'Search radius'),
+                  items: [2.0, 5.0, 10.0, 20.0]
+                      .map(
+                        (r) => DropdownMenuItem(
+                          value: r,
+                          child: Text('${r.toInt()} km'),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: _busy ? null : (r) => setState(() => _radius = r!),
+                ),
+                if (_origin != null) ...[
+                  const SizedBox(height: 12),
+                  Text('Around $_location'),
+                  FilledButton(
+                    onPressed: _busy ? null : _search,
+                    child: const Text('Search nearby'),
+                  ),
+                ],
+                if (_busy) const LinearProgressIndicator(),
+                if (_notice != null)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: Text(_notice!),
+                  ),
+                if (_origin != null) ...[
+                  OutlinedButton.icon(
+                    onPressed: _busy ? null : _maps,
+                    icon: const Icon(Icons.open_in_new),
+                    label: const Text('Search this area on Google Maps'),
+                  ),
+                  const Text(
+                    'Opens Google Maps with the chosen area or approximate location. Its listings and availability are managed by Google.',
+                    style: TextStyle(fontSize: 12),
+                  ),
+                ],
+                if (_items != null && _items!.isNotEmpty) ...[
+                  SegmentedButton<bool>(
+                    segments: const [
+                      ButtonSegment(value: false, label: Text('List')),
+                      ButtonSegment(value: true, label: Text('Map')),
+                    ],
+                    selected: {_map},
+                    onSelectionChanged: (v) => setState(() => _map = v.first),
+                  ),
+                  const SizedBox(height: 12),
+                  if (_map)
+                    SizedBox(
+                      height: 350,
+                      child: PlacesMap(
+                        places: _items!.map(TravelPlace.fromJson).toList(),
+                        center: _origin,
+                        onSelect: (p) =>
+                            _open(_items!.firstWhere((i) => i['id'] == p.id)),
+                      ),
+                    )
+                  else
+                    for (final p in _items!)
+                      Card(
+                        child: ListTile(
+                          leading: const Icon(Icons.place_outlined),
+                          title: Text(p['name'].toString()),
+                          subtitle: Text(
+                            '${p['place_type']} · ${p['distance_km']} km straight-line',
+                          ),
+                          onTap: () => _open(p),
+                        ),
+                      ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}

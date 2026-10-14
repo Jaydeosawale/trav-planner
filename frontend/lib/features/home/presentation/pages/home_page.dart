@@ -1,3 +1,4 @@
+import '../../../../shared/widgets/travel_quick_actions.dart';
 import '../widgets/destination_spotlight.dart';
 import '../../../destinations/presentation/destination_details_page.dart';
 import '../../../destinations/data/place.dart';
@@ -104,6 +105,8 @@ class HomePage extends ConsumerWidget {
                               ref.watch(bannersProvider).asData?.value ?? [],
                           onSearch: (query) => _explore(context, query),
                         ),
+                        const SizedBox(height: 20),
+                        const TravelQuickActions(),
                         const SizedBox(height: 24),
                         if (wide)
                           const Row(

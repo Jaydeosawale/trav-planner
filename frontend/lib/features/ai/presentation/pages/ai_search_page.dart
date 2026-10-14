@@ -1,3 +1,6 @@
+import 'structured_plan_page.dart';
+import '../../../explore/presentation/pages/nearby_places_page.dart';
+import '../../../booking/presentation/pages/booking_links_page.dart';
 import 'package:trav_planner/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -324,6 +327,35 @@ class _AISearchPageState extends State<AISearchPage> {
                   spacing: 8,
                   runSpacing: 8,
                   children: [
+                    FilledButton.icon(
+                      onPressed: _loading
+                          ? null
+                          : () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    StructuredPlanPage(session: _session),
+                              ),
+                            ),
+                      icon: const Icon(Icons.calendar_month_outlined),
+                      label: const Text('Build daily plan'),
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const NearbyPlacesPage(),
+                        ),
+                      ),
+                      icon: const Icon(Icons.near_me_outlined),
+                      label: const Text('Places nearby'),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const BookingLinksPage(),
+                        ),
+                      ),
+                      child: const Text('Book travel directly'),
+                    ),
                     OutlinedButton.icon(
                       onPressed: _loading
                           ? null

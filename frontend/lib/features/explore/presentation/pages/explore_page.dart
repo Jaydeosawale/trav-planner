@@ -1,3 +1,5 @@
+import 'nearby_places_page.dart';
+import '../../../booking/presentation/pages/booking_links_page.dart';
 import 'world_locations_panel.dart';
 import '../../../destinations/presentation/destination_details_page.dart';
 import '../../../destinations/data/place.dart';
@@ -126,6 +128,31 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
                           SizedBox(height: isWide ? 24 : 16),
 
                           _buildSearch(),
+                          const SizedBox(height: 12),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              OutlinedButton.icon(
+                                onPressed: () => Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => const NearbyPlacesPage(),
+                                  ),
+                                ),
+                                icon: const Icon(Icons.near_me_outlined),
+                                label: const Text('Places nearby'),
+                              ),
+                              OutlinedButton.icon(
+                                onPressed: () => Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => const BookingLinksPage(),
+                                  ),
+                                ),
+                                icon: const Icon(Icons.flight_takeoff),
+                                label: const Text('Book travel'),
+                              ),
+                            ],
+                          ),
 
                           SizedBox(height: isWide ? 24 : 14),
 

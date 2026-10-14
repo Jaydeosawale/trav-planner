@@ -40,3 +40,5 @@ from app.services.ai.routing import AIRoutingSettings
 from app.services.ai.conversations import PlannerConversation
 
 from app.services.discovery.models import DiscoveryCache, DiscoveryBudget
+
+from app.services.ai.itinerary_models import ItineraryDraft

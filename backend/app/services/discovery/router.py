@@ -242,3 +242,15 @@ async def open_location(
 
     source = await run_in_threadpool(record, source_id)
     return CityListResponse.model_validate(await resolve_location(db, source))
+
+
+from app.services.discovery.nearby import NearbyRequest, search as nearby_search
+
+
+@router.post("/nearby")
+async def find_nearby(
+    payload: NearbyRequest,
+    db: AsyncSession = Depends(get_db),
+    user=Depends(get_current_user),
+):
+    return await nearby_search(db, payload)
