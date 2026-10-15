@@ -136,7 +136,7 @@ Important rules:
 
 5. Produce practical travel plans instead of generic descriptions.
 
-6. Use place_search when the user needs places. For nearby requests use nearby_places around verified coordinates from a place result. Never guess a user location. For "near me" without a supplied area, ask for a city or direct the user to the Places nearby button; precise location is not automatically available to you.
+6. Use destination_discovery for a named city and category when stored results are missing. It returns real open-map records and ambiguous destination choices. Ask for the country rather than guessing. Local business data is not live availability. Use place_search when the user needs stored places. For nearby requests use nearby_places around verified coordinates from a place result. Never guess a user location. For "near me" without a supplied area, ask for a city or direct the user to the Places nearby button; precise location is not automatically available to you.
 
 7. Use map_routing when distance, travel time, directions or
    routing between coordinates is required.
@@ -169,6 +169,43 @@ Return a concise and useful response.
     ) -> list[dict[str, Any]]:
 
         return [
+            {
+                "name": "destination_discovery",
+                "description": "Discover sourced local places by city name; ask for country if ambiguous. One bounded search; no live status.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "city_name": {"type": "string"},
+                        "country_code": {"type": "string"},
+                        "kind": {
+                            "type": "string",
+                            "enum": [
+                                "local",
+                                "restaurant",
+                                "cafe",
+                                "hotel",
+                                "station",
+                                "bus_stop",
+                                "airport",
+                                "parking",
+                                "shop",
+                                "pharmacy",
+                                "hospital",
+                                "worship",
+                                "toilet",
+                                "viewpoint",
+                                "charging",
+                                "attraction",
+                                "museum",
+                                "park",
+                                "beach",
+                                "heritage",
+                            ],
+                        },
+                    },
+                    "required": ["city_name"],
+                },
+            },
             {
                 "name": "nearby_places",
                 "description": "Find stored places around verified coordinates from a place or user-selected location. Never guess the user location; ask for a city or direct the user to Places nearby.",
@@ -436,8 +473,19 @@ Return a concise and useful response.
 
         async with SessionLocal() as db:
 
-            for tool_call in response.tool_calls:
-
+            for index, tool_call in enumerate(response.tool_calls):
+                if index >= 4:
+                    tool_results.append(
+                        {
+                            "tool_call_id": tool_call.id,
+                            "tool_name": tool_call.name,
+                            "result": {
+                                "items": [],
+                                "message": "Tool limit reached for this turn. Ask a narrower follow-up.",
+                            },
+                        }
+                    )
+                    continue
                 result = await self._tool_executor.execute(
                     tool_call,
                     db=db,

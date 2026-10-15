@@ -21,6 +21,7 @@ MAX_CACHE_ROWS = 2500
 MAX_CACHE_BYTES = 12 * 1024 * 1024
 MAX_DB_BYTES = 200 * 1024 * 1024
 KINDS = {
+    "local": None,
     "attraction": "Q570116",
     "museum": "Q33506",
     "park": "Q22698",
@@ -34,6 +35,12 @@ KINDS = {
     "parking": None,
     "shop": None,
     "airport": None,
+    "pharmacy": None,
+    "hospital": None,
+    "worship": None,
+    "toilet": None,
+    "viewpoint": None,
+    "charging": None,
 }
 _lock = asyncio.Lock()
 
@@ -114,7 +121,7 @@ async def reserve():
         await db.commit()
 
 
-async def request_json(url, params, *, accept=None):
+async def request_json(url, params, *, accept=None, method="GET"):
     cooldown_key = "cooldown:" + url.split("/")[2]
     async with SessionLocal() as db:
         cooldown = await db.get(DiscoveryCache, cooldown_key)
@@ -129,7 +136,10 @@ async def request_json(url, params, *, accept=None):
     }
     async with httpx.AsyncClient(timeout=18, follow_redirects=False) as client:
         async with client.stream(
-            "GET", url, params=params, headers=headers
+            method,
+            url,
+            headers=headers,
+            **({"data": params} if method == "POST" else {"params": params}),
         ) as response:
             if response.status_code == 429:
                 try:
@@ -407,15 +417,11 @@ async def discover(db, city_id, kind="attraction"):
         ],
         city_id,
     )
-    if KINDS[kind] is None:
+    if KINDS[kind] is None and regional:
         return {
             "items": regional,
             "status": "regional",
-            "message": (
-                "Regional OSM source data; live hours and availability are unverified."
-                if regional
-                else "This category needs a reviewed regional data pack. Known places remain available."
-            ),
+            "message": "Stored OpenStreetMap listings; details and current availability are unverified.",
         }
     key = "city:" + city_id + ":" + kind
     row = await db.get(DiscoveryCache, key)
@@ -431,9 +437,9 @@ async def discover(db, city_id, kind="attraction"):
         }
     async with _lock:
         await db.execute(
-            delete(DiscoveryCache).where(
-                DiscoveryCache.kind != "settings", DiscoveryCache.expires_at < now()
-            )
+            delete(DiscoveryCache)
+            .where(DiscoveryCache.kind != "settings", DiscoveryCache.expires_at < now())
+            .execution_options(synchronize_session=False)
         )
         usage = await stats(db)
         if (
@@ -460,13 +466,20 @@ async def discover(db, city_id, kind="attraction"):
         # Release cleanup locks before a source cooldown may be written by another session.
         await db.commit()
         try:
-            items = await wikidata(city_id, lat, lon, kind)
+            if KINDS[kind] is None:
+                from app.services.discovery.open_map import fetch
+
+                items = await fetch(
+                    city_id, lat, lon, "all" if kind == "local" else kind
+                )
+            else:
+                items = await wikidata(city_id, lat, lon, kind)
             excluded = set()
             for item in items:
                 # Preserve existing admin-controlled or already-saved records.
                 existing = await db.scalar(
                     select(Place).where(
-                        Place.provider == "wikidata",
+                        Place.provider == item["provider"],
                         Place.external_place_id == item["external_place_id"],
                     )
                 )
@@ -484,16 +497,24 @@ async def discover(db, city_id, kind="attraction"):
                 db, [i for i in items if i["id"] not in excluded], city_id
             )
             result = {
-                "items": items + regional,
+                "items": list({p["id"]: p for p in items + regional}.values()),
                 "status": "cached",
-                "message": "Source-backed places near this city; coverage may be incomplete.",
+                "message": (
+                    "Up to 40 mapped listings within 5 km of this city centre. Listed hours and availability are unverified."
+                    if KINDS[kind] is None
+                    else "Source-backed places near this city; coverage may be incomplete."
+                ),
             }
             await cache_put(
                 db,
                 key,
                 "search",
                 result,
-                timedelta(days=7) if items else timedelta(hours=6),
+                (
+                    (timedelta(hours=24) if KINDS[kind] is None else timedelta(days=7))
+                    if items
+                    else timedelta(hours=6)
+                ),
             )
         except Exception as exc:
             message = (
@@ -501,7 +522,14 @@ async def discover(db, city_id, kind="attraction"):
                 if isinstance(exc, RuntimeError)
                 else "The free source is temporarily unavailable. Try again later."
             )
-            result = {**stale, "status": "unavailable", "message": message}
+            result = {
+                **stale,
+                "items": list(
+                    {p["id"]: p for p in stale.get("items", []) + regional}.values()
+                ),
+                "status": "unavailable",
+                "message": message,
+            }
             try:
                 await cache_put(db, key, "search", result, timedelta(hours=1))
             except RuntimeError:

@@ -10,7 +10,8 @@ import '../../../destinations/presentation/destination_details_page.dart';
 import '../../../maps/places_map.dart';
 
 class NearbyPlacesPage extends StatefulWidget {
-  const NearbyPlacesPage({super.key, this.client});
+  const NearbyPlacesPage({super.key, this.client, this.initialKind = 'all'});
+  final String initialKind;
   final Dio? client;
   @override
   State<NearbyPlacesPage> createState() => _NearbyPlacesPageState();
@@ -22,10 +23,18 @@ class _NearbyPlacesPageState extends State<NearbyPlacesPage> {
   List<Map<String, dynamic>>? _items;
   LatLng? _origin;
   String _location = '';
-  String _kind = 'all';
+  late String _kind = widget.initialKind;
   double _radius = 5;
   bool _busy = false, _map = false;
   String? _notice;
+  String _filter = '';
+  List<Map<String, dynamic>> get _filtered => (_items ?? [])
+      .where(
+        (p) => '${p['name']} ${p['place_type']} ${p['description'] ?? ''}'
+            .toLowerCase()
+            .contains(_filter.toLowerCase().trim()),
+      )
+      .toList();
   Dio get _client => widget.client ?? ApiClient.dio;
   @override
   void dispose() {
@@ -227,7 +236,7 @@ class _NearbyPlacesPageState extends State<NearbyPlacesPage> {
                 ),
                 const SizedBox(height: 12),
                 const Text(
-                  'Choose a city or use your location for this search. Trav does not save your search coordinates or add them to AI conversations.',
+                  'Choose a city or use your location. Open map searches use the nearest city centre, never your GPS coordinates. Source coverage and business details may be incomplete.',
                 ),
                 const SizedBox(height: 16),
                 TextField(
@@ -273,6 +282,18 @@ class _NearbyPlacesPageState extends State<NearbyPlacesPage> {
                             'cafe': 'Cafés',
                             'hotel': 'Stays',
                             'station': 'Stations',
+                            'bus_stop': 'Bus stops',
+                            'airport': 'Airports',
+                            'parking': 'Parking',
+                            'shop': 'Shopping',
+                            'pharmacy': 'Pharmacies',
+                            'hospital': 'Hospitals & clinics',
+                            'worship': 'Places of worship',
+                            'toilet': 'Public toilets',
+                            'viewpoint': 'Viewpoints',
+                            'charging': 'EV charging',
+                            'beach': 'Beaches',
+                            'heritage': 'Heritage',
                           }.entries
                           .map(
                             (e) => DropdownMenuItem(
@@ -322,7 +343,31 @@ class _NearbyPlacesPageState extends State<NearbyPlacesPage> {
                     style: TextStyle(fontSize: 12),
                   ),
                 ],
+                if (_items != null) ...[
+                  TextButton(
+                    onPressed: () => launchUrl(
+                      Uri.parse('https://www.openstreetmap.org/copyright'),
+                      mode: LaunchMode.externalApplication,
+                    ),
+                    child: const Text('OpenStreetMap contributors · ODbL'),
+                  ),
+                  TextButton(
+                    onPressed: () => launchUrl(
+                      Uri.parse('https://overpass.kumi.systems/'),
+                      mode: LaunchMode.externalApplication,
+                    ),
+                    child: const Text('Open-map service & privacy'),
+                  ),
+                ],
                 if (_items != null && _items!.isNotEmpty) ...[
+                  TextField(
+                    decoration: const InputDecoration(
+                      labelText: 'Filter these results',
+                      prefixIcon: Icon(Icons.search),
+                    ),
+                    onChanged: (v) => setState(() => _filter = v),
+                  ),
+                  const SizedBox(height: 12),
                   SegmentedButton<bool>(
                     segments: const [
                       ButtonSegment(value: false, label: Text('List')),
@@ -336,14 +381,14 @@ class _NearbyPlacesPageState extends State<NearbyPlacesPage> {
                     SizedBox(
                       height: 350,
                       child: PlacesMap(
-                        places: _items!.map(TravelPlace.fromJson).toList(),
+                        places: _filtered.map(TravelPlace.fromJson).toList(),
                         center: _origin,
                         onSelect: (p) =>
                             _open(_items!.firstWhere((i) => i['id'] == p.id)),
                       ),
                     )
                   else
-                    for (final p in _items!)
+                    for (final p in _filtered)
                       Card(
                         child: ListTile(
                           leading: const Icon(Icons.place_outlined),

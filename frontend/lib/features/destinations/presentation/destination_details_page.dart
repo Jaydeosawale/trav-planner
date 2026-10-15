@@ -196,66 +196,98 @@ class _DestinationDetailsPageState
                       spacing: 12,
                       runSpacing: 12,
                       children: [
-                        DropdownButton<String>(
-                          value: _discoveryKind,
-                          items: const [
-                            DropdownMenuItem(
-                              value: 'attraction',
-                              child: Text('Attractions'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'museum',
-                              child: Text('Museums'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'heritage',
-                              child: Text('Monuments'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'park',
-                              child: Text('Parks'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'beach',
-                              child: Text('Beaches'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'restaurant',
-                              child: Text('Restaurants'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'cafe',
-                              child: Text('Cafés'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'hotel',
-                              child: Text('Stays'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'station',
-                              child: Text('Stations'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'bus_stop',
-                              child: Text('Bus stops'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'airport',
-                              child: Text('Airports'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'parking',
-                              child: Text('Parking'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'shop',
-                              child: Text('Shops'),
-                            ),
-                          ],
-                          onChanged: _discovering
-                              ? null
-                              : (value) =>
-                                    setState(() => _discoveryKind = value!),
+                        SizedBox(
+                          width: 220,
+                          child: DropdownButton<String>(
+                            isExpanded: true,
+                            value: _discoveryKind,
+                            items: const [
+                              DropdownMenuItem(
+                                value: 'local',
+                                child: Text('Local places'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'attraction',
+                                child: Text('Attractions'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'museum',
+                                child: Text('Museums'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'heritage',
+                                child: Text('Monuments'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'park',
+                                child: Text('Parks'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'beach',
+                                child: Text('Beaches'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'restaurant',
+                                child: Text('Restaurants'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'cafe',
+                                child: Text('Cafés'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'hotel',
+                                child: Text('Stays'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'station',
+                                child: Text('Stations'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'bus_stop',
+                                child: Text('Bus stops'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'airport',
+                                child: Text('Airports'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'parking',
+                                child: Text('Parking'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'shop',
+                                child: Text('Shops'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'pharmacy',
+                                child: Text('Pharmacies'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'hospital',
+                                child: Text('Hospitals & clinics'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'worship',
+                                child: Text('Places of worship'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'toilet',
+                                child: Text('Public toilets'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'viewpoint',
+                                child: Text('Viewpoints'),
+                              ),
+                              DropdownMenuItem(
+                                value: 'charging',
+                                child: Text('EV charging'),
+                              ),
+                            ],
+                            onChanged: _discovering
+                                ? null
+                                : (value) =>
+                                      setState(() => _discoveryKind = value!),
+                          ),
                         ),
                         OutlinedButton.icon(
                           onPressed: _discovering ? null : _discover,

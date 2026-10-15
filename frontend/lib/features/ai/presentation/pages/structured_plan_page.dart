@@ -1,3 +1,7 @@
+import 'dart:ui' as ui;
+import 'package:flutter/rendering.dart';
+import 'package:share_plus/share_plus.dart';
+import '../widgets/plan_postcard.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -287,6 +291,40 @@ class _StructuredPlanPageState extends ConsumerState<StructuredPlanPage> {
     }
   }
 
+  final _postcardKey = GlobalKey();
+  Future<void> _sharePostcard() async {
+    try {
+      final boundary =
+          _postcardKey.currentContext!.findRenderObject()
+              as RenderRepaintBoundary;
+      final image = await boundary.toImage(pixelRatio: 2);
+      final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+      image.dispose();
+      if (bytes == null || !mounted) return;
+      final box = context.findRenderObject() as RenderBox;
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [
+            XFile.fromData(bytes.buffer.asUint8List(), mimeType: 'image/png'),
+          ],
+          fileNameOverrides: ['trav-plan.png'],
+          title: 'My Trav plan',
+          sharePositionOrigin: box.localToGlobal(Offset.zero) & box.size,
+        ),
+      );
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Couldn’t export the plan image. Your draft is still here.',
+            ),
+          ),
+        );
+      }
+    }
+  }
+
   Widget _preview() {
     final plan = _draft!['plan'] as Map;
     final days = plan['days'] as List;
@@ -311,7 +349,22 @@ class _StructuredPlanPageState extends ConsumerState<StructuredPlanPage> {
           'Review your daily plan',
           style: Theme.of(context).textTheme.headlineMedium,
         ),
-        Text(_draft!['city_name']?.toString() ?? ''),
+        const SizedBox(height: 16),
+        RepaintBoundary(
+          key: _postcardKey,
+          child: PlanPostcard(
+            destination:
+                _draft!['city_name']?.toString() ?? plan['title'].toString(),
+            days: days.length,
+            activities: _selected.length,
+            stops: linked.map((p) => p.name).toList(),
+          ),
+        ),
+        TextButton.icon(
+          onPressed: _busy ? null : _sharePostcard,
+          icon: const Icon(Icons.ios_share),
+          label: const Text('Share plan image'),
+        ),
         const SizedBox(height: 12),
         const Text(
           'AI suggestions, not confirmed bookings. Durations are estimates; verify hours, access and travel arrangements. Untick activities you don’t want. You can edit and reorder the saved itinerary later.',
@@ -346,6 +399,11 @@ class _StructuredPlanPageState extends ConsumerState<StructuredPlanPage> {
         ],
         for (var i = 0; i < days.length; i++)
           Card(
+            color: [
+              const Color(0xFFE1F0E8),
+              const Color(0xFFE5EDFC),
+              const Color(0xFFFBE7D6),
+            ][i % 3],
             child: Padding(
               padding: const EdgeInsets.all(14),
               child: Column(

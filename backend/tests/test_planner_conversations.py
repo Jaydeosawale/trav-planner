@@ -76,3 +76,31 @@ def test_additive_migration_keeps_existing_data(monkeypatch):
         assert conn.execute(sa.text('SELECT created_at FROM planner_conversations')).scalar() is not None
         assert conn.execute(sa.text('SELECT title FROM existing_trips')).scalar()=='Keep me'
     engine.dispose()
+
+
+@pytest.mark.asyncio
+async def test_successful_first_message_creates_owned_conversation(monkeypatch):
+    engine = create_async_engine('sqlite+aiosqlite:///:memory:')
+    async with engine.begin() as conn:
+        await conn.run_sync(PlannerConversation.__table__.create)
+    sessions = async_sessionmaker(engine, expire_on_commit=False)
+    app = FastAPI(); app.include_router(router, prefix='/ai')
+    async def db():
+        async with sessions() as session: yield session
+    app.dependency_overrides[get_db] = db
+    app.dependency_overrides[get_current_user] = lambda: SimpleNamespace(id='owner')
+    seen=[]
+    async def run(self, request, *, context=None):
+        seen.append(context.data.get('planner_prompt',''))
+        return AgentResponse(content='A sourced suggestion', agent='test')
+    monkeypatch.setattr('app.agents.travel_planner.TravelPlanningAgent.run',run)
+    async with AsyncClient(transport=ASGITransport(app=app),base_url='http://test') as c:
+        r=await c.post('/ai/chat',json={'message':'Pune museums'})
+        assert r.status_code==200
+        ident=r.json()['data']['metadata']['session_id']
+        saved=(await c.get('/ai/sessions/'+ident)).json()
+        assert len(saved['turns'])==2
+        await c.post('/ai/chat',json={'message':'Less walking','session_id':ident})
+        assert 'Pune museums' in seen[-1] and 'Less walking' in seen[-1]
+        assert len((await c.get('/ai/sessions/'+ident)).json()['turns'])==4
+    await engine.dispose()

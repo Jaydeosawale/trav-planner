@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'structured_plan_page.dart';
 import '../../../explore/presentation/pages/nearby_places_page.dart';
 import '../../../booking/presentation/pages/booking_links_page.dart';
@@ -32,6 +33,7 @@ class _AISearchPageState extends State<AISearchPage> {
   String? _error;
   String? _lastMessage;
   AIResponseModel? _response;
+  final List<Map<String, String>> _history = [];
 
   @override
   void dispose() {
@@ -49,6 +51,13 @@ class _AISearchPageState extends State<AISearchPage> {
     FocusScope.of(context).unfocus();
 
     setState(() {
+      if (_response != null && _lastMessage != null) {
+        _history.addAll([
+          {'role': 'user', 'content': _lastMessage!},
+          {'role': 'assistant', 'content': _response!.content},
+        ]);
+        if (_history.length > 6) _history.removeRange(0, _history.length - 6);
+      }
       _loading = true;
       _lastMessage = message;
       _error = null;
@@ -62,9 +71,12 @@ class _AISearchPageState extends State<AISearchPage> {
         sessionId: _session?['id']?.toString(),
       );
       Map<String, dynamic>? refreshed;
-      if (response.success && _session != null) {
+      final sessionId =
+          _session?['id']?.toString() ??
+          response.metadata['session_id']?.toString();
+      if (response.success && sessionId != null) {
         try {
-          refreshed = await _api.session(_session!['id'].toString());
+          refreshed = await _api.session(sessionId);
         } catch (_) {}
       }
 
@@ -75,7 +87,17 @@ class _AISearchPageState extends State<AISearchPage> {
       setState(() {
         if (response.success) {
           _response = response;
-          if (refreshed != null) _session = refreshed;
+          _controller.clear();
+          if (refreshed != null) {
+            _session = refreshed;
+          } else if (sessionId != null && _session == null) {
+            _session = {
+              'id': sessionId,
+              'title': message,
+              'brief': <String, dynamic>{},
+              'version': 0,
+            };
+          }
         } else {
           _error = response.content.isNotEmpty
               ? response.content
@@ -89,7 +111,10 @@ class _AISearchPageState extends State<AISearchPage> {
       }
 
       setState(() {
-        _error = error.toString();
+        _error = error is DioException && error.response?.data is Map
+            ? error.response!.data['detail']?.toString() ??
+                  'Couldn’t send the message. Please retry.'
+            : 'Couldn’t send the message. Please retry.';
       });
     } finally {
       if (mounted) {
@@ -112,6 +137,7 @@ class _AISearchPageState extends State<AISearchPage> {
       setState(() {
         _session = result;
         if (newPlan) {
+          _history.clear();
           _response = null;
           _lastMessage = null;
           _savedTripId = null;
@@ -155,6 +181,19 @@ class _AISearchPageState extends State<AISearchPage> {
       final turns = saved['turns'] as List? ?? [];
       setState(() {
         _session = saved;
+        _history.clear();
+        if (turns.length > 2) {
+          _history.addAll(
+            turns
+                .take(turns.length - 2)
+                .map(
+                  (t) => {
+                    'role': t['role'].toString(),
+                    'content': t['content'].toString(),
+                  },
+                ),
+          );
+        }
         _savedTripId = null;
         _error = null;
         _controller.clear();
@@ -207,6 +246,7 @@ class _AISearchPageState extends State<AISearchPage> {
       if (mounted) {
         setState(() {
           _session = null;
+          _history.clear();
           _response = null;
           _lastMessage = null;
           _savedTripId = null;
@@ -396,43 +436,6 @@ class _AISearchPageState extends State<AISearchPage> {
                   ),
                 ],
                 const SizedBox(height: 16),
-                TextField(
-                  controller: _controller,
-                  enabled: !_loading,
-                  maxLines: 3,
-                  textInputAction: TextInputAction.newline,
-                  decoration: InputDecoration(
-                    hintText:
-                        'A 5-day trip to Japan in April, with food and quiet places…',
-                    filled: true,
-                    fillColor: AppColors.surface,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(18),
-                      borderSide: BorderSide.none,
-                    ),
-                    contentPadding: const EdgeInsets.all(18),
-                    suffixIcon: _loading
-                        ? const Padding(
-                            padding: EdgeInsets.all(14),
-                            child: SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            ),
-                          )
-                        : IconButton(
-                            tooltip: 'Send message',
-                            style: IconButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              foregroundColor: Colors.white,
-                            ),
-                            onPressed: _askAI,
-                            icon: const Icon(Icons.arrow_upward_rounded),
-                          ),
-                  ),
-                  onSubmitted: (_) => _askAI(),
-                ),
-
                 const SizedBox(height: 24),
 
                 Wrap(
@@ -467,6 +470,26 @@ class _AISearchPageState extends State<AISearchPage> {
 
                 const SizedBox(height: 28),
 
+                for (final turn in _history) ...[
+                  Align(
+                    alignment: turn['role'] == 'user'
+                        ? Alignment.centerRight
+                        : Alignment.centerLeft,
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: turn['role'] == 'user'
+                            ? AppColors.surfaceVariant
+                            : AppColors.surface,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: turn['role'] == 'user'
+                          ? Text(turn['content']!)
+                          : TravelMarkdown(content: turn['content']!),
+                    ),
+                  ),
+                ],
                 if (_lastMessage != null) ...[
                   Align(
                     alignment: Alignment.centerRight,
@@ -512,6 +535,44 @@ class _AISearchPageState extends State<AISearchPage> {
                     style: TextStyle(color: AppColors.textSecondary),
                   ),
                 ],
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _controller,
+                  enabled: !_loading,
+                  maxLines: 3,
+                  textInputAction: TextInputAction.newline,
+                  decoration: InputDecoration(
+                    hintText: _lastMessage == null
+                        ? 'Where would you like to go? Tell me your dates and budget…'
+                        : 'Ask a follow-up or change your plans…',
+                    filled: true,
+                    fillColor: AppColors.surface,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(18),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.all(18),
+                    suffixIcon: _loading
+                        ? const Padding(
+                            padding: EdgeInsets.all(14),
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          )
+                        : IconButton(
+                            tooltip: 'Send message',
+                            style: IconButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: Colors.white,
+                            ),
+                            onPressed: _askAI,
+                            icon: const Icon(Icons.arrow_upward_rounded),
+                          ),
+                  ),
+                  onSubmitted: (_) => _askAI(),
+                ),
               ],
             ),
           ),

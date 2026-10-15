@@ -21,6 +21,12 @@ TYPES = {
     "airport",
     "parking",
     "shop",
+    "pharmacy",
+    "hospital",
+    "worship",
+    "toilet",
+    "viewpoint",
+    "charging",
 }
 
 

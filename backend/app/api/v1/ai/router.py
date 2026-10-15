@@ -7,7 +7,7 @@ from __future__ import annotations
 import json
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database.session import get_db
 from app.services.ai.conversations import PlannerConversation, owned, payload, replace, context_prompt
@@ -49,6 +49,10 @@ async def chat_with_ai(
     row = None
     if request.session_id:
         row = await owned(db, request.session_id, str(current_user.id))
+    if row is None:
+        count = await db.scalar(select(func.count()).select_from(PlannerConversation).where(PlannerConversation.user_id == str(current_user.id)))
+        if count >= 20:
+            raise HTTPException(409, 'You have 20 saved conversations. Reopen a recent plan or forget an old conversation to start another.')
     agent = TravelPlanningAgent()
 
     context = AgentContext(
@@ -62,6 +66,10 @@ async def chat_with_ai(
         context=context,
     )
 
+    if row is None and result.success:
+        row = PlannerConversation(user_id=str(current_user.id), title=request.message[:100] or 'Travel ideas', brief_json='{}', turns_json='[]', version=0)
+        db.add(row)
+        await db.flush()
     if row is not None and result.success:
         turns = json.loads(row.turns_json) + [
             {'role': 'user', 'content': request.message[:10000]},

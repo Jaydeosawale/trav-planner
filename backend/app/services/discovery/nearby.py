@@ -97,12 +97,12 @@ async def search(db, payload, *, enrich=True):
         and not matching_cached
         and not matching_published
         and cities
-        and payload.kind in ["all", "attraction", "museum", "park", "heritage", "beach"]
+        and (payload.kind in KINDS or payload.kind == "all")
     ):
         cached_cities = {r.city_id for r in rows}
         source_city = next((c for c in cities if c.id in cached_cities), cities[0])
         result = await discover(
-            db, source_city.id, "attraction" if payload.kind == "all" else payload.kind
+            db, source_city.id, "local" if payload.kind == "all" else payload.kind
         )
         notice = result.get("message", "")
         rows = (

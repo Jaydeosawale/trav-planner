@@ -57,7 +57,7 @@ class _BookingLinksPageState extends State<BookingLinksPage> {
               const SizedBox(height: 20),
               Wrap(
                 spacing: 8,
-                children: ['Flights', 'Trains']
+                children: ['Flights', 'Trains', 'Buses', 'Stays']
                     .map(
                       (m) => ChoiceChip(
                         label: Text(m),
@@ -96,7 +96,7 @@ class _BookingLinksPageState extends State<BookingLinksPage> {
                     ),
                   ],
                 ),
-              ] else ...[
+              ] else if (_mode == 'Trains') ...[
                 DropdownButtonFormField<String>(
                   initialValue: _country,
                   decoration: const InputDecoration(
@@ -116,6 +116,36 @@ class _BookingLinksPageState extends State<BookingLinksPage> {
                 const SizedBox(height: 8),
                 const Text(
                   'For other countries, book with the relevant local rail operator. More verified providers can be added later.',
+                ),
+              ],
+              if (_mode == 'Buses') ...[
+                const ListTile(
+                  leading: Icon(Icons.directions_bus_outlined),
+                  title: Text('City to city, your way'),
+                  subtitle: Text(
+                    'Choose routes, dates and seats with the bus provider. Coverage varies by country.',
+                  ),
+                ),
+                FilledButton(
+                  onPressed: () => _open('https://www.redbus.in/'),
+                  child: const Text('redBus · India'),
+                ),
+                TextButton(
+                  onPressed: () => _open('https://www.flixbus.com/'),
+                  child: const Text('FlixBus · supported routes'),
+                ),
+              ],
+              if (_mode == 'Stays') ...[
+                const ListTile(
+                  leading: Icon(Icons.bed_outlined),
+                  title: Text('Find your home for the night'),
+                  subtitle: Text(
+                    'Check current room prices, policies and availability with the accommodation provider.',
+                  ),
+                ),
+                FilledButton(
+                  onPressed: () => _open('https://www.booking.com/'),
+                  child: const Text('Find stays on Booking.com'),
                 ),
               ],
               const SizedBox(height: 24),

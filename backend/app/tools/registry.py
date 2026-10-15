@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from app.tools.nearby_places import NearbyPlacesTool
+from app.tools.destination_discovery import DestinationDiscoveryTool
 from app.tools.base import Tool
 from app.tools.map_routing import MapRoutingTool
 from app.tools.place_search import PlaceSearchTool
@@ -65,4 +66,5 @@ def create_default_tool_registry() -> ToolRegistry:
     registry.register(MapRoutingTool())
 
     registry.register(NearbyPlacesTool())
+    registry.register(DestinationDiscoveryTool())
     return registry
