@@ -427,7 +427,15 @@ async def discover(db, city_id, kind="attraction"):
     row = await db.get(DiscoveryCache, key)
     stale = json.loads(row.value) if row else {"items": []}
     stale["items"] = await visible(db, stale.get("items", []), city_id)
-    if row and future(row.expires_at) > now():
+    if (
+        row
+        and future(row.expires_at) > now()
+        and not (
+            KINDS[kind] is None
+            and stale.get("status") == "unavailable"
+            and stale.get("source_lookup_version", 0) < 2
+        )
+    ):
         return {**stale, "status": stale.get("status", "cached")}
     if _lock.locked():
         return {
@@ -528,10 +536,16 @@ async def discover(db, city_id, kind="attraction"):
                     {p["id"]: p for p in stale.get("items", []) + regional}.values()
                 ),
                 "status": "unavailable",
+                "source_lookup_version": 2,
+                "source_error": (
+                    ("HTTP_" + str(exc.response.status_code))
+                    if isinstance(exc, httpx.HTTPStatusError)
+                    else type(exc).__name__
+                ),
                 "message": message,
             }
             try:
-                await cache_put(db, key, "search", result, timedelta(hours=1))
+                await cache_put(db, key, "search", result, timedelta(minutes=2))
             except RuntimeError:
                 await db.rollback()
         await db.commit()
