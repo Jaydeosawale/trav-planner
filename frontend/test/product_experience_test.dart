@@ -1,3 +1,6 @@
+import 'dart:io';
+import 'dart:ui' as ui;
+import 'package:flutter/rendering.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:trav_planner/features/ai/data/datasources/ai_api.dart';
@@ -60,5 +63,46 @@ void main() {
     expect(find.text('7 days'), findsOneWidget);
     expect(find.text('35 stops'), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+  testWidgets('plan illustration exports as a PNG', (tester) async {
+    final key = GlobalKey();
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: SizedBox(
+              width: 360,
+              child: RepaintBoundary(
+                key: key,
+                child: const PlanPostcard(
+                  destination: 'Pune',
+                  days: 3,
+                  activities: 9,
+                  stops: [
+                    'Raja Dinkar Kelkar Museum',
+                    'Sarasbaug',
+                    'Vishrambaug Wada',
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.runAsync(() async {
+      final image =
+          await (key.currentContext!.findRenderObject()
+                  as RenderRepaintBoundary)
+              .toImage(pixelRatio: 2);
+      final data = await image.toByteData(format: ui.ImageByteFormat.png);
+      image.dispose();
+      expect(data, isNotNull);
+      final bytes = data!.buffer.asUint8List();
+      expect(bytes.take(4).toList(), [137, 80, 78, 71]);
+      final output = Platform.environment['TRAV_POSTCARD_PREVIEW'];
+      if (output != null) await File(output).writeAsBytes(bytes);
+    });
   });
 }
