@@ -33,6 +33,10 @@ class Settings(BaseSettings):
         "Enterprise AI Multi-Agent Travel Planner Backend"
     )
 
+    # Dedicated free project, enabled only after verifying plan and attribution.
+    GEOAPIFY_API_KEY: str = ""
+    GEOAPIFY_FREE_PLAN_CONFIRMED: bool = False
+
     OPENAI_API_KEY: str = ""
     OPENAI_MODEL: str = "gpt-6-luna"
     OPENAI_FREE_ACCESS_UNTIL: str = ""

@@ -1,3 +1,4 @@
+import '../../../../core/widgets/place_source_credit.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -343,6 +344,7 @@ class _NearbyPlacesPageState extends State<NearbyPlacesPage> {
                     style: TextStyle(fontSize: 12),
                   ),
                 ],
+                PlaceSourceCredit(data: _items),
                 if (_items != null) ...[
                   TextButton(
                     onPressed: () => launchUrl(

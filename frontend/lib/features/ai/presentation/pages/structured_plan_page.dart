@@ -1,3 +1,4 @@
+import '../../../../core/widgets/place_source_credit.dart';
 import 'dart:ui' as ui;
 import 'package:flutter/rendering.dart';
 import 'package:share_plus/share_plus.dart';
@@ -377,6 +378,7 @@ class _StructuredPlanPageState extends ConsumerState<StructuredPlanPage> {
           decoration: const InputDecoration(labelText: 'Trip title'),
         ),
         Text(plan['summary']?.toString() ?? ''),
+        PlaceSourceCredit(data: _draft),
         if (linked.isNotEmpty) ...[
           const SizedBox(height: 12),
           TextButton.icon(

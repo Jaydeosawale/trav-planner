@@ -1,3 +1,4 @@
+import '../../core/widgets/place_source_credit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -64,6 +65,9 @@ class _PlacesMapState extends State<PlacesMap> {
     }
     return Column(
       children: [
+        PlaceSourceCredit(
+          data: widget.places.map((p) => p.visitingNotes).toList(),
+        ),
         if (_failed)
           const Padding(
             padding: EdgeInsets.all(8),

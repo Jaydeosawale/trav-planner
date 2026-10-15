@@ -66,6 +66,8 @@ async def settings(db):
 
 
 async def stats(db):
+    from app.services.discovery import geoapify
+
     measure = (
         func.octet_length(DiscoveryCache.value)
         if db.bind.dialect.name == "postgresql"
@@ -95,6 +97,10 @@ async def stats(db):
         **await settings(db),
         "cost_policy": "free_only",
         "paid_fallback": False,
+        "additional_places_source": (
+            "geoapify_free" if geoapify.enabled() else "not_configured"
+        ),
+        "source_request_result_limit": 20 if geoapify.enabled() else 40,
     }
 
 
@@ -121,7 +127,9 @@ async def reserve():
         await db.commit()
 
 
-async def request_json(url, params, *, accept=None, method="GET"):
+async def request_json(
+    url, params, *, accept=None, method="GET", secret_headers=None, json_body=None
+):
     cooldown_key = "cooldown:" + url.split("/")[2]
     async with SessionLocal() as db:
         cooldown = await db.get(DiscoveryCache, cooldown_key)
@@ -134,12 +142,19 @@ async def request_json(url, params, *, accept=None, method="GET"):
         "User-Agent": "TravDiscovery/1.0 (+https://github.com/Jaydeosawale/trav-planner)",
         "Accept": accept or "application/json",
     }
+    if secret_headers:
+        headers.update(secret_headers)
+    payload = (
+        {"json": json_body}
+        if json_body is not None
+        else ({"data": params} if method == "POST" else {"params": params})
+    )
     async with httpx.AsyncClient(timeout=18, follow_redirects=False) as client:
         async with client.stream(
             method,
             url,
             headers=headers,
-            **({"data": params} if method == "POST" else {"params": params}),
+            **payload,
         ) as response:
             if response.status_code == 429:
                 try:
@@ -474,7 +489,11 @@ async def discover(db, city_id, kind="attraction"):
         # Release cleanup locks before a source cooldown may be written by another session.
         await db.commit()
         try:
-            if KINDS[kind] is None:
+            from app.services.discovery import geoapify
+
+            if KINDS[kind] is None or (
+                geoapify.enabled() and kind in geoapify.CATEGORIES
+            ):
                 from app.services.discovery.open_map import fetch
 
                 items = await fetch(

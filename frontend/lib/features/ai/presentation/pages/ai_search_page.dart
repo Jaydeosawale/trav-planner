@@ -1,3 +1,4 @@
+import '../../../../core/widgets/place_source_credit.dart';
 import 'package:dio/dio.dart';
 import 'structured_plan_page.dart';
 import '../../../explore/presentation/pages/nearby_places_page.dart';
@@ -705,6 +706,7 @@ class _ResponseCard extends StatelessWidget {
           const SizedBox(height: 16),
 
           TravelMarkdown(content: response.content),
+          PlaceSourceCredit(data: response.data),
         ],
       ),
     );

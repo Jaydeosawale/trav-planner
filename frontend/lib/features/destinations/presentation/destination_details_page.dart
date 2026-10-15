@@ -1,3 +1,4 @@
+import '../../../core/widgets/place_source_credit.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
@@ -315,6 +316,9 @@ class _DestinationDetailsPageState
                           ),
                         ),
                       ),
+                    PlaceSourceCredit(
+                      data: _discovered.map((p) => p.visitingNotes).toList(),
+                    ),
                     places.when(
                       loading: () => const Padding(
                         padding: EdgeInsets.all(40),
@@ -780,6 +784,7 @@ class _DestinationDetailsPageState
                       'Map location is being added.',
                       style: TextStyle(color: AppColors.textSecondary),
                     ),
+                  PlaceSourceCredit(data: place.visitingNotes),
                   if (place.source?.host == 'www.openstreetmap.org')
                     const Text('© OpenStreetMap contributors · ODbL 1.0'),
                   if (place.source != null)

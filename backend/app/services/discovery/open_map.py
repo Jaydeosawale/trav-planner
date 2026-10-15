@@ -66,6 +66,10 @@ async def fetch(city_id, lat, lon, kind):
         -90 <= lat <= 90 and -180 <= lon <= 180
     ):
         raise ValueError("Invalid public area")
+    from app.services.discovery import geoapify
+
+    if geoapify.enabled() and kind in geoapify.CATEGORIES:
+        return await geoapify.fetch(city_id, lat, lon, kind)
     # Fixed categories and validated numbers only; no user text in Overpass QL.
     filters = list(FILTERS.values()) if kind == "all" else [FILTERS[kind]]
     query = (
