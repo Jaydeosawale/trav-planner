@@ -1,6 +1,8 @@
+import 'package:flutter/services.dart';
 import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:flutter/rendering.dart';
+import 'package:trav_planner/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:trav_planner/features/ai/data/datasources/ai_api.dart';
@@ -65,24 +67,36 @@ void main() {
     expect(tester.takeException(), isNull);
   });
   testWidgets('plan illustration exports as a PNG', (tester) async {
+    await tester.runAsync(() async {
+      await (FontLoader('Inter')
+            ..addFont(rootBundle.load('assets/fonts/Inter-400.ttf'))
+            ..addFont(rootBundle.load('assets/fonts/Inter-700.ttf')))
+          .load();
+      await (FontLoader(
+        'MaterialIcons',
+      )..addFont(rootBundle.load('fonts/MaterialIcons-Regular.otf'))).load();
+    });
     final key = GlobalKey();
     await tester.pumpWidget(
       MaterialApp(
+        theme: AppTheme.light,
         home: Scaffold(
           body: Center(
             child: SizedBox(
               width: 360,
               child: RepaintBoundary(
                 key: key,
-                child: const PlanPostcard(
-                  destination: 'Pune',
-                  days: 3,
-                  activities: 9,
-                  stops: [
-                    'Raja Dinkar Kelkar Museum',
-                    'Sarasbaug',
-                    'Vishrambaug Wada',
-                  ],
+                child: IntrinsicHeight(
+                  child: const PlanPostcard(
+                    destination: 'Pune',
+                    days: 3,
+                    activities: 9,
+                    stops: [
+                      'Raja Dinkar Kelkar Museum',
+                      'Sarasbaug',
+                      'Vishrambaug Wada',
+                    ],
+                  ),
                 ),
               ),
             ),
