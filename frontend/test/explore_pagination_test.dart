@@ -41,11 +41,12 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Next'));
-    await tester.tap(find.text('Next'));
+    await tester.ensureVisible(find.text('Show more destinations'));
+    await tester.tap(find.text('Show more destinations'));
     await tester.pumpAndSettle();
     expect(requests.last.page, 2);
     expect(find.text('City page 2'), findsOneWidget);
+    expect(find.text('City page 1'), findsOneWidget);
     await tester.ensureVisible(find.byType(TextField));
     await tester.enterText(find.byType(TextField), 'Tokyo');
     await tester.pump(const Duration(milliseconds: 500));

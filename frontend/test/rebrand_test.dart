@@ -136,9 +136,9 @@ void main() {
     await setup(tester, const Size(360, 1100), const ExplorePage());
     expect(tester.takeException(), isNull);
     await tester.runAsync(() => capture('trav-explore'));
-    await tester.tap(find.text('Goa').first);
+    await tester.tap(find.text('Panaji').first);
     await tester.pumpAndSettle();
-    expect(find.text('Search results for "Goa"'), findsOneWidget);
+    expect(find.text('Search results for "Panaji"'), findsOneWidget);
     expect(find.text('No cities found'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });

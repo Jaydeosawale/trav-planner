@@ -1,3 +1,4 @@
+import '../../../ai/presentation/pages/ai_search_page.dart';
 import 'package:trav_planner/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 
@@ -49,9 +50,11 @@ class CountryDetailsPage extends StatelessWidget {
 
           const SizedBox(width: 8),
 
-          const Text(
-            'Country Details',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+          const Expanded(
+            child: Text(
+              'Country Details',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+            ),
           ),
         ],
       ),
@@ -78,10 +81,6 @@ class CountryDetailsPage extends StatelessWidget {
             const SizedBox(height: 24),
 
             _buildVisaSection(context, isWide),
-
-            const SizedBox(height: 24),
-
-            _buildTravelInformationSection(isWide),
 
             const SizedBox(height: 24),
 
@@ -238,7 +237,7 @@ class CountryDetailsPage extends StatelessWidget {
           crossAxisCount: isWide ? 4 : 2,
           crossAxisSpacing: 12,
           mainAxisSpacing: 12,
-          childAspectRatio: isWide ? 2.5 : 1.8,
+          mainAxisExtent: isWide ? 130 : 154,
         ),
         itemBuilder: (context, index) {
           return _FactCard(fact: visibleFacts[index]);
@@ -259,7 +258,7 @@ class CountryDetailsPage extends StatelessWidget {
               title: 'States & Provinces',
               subtitle: 'Explore regions and local information.',
               onTap: () {
-                Navigator.of(context).pop();
+                Navigator.of(context).pop('states');
               },
             ),
           ),
@@ -272,7 +271,7 @@ class CountryDetailsPage extends StatelessWidget {
               title: 'Cities',
               subtitle: 'Discover cities and places to visit.',
               onTap: () {
-                Navigator.of(context).pop();
+                Navigator.of(context).pop('cities');
               },
             ),
           ),
@@ -285,51 +284,8 @@ class CountryDetailsPage extends StatelessWidget {
     return _SectionCard(
       title: 'Visa & Entry',
       icon: Icons.badge_outlined,
-      child: _ActionCard(
-        icon: Icons.verified_user_outlined,
-        title: 'Check Visa & Entry Requirements',
-        subtitle: 'Get current requirements before travelling.',
-        onTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Visa intelligence will be connected to current official sources.',
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildTravelInformationSection(bool isWide) {
-    return _SectionCard(
-      title: 'Travel Information',
-      icon: Icons.travel_explore_rounded,
-      child: GridView.count(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        crossAxisCount: isWide ? 3 : 1,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: isWide ? 2.8 : 3.5,
-        children: const [
-          _SimpleInfoCard(
-            icon: Icons.shield_outlined,
-            title: 'Safety',
-            subtitle: 'Travel safety information',
-          ),
-          _SimpleInfoCard(
-            icon: Icons.health_and_safety_outlined,
-            title: 'Health',
-            subtitle: 'Health and travel guidance',
-          ),
-          _SimpleInfoCard(
-            icon: Icons.gavel_rounded,
-            title: 'Local Rules',
-            subtitle: 'Important local regulations',
-          ),
-        ],
+      child: const Text(
+        'Entry rules depend on your passport and trip. Check the destination’s official immigration or embassy website before booking. Trav does not verify visa eligibility.',
       ),
     );
   }
@@ -345,50 +301,29 @@ class CountryDetailsPage extends StatelessWidget {
         ),
         border: Border.all(color: AppColors.surfaceVariant),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Icon(
-              Icons.auto_awesome_rounded,
-              color: AppColors.primary,
-            ),
+          const Icon(Icons.auto_awesome_rounded, color: AppColors.primary),
+          const SizedBox(height: 12),
+          const Text(
+            'Plan your visit',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
           ),
-
-          const SizedBox(width: 16),
-
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'AI Travel Intelligence',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  'Ask anything about travelling to ${country.name}.',
-                  style: const TextStyle(color: AppColors.textSecondary),
-                ),
-              ],
-            ),
+          const SizedBox(height: 6),
+          Text(
+            'Get ideas for ${country.name}, then choose your dates and destinations.',
           ),
-
-          const SizedBox(width: 12),
-
+          const SizedBox(height: 16),
           FilledButton.icon(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('AI country search will be connected next.'),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => AISearchPage(
+                  initialMessage:
+                      'Help me plan a trip to ${country.name}. Ask about my dates, interests and budget.',
                 ),
-              );
-            },
+              ),
+            ),
             icon: const Icon(Icons.auto_awesome_rounded, size: 18),
             label: const Text('Ask AI'),
           ),
@@ -426,11 +361,13 @@ class _SectionCard extends StatelessWidget {
             children: [
               Icon(icon, size: 21, color: AppColors.primary),
               const SizedBox(width: 9),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
               ),
             ],
@@ -535,55 +472,6 @@ class _ActionCard extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _SimpleInfoCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-
-  const _SimpleInfoCard({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: AppColors.primary),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(fontWeight: FontWeight.w700),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  subtitle,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }

@@ -34,7 +34,7 @@ class TravelQuickActions extends StatelessWidget {
               ),
               (
                 Icons.public,
-                'Explore destinations',
+                'Explore',
                 'Your next somewhere',
                 const Color(0xFFF8E5D3),
                 const ExplorePage(),
@@ -42,6 +42,7 @@ class TravelQuickActions extends StatelessWidget {
             ])
               SizedBox(
                 width: (box.maxWidth - 20) / 3,
+                height: box.maxWidth > 500 ? 156 : 128,
                 child: Material(
                   color: item.$4,
                   borderRadius: BorderRadius.circular(20),

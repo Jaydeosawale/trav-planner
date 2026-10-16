@@ -6,9 +6,9 @@ class TravelInspirationGrid extends StatelessWidget {
   const TravelInspirationGrid({super.key, required this.onSelect});
   final ValueChanged<String> onSelect;
   static const places = [
-    ('Goa', 'Slow days by the sea', 'goa'),
+    ('Panaji', 'Discover Goa at your pace', 'goa'),
     ('Paris', 'A city full of stories', 'paris'),
-    ('Switzerland', 'Take the scenic route', 'switzerland'),
+    ('Interlaken', 'Take the Swiss scenic route', 'switzerland'),
   ];
 
   @override
@@ -98,18 +98,17 @@ class TravelInspirationGrid extends StatelessWidget {
           ],
         );
       }
-      return Column(
-        children: [
-          tile(0, 190),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(child: tile(1, 180)),
-              const SizedBox(width: 12),
-              Expanded(child: tile(2, 180)),
-            ],
+      return SizedBox(
+        height: 210,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          itemCount: places.length,
+          separatorBuilder: (_, _) => const SizedBox(width: 12),
+          itemBuilder: (_, index) => SizedBox(
+            width: (box.maxWidth * .86).clamp(220.0, 340.0),
+            child: tile(index, 210),
           ),
-        ],
+        ),
       );
     },
   );

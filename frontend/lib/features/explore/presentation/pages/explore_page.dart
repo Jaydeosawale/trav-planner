@@ -6,6 +6,7 @@ import '../../../destinations/data/place.dart';
 import '../../../../shared/widgets/travel_inspiration_grid.dart';
 import 'package:trav_planner/core/theme/app_colors.dart';
 import 'dart:async';
+import 'package:flutter/rendering.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:flutter/material.dart';
@@ -29,18 +30,20 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
   final TextEditingController _searchController = TextEditingController();
 
   Timer? _searchDebounce;
+  final ScrollController _scroll = ScrollController();
 
   String _searchQuery = '';
 
   ExploreCountry? _selectedCountry;
   ExploreState? _selectedState;
 
-  int _section = 0;
+  int _section = 2;
   int _cityPage = 1;
 
   @override
   void initState() {
     super.initState();
+    _scroll.addListener(_loadNextOnScroll);
     _searchQuery = widget.initialQuery.trim();
     _searchController.text = _searchQuery;
     if (_searchQuery.isNotEmpty) _section = 2;
@@ -49,8 +52,35 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
   @override
   void dispose() {
     _searchDebounce?.cancel();
+    _scroll.dispose();
     _searchController.dispose();
     super.dispose();
+  }
+
+  ExploreCitySearchRequest _requestForPage(int page) =>
+      ExploreCitySearchRequest(
+        search: _searchQuery.trim().isEmpty ? null : _searchQuery.trim(),
+        countryId: _selectedCountry?.id,
+        stateId: _selectedState?.id,
+        size: 20,
+        page: page,
+      );
+
+  void _loadNextOnScroll() {
+    if (_section != 2 ||
+        !_scroll.hasClients ||
+        _scroll.position.extentAfter > 240) {
+      return;
+    }
+    if (_scroll.position.userScrollDirection != ScrollDirection.reverse ||
+        (_searchDebounce?.isActive ?? false)) {
+      return;
+    }
+    final result = ref
+        .read(exploreCitiesProvider(_requestForPage(_cityPage)))
+        .asData
+        ?.value;
+    if (result != null && _cityPage < result.pages) setState(() => _cityPage++);
   }
 
   void _onSearchChanged(String value) {
@@ -111,6 +141,8 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
                 final isWide = constraints.maxWidth >= 900;
 
                 return SingleChildScrollView(
+                  key: const ValueKey('explore-scroll'),
+                  controller: _scroll,
                   padding: EdgeInsets.only(
                     left: isWide ? 48 : 16,
                     right: isWide ? 48 : 16,
@@ -123,6 +155,10 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          if (Navigator.of(context).canPop()) ...[
+                            const BackButton(),
+                            const SizedBox(height: 8),
+                          ],
                           _buildHeader(context, items.length),
 
                           SizedBox(height: isWide ? 24 : 16),
@@ -156,7 +192,9 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
 
                           SizedBox(height: isWide ? 24 : 14),
 
-                          if (_section == 0 && _searchQuery.isEmpty) ...[
+                          if (_section == 2 &&
+                              _searchQuery.isEmpty &&
+                              _selectedCountry == null) ...[
                             TravelInspirationGrid(
                               onSelect: (query) {
                                 setState(() {
@@ -169,6 +207,8 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
                             ),
                             const SizedBox(height: 28),
                           ],
+                          _buildBrowseCountries(items),
+                          const SizedBox(height: 16),
                           _buildSectionSelector(),
 
                           SizedBox(height: isWide ? 24 : 18),
@@ -178,6 +218,8 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
 
                           if (_section == 1) _buildStatesSection(isWide),
 
+                          if (_section == 2 && _searchQuery.isNotEmpty)
+                            _buildMatchingCountries(items),
                           if (_section == 2) _buildCitiesSection(isWide),
                           if (_section == 2 &&
                               _searchQuery.length >= 2 &&
@@ -249,7 +291,7 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
         ),
         const SizedBox(height: 8),
         Text(
-          'Explore countries, regions and cities before you plan your trip.',
+          'Scroll for ideas, tap a country, or search for somewhere specific.',
           style: TextStyle(color: AppColors.textSecondary, fontSize: 15),
         ),
         const SizedBox(height: 16),
@@ -307,7 +349,7 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
                     setState(() {
                       _searchQuery = '';
                       _cityPage = 1;
-                      _section = 0;
+                      _section = 2;
                     });
                   },
                   icon: const Icon(Icons.close_rounded),
@@ -337,22 +379,18 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
         child: Row(
           children: [
             _sectionChip(
+              label: 'Cities',
+              icon: Icons.location_city_rounded,
+              index: 2,
+            ),
+            const SizedBox(width: 8),
+            _sectionChip(
               label: 'Countries',
               icon: Icons.public_rounded,
               index: 0,
             ),
             const SizedBox(width: 8),
-            _sectionChip(
-              label: 'States & Provinces',
-              icon: Icons.map_rounded,
-              index: 1,
-            ),
-            const SizedBox(width: 8),
-            _sectionChip(
-              label: 'Cities',
-              icon: Icons.location_city_rounded,
-              index: 2,
-            ),
+            _sectionChip(label: 'Regions', icon: Icons.map_rounded, index: 1),
           ],
         ),
       ),
@@ -386,6 +424,89 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
         fontWeight: FontWeight.w700,
       ),
       side: BorderSide(color: selected ? AppColors.primary : AppColors.border),
+    );
+  }
+
+  void _browseCountry(ExploreCountry? country) {
+    _searchDebounce?.cancel();
+    setState(() {
+      _selectedCountry = country;
+      _selectedState = null;
+      _searchQuery = '';
+      _searchController.clear();
+      _cityPage = 1;
+      _section = 2;
+    });
+  }
+
+  Widget _buildBrowseCountries(List<ExploreCountry> countries) {
+    const codes = ['IN', 'ID', 'JP', 'FR', 'IT', 'TH', 'CH', 'GB', 'US', 'AU'];
+    final picks = [
+      if (_selectedCountry != null && !codes.contains(_selectedCountry!.iso2))
+        _selectedCountry!,
+      for (final code in codes)
+        ...countries.where((c) => c.iso2 == code && c.isActive),
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Browse by country',
+          style: TextStyle(fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: 8),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: ChoiceChip(
+                  label: const Text('Worldwide'),
+                  selected: _selectedCountry == null,
+                  onSelected: (_) => _browseCountry(null),
+                ),
+              ),
+              for (final country in picks)
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: ChoiceChip(
+                    label: Text(country.name),
+                    selected: _selectedCountry?.id == country.id,
+                    onSelected: (_) => _browseCountry(country),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMatchingCountries(List<ExploreCountry> countries) {
+    final q = _searchQuery.toLowerCase();
+    final matches = countries
+        .where(
+          (c) =>
+              c.isActive &&
+              (c.name.toLowerCase().contains(q) || c.iso2.toLowerCase() == q),
+        )
+        .take(6);
+    if (matches.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          for (final country in matches)
+            ActionChip(
+              avatar: const Icon(Icons.public, size: 18),
+              label: Text('Browse ${country.name}'),
+              onPressed: () => _browseCountry(country),
+            ),
+        ],
+      ),
     );
   }
 
@@ -622,15 +743,19 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
   Widget _buildCitiesSection(bool isWide) {
     final query = _searchQuery.trim();
 
-    final request = ExploreCitySearchRequest(
-      search: query.isEmpty ? null : query,
-      countryId: _selectedCountry?.id,
-      stateId: _selectedState?.id,
-      size: 20,
-      page: _cityPage,
-    );
-
+    final request = _requestForPage(_cityPage);
     final cities = ref.watch(exploreCitiesProvider(request));
+    final previous = <ExploreCity>[];
+    for (var page = 1; page < _cityPage; page++) {
+      previous.addAll(
+        ref
+                .watch(exploreCitiesProvider(_requestForPage(page)))
+                .asData
+                ?.value
+                .items ??
+            [],
+      );
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -653,50 +778,30 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
 
         const SizedBox(height: 16),
 
+        if (previous.isNotEmpty) ...[
+          _cityGrid(previous, isWide),
+          const SizedBox(height: 16),
+        ],
         cities.when(
           loading: () => _buildLoading('Finding cities...'),
-          error: (error, _) => _buildError(error.toString()),
+          error: (error, _) => _buildError(
+            error.toString(),
+            onRetry: () => ref.invalidate(exploreCitiesProvider(request)),
+          ),
           data: (result) {
             if (result.items.isEmpty) {
               return _buildEmpty(
                 icon: Icons.location_city_outlined,
                 title: 'No cities found',
-                subtitle: 'Try a different city name.',
+                subtitle: query.isEmpty
+                    ? 'Choose a country above to explore another area.'
+                    : 'Try another name, or check the town results below.',
               );
             }
 
             return Column(
               children: [
-                GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: result.items.length,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: isWide ? 3 : 1,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                    childAspectRatio: isWide ? 3.1 : 4,
-                  ),
-                  itemBuilder: (context, index) {
-                    final city = result.items[index];
-                    return InkWell(
-                      borderRadius: BorderRadius.circular(18),
-                      onTap: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => DestinationDetailsPage(
-                            cityId: city.id,
-                            name: city.name,
-                            center: validCoordinates(
-                              city.latitude,
-                              city.longitude,
-                            ),
-                          ),
-                        ),
-                      ),
-                      child: _CityCard(city: city),
-                    );
-                  },
-                ),
+                _cityGrid(result.items, isWide),
                 const SizedBox(height: 16),
                 Text(
                   '${result.total} cities · Page ${result.page} of ${result.pages}',
@@ -706,26 +811,14 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    OutlinedButton.icon(
-                      onPressed: _cityPage > 1
-                          ? () => setState(() => _cityPage--)
-                          : null,
-                      icon: const Icon(Icons.chevron_left),
-                      label: const Text('Previous'),
-                    ),
-                    const SizedBox(width: 12),
-                    FilledButton.icon(
-                      onPressed: _cityPage < result.pages
-                          ? () => setState(() => _cityPage++)
-                          : null,
-                      icon: const Icon(Icons.chevron_right),
-                      label: const Text('Next'),
-                    ),
-                  ],
-                ),
+                if (_cityPage < result.pages)
+                  FilledButton.icon(
+                    onPressed: () => setState(() => _cityPage++),
+                    icon: const Icon(Icons.expand_more),
+                    label: const Text('Show more destinations'),
+                  )
+                else
+                  const Text('You’ve reached the end of these destinations.'),
               ],
             );
           },
@@ -733,6 +826,34 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
       ],
     );
   }
+
+  Widget _cityGrid(List<ExploreCity> items, bool isWide) => GridView.builder(
+    shrinkWrap: true,
+    physics: const NeverScrollableScrollPhysics(),
+    itemCount: items.length,
+    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+      crossAxisCount: isWide ? 3 : 1,
+      crossAxisSpacing: 16,
+      mainAxisSpacing: 16,
+      mainAxisExtent: isWide ? 116 : 104,
+    ),
+    itemBuilder: (context, index) {
+      final city = items[index];
+      return InkWell(
+        borderRadius: BorderRadius.circular(18),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => DestinationDetailsPage(
+              cityId: city.id,
+              name: city.name,
+              center: validCoordinates(city.latitude, city.longitude),
+            ),
+          ),
+        ),
+        child: _CityCard(city: city),
+      );
+    },
+  );
 
   // ==========================================================
   // Shared UI
@@ -774,7 +895,7 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
     );
   }
 
-  Widget _buildError(String error) {
+  Widget _buildError(String error, {VoidCallback? onRetry}) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -793,14 +914,18 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
             ),
             const SizedBox(height: 8),
             Text(
-              error,
+              'Please try again. Your browsing choices are kept.',
               textAlign: TextAlign.center,
               style: TextStyle(color: AppColors.textSecondary),
             ),
             const SizedBox(height: 18),
             FilledButton.icon(
               onPressed: () {
-                ref.invalidate(exploreCountriesProvider);
+                if (onRetry != null) {
+                  onRetry();
+                } else {
+                  ref.invalidate(exploreCountriesProvider);
+                }
               },
               icon: const Icon(Icons.refresh_rounded),
               label: const Text('Retry'),
@@ -853,10 +978,13 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
     );
   }
 
-  void _openCountryDetails(ExploreCountry country) {
-    Navigator.of(context).push(
+  Future<void> _openCountryDetails(ExploreCountry country) async {
+    final section = await Navigator.of(context).push<String>(
       MaterialPageRoute(builder: (_) => CountryDetailsPage(country: country)),
     );
+    if (!mounted || section == null) return;
+    _browseCountry(country);
+    if (section == 'states') setState(() => _section = 1);
   }
 }
 
@@ -1079,22 +1207,15 @@ class _CityCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
-                if (city.latitude != null && city.longitude != null)
-                  Text(
-                    '${city.latitude!.toStringAsFixed(2)}, ${city.longitude!.toStringAsFixed(2)}',
-                    style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 11,
-                    ),
-                  )
-                else
-                  Text(
-                    'Explore city',
-                    style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 12,
-                    ),
+                const Text(
+                  'Places, food & things to do',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 11,
                   ),
+                ),
               ],
             ),
           ),

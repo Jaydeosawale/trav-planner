@@ -27,6 +27,7 @@ class _DestinationSpotlightState extends State<DestinationSpotlight>
   Timer? _timer;
   int _index = 0;
   bool _foreground = true;
+  bool _tabVisible = true;
   bool _interacting = false;
   bool _reduceMotion = false;
   static const _places = [
@@ -47,6 +48,7 @@ class _DestinationSpotlightState extends State<DestinationSpotlight>
   void didChangeDependencies() {
     super.didChangeDependencies();
     _reduceMotion = MediaQuery.disableAnimationsOf(context);
+    _tabVisible = TickerMode.valuesOf(context).enabled;
     _schedule();
   }
 
@@ -68,7 +70,8 @@ class _DestinationSpotlightState extends State<DestinationSpotlight>
 
   void _schedule() {
     _timer?.cancel();
-    if (_reduceMotion ||
+    if (!_tabVisible ||
+        _reduceMotion ||
         !_foreground ||
         _interacting ||
         _hovered ||

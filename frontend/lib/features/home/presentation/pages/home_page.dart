@@ -108,6 +108,36 @@ class HomePage extends ConsumerWidget {
                         const SizedBox(height: 20),
                         const TravelQuickActions(),
                         const SizedBox(height: 24),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'Find your kind of escape',
+                                style: Theme.of(context).textTheme.titleLarge
+                                    ?.copyWith(fontSize: wide ? 22 : 19),
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () => _explore(context),
+                              child: const Text('Explore all'),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        TravelInspirationGrid(
+                          onSelect: (query) => _explore(context, query),
+                        ),
+                        const SizedBox(height: 32),
+                        Text(
+                          'Places to explore',
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        const SizedBox(height: 16),
+                        _DestinationCollection(
+                          onExplore: (query) => _explore(context, query),
+                        ),
+                        const SizedBox(height: 28),
                         if (wide)
                           const Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -150,35 +180,6 @@ class HomePage extends ConsumerWidget {
                           ],
                         ),
                         const SizedBox(height: 24),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                'Find your kind of escape',
-                                style: Theme.of(context).textTheme.titleLarge
-                                    ?.copyWith(fontSize: wide ? 22 : 19),
-                              ),
-                            ),
-                            TextButton(
-                              onPressed: () => _explore(context),
-                              child: const Text('Explore all'),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        TravelInspirationGrid(
-                          onSelect: (query) => _explore(context, query),
-                        ),
-                        const SizedBox(height: 32),
-                        Text(
-                          'Fresh discoveries',
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
-                        const SizedBox(height: 16),
-                        _DestinationCollection(
-                          onExplore: (query) => _explore(context, query),
-                        ),
                         const SizedBox(height: 24),
                       ],
                     ),

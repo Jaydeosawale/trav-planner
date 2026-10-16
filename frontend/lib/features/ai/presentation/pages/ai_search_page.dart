@@ -16,7 +16,8 @@ import '../../data/datasources/ai_api.dart';
 import '../../data/models/ai_response_model.dart';
 
 class AISearchPage extends StatefulWidget {
-  const AISearchPage({super.key, this.api});
+  const AISearchPage({super.key, this.api, this.initialMessage});
+  final String? initialMessage;
   final AIApi? api;
 
   @override
@@ -35,6 +36,12 @@ class _AISearchPageState extends State<AISearchPage> {
   String? _lastMessage;
   AIResponseModel? _response;
   final List<Map<String, String>> _history = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.text = widget.initialMessage ?? '';
+  }
 
   @override
   void dispose() {

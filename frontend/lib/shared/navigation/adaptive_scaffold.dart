@@ -27,41 +27,35 @@ class AdaptiveScaffold extends StatefulWidget {
 
 class _AdaptiveScaffoldState extends State<AdaptiveScaffold> {
   int _selectedIndex = 0;
+  final Set<int> _visited = {0};
 
   bool _isDesktop(BuildContext context) => Responsive.isDesktop(context);
   bool _isTablet(BuildContext context) => Responsive.isTablet(context);
 
   void _onNavigationSelected(int index) {
+    FocusScope.of(context).unfocus();
     setState(() {
       _selectedIndex = index;
+      _visited.add(index);
     });
   }
 
-  Widget _buildBody() {
-    switch (_selectedIndex) {
-      case 0:
-        return widget.body;
-
-      case 1:
-        return const ExplorePage();
-
-      case 2:
-        return const AISearchPage();
-
-      case 3:
-        return const MyTripsPage();
-
-      case 4:
-        return const ProfilePage();
-
-      // ========================================================
-      // Safety fallback
-      // ========================================================
-
-      default:
-        return widget.body;
-    }
-  }
+  Widget _buildBody() => IndexedStack(
+    index: _selectedIndex,
+    children: List.generate(5, (index) {
+      if (!_visited.contains(index)) return const SizedBox.shrink();
+      return TickerMode(
+        enabled: index == _selectedIndex,
+        child: switch (index) {
+          1 => const ExplorePage(),
+          2 => const AISearchPage(),
+          3 => const MyTripsPage(),
+          4 => const ProfilePage(),
+          _ => widget.body,
+        },
+      );
+    }),
+  );
 
   @override
   Widget build(BuildContext context) {
