@@ -19,7 +19,12 @@ import '../providers/explore_provider.dart';
 import 'country_details_page.dart';
 
 class ExplorePage extends ConsumerStatefulWidget {
-  const ExplorePage({super.key, this.initialQuery = ''});
+  const ExplorePage({
+    super.key,
+    this.initialQuery = '',
+    this.placeKind = 'attraction',
+  });
+  final String placeKind;
   final String initialQuery;
 
   @override
@@ -229,6 +234,7 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
                                 '${_searchQuery}_${_selectedCountry?.iso2}',
                               ),
                               query: _searchQuery,
+                              placeKind: widget.placeKind,
                               country: _selectedCountry?.iso2,
                             ),
                           const SizedBox(height: 24),
@@ -845,6 +851,7 @@ class _ExplorePageState extends ConsumerState<ExplorePage> {
           MaterialPageRoute(
             builder: (_) => DestinationDetailsPage(
               cityId: city.id,
+              initialKind: widget.placeKind,
               name: city.name,
               center: validCoordinates(city.latitude, city.longitude),
             ),

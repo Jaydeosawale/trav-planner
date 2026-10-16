@@ -46,6 +46,7 @@ class PlaceService(BaseService[Place]):
         city_id: str | None = None,
         place_type: str | None = None,
         category_id: str | None = None,
+        has_photo: bool = False,
     ) -> tuple[list[Place], int]:
         """
         Search and paginate active places.
@@ -62,6 +63,7 @@ class PlaceService(BaseService[Place]):
             place_type=place_type,
             category_id=category_id,
             active_only=True,
+            has_photo=has_photo,
         )
 
     # ==========================================================
@@ -81,17 +83,13 @@ class PlaceService(BaseService[Place]):
             db,
             payload.name,
         ):
-            raise ConflictException(
-                "Place already exists."
-            )
+            raise ConflictException("Place already exists.")
 
         if await self.repository.exists_by_slug(
             db,
             payload.slug,
         ):
-            raise ConflictException(
-                "Place slug already exists."
-            )
+            raise ConflictException("Place slug already exists.")
 
         place = Place(
             **payload.model_dump(),
@@ -123,19 +121,21 @@ class PlaceService(BaseService[Place]):
         )
 
         if place is None:
-            raise NotFoundException(
-                "Place"
-            )
+            raise NotFoundException("Place")
 
         data = payload.model_dump(
             exclude_unset=True,
         )
 
-        if place.content_revision == 'discovery-v1':
-            data['content_revision'] = 'admin-edited'
+        if place.content_revision == "discovery-v1":
+            data["content_revision"] = "admin-edited"
 
-        if 'image_url' in data and data['image_url'] != place.image_url and 'image_credit' not in data:
-            data['image_credit'] = None
+        if (
+            "image_url" in data
+            and data["image_url"] != place.image_url
+            and "image_credit" not in data
+        ):
+            data["image_credit"] = None
 
         # ------------------------------------------------------
         # Name
@@ -152,9 +152,7 @@ class PlaceService(BaseService[Place]):
                     name,
                 )
             ):
-                raise ConflictException(
-                    "Place already exists."
-                )
+                raise ConflictException("Place already exists.")
 
         # ------------------------------------------------------
         # Slug
@@ -171,9 +169,7 @@ class PlaceService(BaseService[Place]):
                     slug,
                 )
             ):
-                raise ConflictException(
-                    "Place slug already exists."
-                )
+                raise ConflictException("Place slug already exists.")
 
         # ------------------------------------------------------
         # Apply Updates
@@ -211,9 +207,7 @@ class PlaceService(BaseService[Place]):
         )
 
         if place is None:
-            raise NotFoundException(
-                "Place"
-            )
+            raise NotFoundException("Place")
 
         await self.repository.delete(
             db,
@@ -263,9 +257,7 @@ class PlaceService(BaseService[Place]):
         )
 
         if place is None:
-            raise NotFoundException(
-                "Place"
-            )
+            raise NotFoundException("Place")
 
         return place
 
@@ -291,8 +283,6 @@ class PlaceService(BaseService[Place]):
         )
 
         if place is None:
-            raise NotFoundException(
-                "Place"
-            )
+            raise NotFoundException("Place")
 
         return place

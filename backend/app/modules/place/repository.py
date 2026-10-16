@@ -13,6 +13,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.modules.city.model import City
+from app.modules.country.model import Country
+from app.modules.state.model import State
 from app.modules.place.model import Place
 from app.repositories.base import BaseRepository
 
@@ -64,9 +66,7 @@ class PlaceRepository(BaseRepository[Place]):
             )
         )
 
-        return list(
-            result.scalars().all()
-        )
+        return list(result.scalars().all())
 
     # ==========================================================
     # Get By ID
@@ -157,6 +157,7 @@ class PlaceRepository(BaseRepository[Place]):
         place_type: str | None = None,
         category_id: str | None = None,
         active_only: bool = True,
+        has_photo: bool = False,
     ) -> tuple[list[Place], int]:
         """
         Search and paginate places.
@@ -187,7 +188,17 @@ class PlaceRepository(BaseRepository[Place]):
 
         if active_only:
             filters.append(
-                Place.is_active.is_(True),
+                Place.is_active.is_(True)
+                & Place.city.has(
+                    City.is_active.is_(True)
+                    & City.is_deleted.is_(False)
+                    & City.country.has(
+                        Country.is_active.is_(True) & Country.is_deleted.is_(False)
+                    )
+                    & City.state.has(
+                        State.is_active.is_(True) & State.is_deleted.is_(False)
+                    )
+                ),
             )
 
         # ------------------------------------------------------
@@ -201,43 +212,40 @@ class PlaceRepository(BaseRepository[Place]):
                 search_pattern = f"%{search_value}%"
 
                 filters.append(
-    or_(
-        Place.city.has(City.name.ilike(search_pattern)),
-        Place.name.ilike(
-            search_pattern,
-        ),
-        Place.place_type.ilike(
-            search_pattern,
-        ),
-        Place.short_description.ilike(
-            search_pattern,
-        ),
-        Place.description.ilike(
-            search_pattern,
-        ),
-        Place.address.ilike(
-            search_pattern,
-        ),
-        Place.locality.ilike(
-            search_pattern,
-        ),
-        Place.provider.ilike(
-            search_pattern,
-        ),
-        Place.external_place_id.ilike(
-            search_pattern,
-        ),
-    )
-)
+                    or_(
+                        Place.city.has(City.name.ilike(search_pattern)),
+                        Place.name.ilike(
+                            search_pattern,
+                        ),
+                        Place.place_type.ilike(
+                            search_pattern,
+                        ),
+                        Place.short_description.ilike(
+                            search_pattern,
+                        ),
+                        Place.description.ilike(
+                            search_pattern,
+                        ),
+                        Place.address.ilike(
+                            search_pattern,
+                        ),
+                        Place.locality.ilike(
+                            search_pattern,
+                        ),
+                        Place.provider.ilike(
+                            search_pattern,
+                        ),
+                        Place.external_place_id.ilike(
+                            search_pattern,
+                        ),
+                    )
+                )
 
         # ------------------------------------------------------
         # Country / State Relationship
         # ------------------------------------------------------
 
-        needs_city_join = (
-            country_id is not None
-            or state_id is not None
-        )
+        needs_city_join = country_id is not None or state_id is not None
 
         # ------------------------------------------------------
         # City Filter
@@ -266,14 +274,20 @@ class PlaceRepository(BaseRepository[Place]):
                 Place.category_id == category_id,
             )
 
+        if country_id:
+            filters.append(City.country_id == country_id)
+        if state_id:
+            filters.append(City.state_id == state_id)
+        if has_photo:
+            filters.append(
+                or_(Place.image_url.like("https://%"), Place.image_url.like("http://%"))
+            )
+
         # ------------------------------------------------------
         # Count Query
         # ------------------------------------------------------
 
-        count_query = (
-            select(func.count())
-            .select_from(Place)
-        )
+        count_query = select(func.count()).select_from(Place)
 
         if needs_city_join:
             count_query = count_query.join(
@@ -294,12 +308,9 @@ class PlaceRepository(BaseRepository[Place]):
         # Main Query
         # ------------------------------------------------------
 
-        query = (
-            select(Place)
-            .options(
-                selectinload(Place.city),
-                selectinload(Place.category),
-            )
+        query = select(Place).options(
+            selectinload(Place.city),
+            selectinload(Place.category),
         )
 
         if needs_city_join:
@@ -312,24 +323,6 @@ class PlaceRepository(BaseRepository[Place]):
         )
 
         # ------------------------------------------------------
-        # Country Filter
-        # ------------------------------------------------------
-
-        if country_id:
-            query = query.where(
-                City.country_id == country_id,
-            )
-
-        # ------------------------------------------------------
-        # State Filter
-        # ------------------------------------------------------
-
-        if state_id:
-            query = query.where(
-                City.state_id == state_id,
-            )
-
-        # ------------------------------------------------------
         # Ordering
         # ------------------------------------------------------
 
@@ -337,6 +330,7 @@ class PlaceRepository(BaseRepository[Place]):
             Place.is_featured.desc(),
             Place.rating.desc().nullslast(),
             Place.name,
+            Place.id,
         )
 
         # ------------------------------------------------------
@@ -355,9 +349,7 @@ class PlaceRepository(BaseRepository[Place]):
             query,
         )
 
-        places = list(
-            result.scalars().all()
-        )
+        places = list(result.scalars().all())
 
         return places, total
 

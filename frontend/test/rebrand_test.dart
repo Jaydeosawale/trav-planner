@@ -1,3 +1,4 @@
+import 'package:trav_planner/features/places/data/place_catalogue.dart';
 import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
@@ -44,6 +45,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          placeCatalogueProvider.overrideWith(
+            (ref, q) async => const PlaceResults(items: [], total: 0, pages: 0),
+          ),
           bannersProvider.overrideWith((ref) async => []),
           destinationsProvider.overrideWith((ref) async => []),
           exploreCountriesProvider.overrideWith(

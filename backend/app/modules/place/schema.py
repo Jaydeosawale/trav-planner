@@ -11,10 +11,10 @@ from pydantic import BaseModel
 from pydantic import ConfigDict
 from pydantic import Field
 
-
 # ==========================================================
 # Create Place
 # ==========================================================
+
 
 class PlaceCreate(BaseModel):
     """
@@ -94,6 +94,7 @@ class PlaceCreate(BaseModel):
 # ==========================================================
 # Update Place
 # ==========================================================
+
 
 class PlaceUpdate(BaseModel):
     """
@@ -179,6 +180,7 @@ class PlaceUpdate(BaseModel):
 # Response
 # ==========================================================
 
+
 class PlaceResponse(BaseModel):
     """
     Public place representation.
@@ -191,6 +193,8 @@ class PlaceResponse(BaseModel):
     id: str
 
     city_id: str
+    city_name: str | None = None
+    country_id: str | None = None
     category_id: str | None
 
     name: str
@@ -224,11 +228,13 @@ class PlaceResponse(BaseModel):
 
     created_at: datetime
     updated_at: datetime
-    
 
     # ==========================================================
+
+
 # Paginated Response
 # ==========================================================
+
 
 class PlacePaginatedResponse(BaseModel):
     """

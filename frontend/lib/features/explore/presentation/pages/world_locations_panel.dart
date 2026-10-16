@@ -11,8 +11,10 @@ class WorldLocationsPanel extends StatefulWidget {
     required this.query,
     this.country,
     this.client,
+    this.placeKind = 'attraction',
   });
   final String query;
+  final String placeKind;
   final String? country;
   final Dio? client;
   @override
@@ -73,6 +75,7 @@ class _WorldLocationsPanelState extends State<WorldLocationsPanel> {
           builder: (_) => DestinationDetailsPage(
             discoveryClient: widget.client,
             cityId: city.id,
+            initialKind: widget.placeKind,
             name: city.name,
             center: validCoordinates(city.latitude, city.longitude),
           ),

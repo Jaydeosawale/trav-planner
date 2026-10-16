@@ -19,6 +19,7 @@ class DestinationDetailsPage extends ConsumerStatefulWidget {
   final TravelPlace? initialPlace;
   final Dio? discoveryClient;
   final bool autoDiscover;
+  final String initialKind;
   const DestinationDetailsPage({
     super.key,
     required this.cityId,
@@ -29,6 +30,7 @@ class DestinationDetailsPage extends ConsumerStatefulWidget {
     this.initialPlace,
     this.discoveryClient,
     this.autoDiscover = true,
+    this.initialKind = 'attraction',
   });
 
   @override
@@ -57,6 +59,7 @@ class _DestinationDetailsPageState
   @override
   void initState() {
     super.initState();
+    _discoveryKind = widget.initialKind;
     _scroll.addListener(_schedulePhotos);
     if (widget.autoDiscover) {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -64,7 +67,9 @@ class _DestinationDetailsPageState
           final known = await ref.read(
             cityPlacesProvider(widget.cityId).future,
           );
-          if (mounted && known.isEmpty && _discovered.isEmpty) {
+          if (mounted &&
+              (known.isEmpty || widget.initialKind != 'attraction') &&
+              _discovered.isEmpty) {
             await _discover();
           }
         } catch (_) {
@@ -136,7 +141,11 @@ class _DestinationDetailsPageState
           }.values.toList();
           _discoveryNotice =
               data['message']?.toString() ?? 'Source-backed places loaded.';
-          _filter = 'All';
+          _filter =
+              widget.initialKind != 'attraction' &&
+                  _discoveryKind == widget.initialKind
+              ? widget.initialKind
+              : 'All';
         });
       }
     } catch (_) {

@@ -19,7 +19,7 @@ LatLng? validCoordinates(dynamic latitude, dynamic longitude) {
 
 class TravelPlace {
   final String id, name, type;
-  final String? cityId;
+  final String? cityId, cityName, countryId;
   final String? description, address, imageUrl;
   final LatLng? point;
   final bool featured;
@@ -33,6 +33,8 @@ class TravelPlace {
     required this.name,
     required this.type,
     this.cityId,
+    this.cityName,
+    this.countryId,
     this.description,
     this.address,
     this.imageUrl,
@@ -49,6 +51,8 @@ class TravelPlace {
     name: name,
     type: type,
     cityId: cityId,
+    cityName: cityName,
+    countryId: countryId,
     description: description,
     address: address,
     imageUrl: photo.imageUrl ?? imageUrl,
@@ -63,11 +67,13 @@ class TravelPlace {
   factory TravelPlace.fromJson(Map<String, dynamic> json) => TravelPlace(
     id: json['id'].toString(),
     cityId: json['city_id']?.toString(),
+    cityName: json['city_name']?.toString(),
+    countryId: json['country_id']?.toString(),
     name: json['name']?.toString() ?? 'Place',
     type: json['place_type']?.toString() ?? 'attraction',
     description: (json['description'] ?? json['short_description'])?.toString(),
     address: json['address']?.toString(),
-    imageUrl: json['image_url']?.toString(),
+    imageUrl: displayPhotoUrl(json['image_url']?.toString()),
     point: validCoordinates(json['latitude'], json['longitude']),
     featured: json['is_featured'] == true,
     discovered: json['is_discovery'] == true,
@@ -95,4 +101,20 @@ Map<String, dynamic>? _credits(dynamic value) {
   } catch (_) {
     return null;
   }
+}
+
+// Wikimedia's thumbnail API may return the thumb host, which rejects some
+// external requests. The same thumbnail path is served by its upload CDN.
+String? displayPhotoUrl(String? value) {
+  final uri = value == null ? null : Uri.tryParse(value);
+  if (uri?.scheme == 'https' &&
+      uri?.host == 'thumb.wikimedia.org' &&
+      uri!.path.startsWith('/wikipedia/commons/thumb/')) {
+    return uri
+        .replace(host: 'upload.wikimedia.org')
+        .toString()
+        .split('?')
+        .first;
+  }
+  return value;
 }

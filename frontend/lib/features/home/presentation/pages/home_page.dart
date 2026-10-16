@@ -1,4 +1,8 @@
-import '../../../../shared/widgets/travel_quick_actions.dart';
+import '../../../places/presentation/browse_places_page.dart';
+import '../../../places/data/place_catalogue.dart';
+import '../widgets/home_places_section.dart';
+import '../../../booking/presentation/pages/booking_links_page.dart';
+import '../../../explore/presentation/pages/nearby_places_page.dart';
 import '../widgets/destination_spotlight.dart';
 import '../../../destinations/presentation/destination_details_page.dart';
 import '../../../destinations/data/place.dart';
@@ -103,35 +107,100 @@ class HomePage extends ConsumerWidget {
                         DestinationSpotlight(
                           banners:
                               ref.watch(bannersProvider).asData?.value ?? [],
-                          onSearch: (query) => _explore(context, query),
+                          onSearch: (query) => Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => BrowsePlacesPage(
+                                initialQuery: PlaceQuery(search: query),
+                              ),
+                            ),
+                          ),
                         ),
-                        const SizedBox(height: 20),
-                        const TravelQuickActions(),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 14),
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 12,
+                                  ),
+                                ),
+                                onPressed: () => Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => const NearbyPlacesPage(),
+                                  ),
+                                ),
+                                icon: const Icon(
+                                  Icons.near_me_outlined,
+                                  size: 17,
+                                ),
+                                label: const Text('Nearby', maxLines: 1),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 12,
+                                  ),
+                                ),
+                                onPressed: () => Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => const BookingLinksPage(),
+                                  ),
+                                ),
+                                icon: const Icon(
+                                  Icons.flight_takeoff,
+                                  size: 17,
+                                ),
+                                label: const Text('Book', maxLines: 1),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 12,
+                                  ),
+                                ),
+                                onPressed: () => Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => const SavedPage(),
+                                  ),
+                                ),
+                                icon: const Icon(
+                                  Icons.bookmark_border,
+                                  size: 17,
+                                ),
+                                label: const Text('Saved', maxLines: 1),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                        const HomePlacesSection(),
+                        const SizedBox(height: 28),
+                        Row(
                           children: [
                             Expanded(
                               child: Text(
-                                'Find your kind of escape',
-                                style: Theme.of(context).textTheme.titleLarge
-                                    ?.copyWith(fontSize: wide ? 22 : 19),
+                                'Somewhere new?',
+                                style: Theme.of(context).textTheme.titleLarge,
                               ),
                             ),
                             TextButton(
                               onPressed: () => _explore(context),
-                              child: const Text('Explore all'),
+                              child: const Text('Destinations'),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 16),
-                        TravelInspirationGrid(
-                          onSelect: (query) => _explore(context, query),
-                        ),
-                        const SizedBox(height: 32),
-                        Text(
-                          'Places to explore',
-                          style: Theme.of(context).textTheme.titleLarge,
+                        const Text(
+                          'Choose a destination for more local places.',
                         ),
                         const SizedBox(height: 16),
                         _DestinationCollection(
@@ -152,34 +221,6 @@ class HomePage extends ConsumerWidget {
                           const SizedBox(height: 16),
                           const _TripShortcut(),
                         ],
-                        const SizedBox(height: 20),
-                        Wrap(
-                          spacing: 18,
-                          runSpacing: 8,
-                          children: [
-                            TextButton.icon(
-                              onPressed: () => _explore(context),
-                              icon: const Icon(Icons.location_on_outlined),
-                              label: const Text('Discover places'),
-                              style: TextButton.styleFrom(
-                                foregroundColor: AppColors.textSecondary,
-                              ),
-                            ),
-                            TextButton.icon(
-                              onPressed: () => Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) => const SavedPage(),
-                                ),
-                              ),
-                              icon: const Icon(Icons.bookmark_border_rounded),
-                              label: const Text('Keep your favorites'),
-                              style: TextButton.styleFrom(
-                                foregroundColor: AppColors.textSecondary,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
                         const SizedBox(height: 24),
                       ],
                     ),
@@ -299,12 +340,11 @@ class _DestinationCollection extends ConsumerWidget {
           ),
         ),
         data: (destinations) {
-          final active = destinations.where((d) => d.isActive).toList();
+          final active = destinations
+              .where((d) => d.isActive && d.image?.startsWith('http') == true)
+              .toList();
           if (active.isEmpty) {
-            return const Text(
-              'New destinations will appear here soon.',
-              style: TextStyle(color: AppColors.textSecondary),
-            );
+            return TravelInspirationGrid(onSelect: onExplore);
           }
           return SizedBox(
             height: 230,

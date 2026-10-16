@@ -174,7 +174,7 @@ class _DestinationSpotlightState extends State<DestinationSpotlight>
             ),
             Container(
               width: double.infinity,
-              padding: EdgeInsets.all(wide ? 40 : 22),
+              padding: EdgeInsets.all(wide ? 32 : 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -212,40 +212,17 @@ class _DestinationSpotlightState extends State<DestinationSpotlight>
                       ),
                     ),
                   ),
-                  SizedBox(height: wide ? 60 : 48),
-                  const IgnorePointer(
-                    child: Text(
-                      'LESS PLANNING. MORE LIVING.',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        letterSpacing: 1.8,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
+                  SizedBox(height: wide ? 28 : 20),
                   IgnorePointer(
                     child: Text(
                       'Somewhere\nworth going.',
                       style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                        fontSize: wide ? 54 : 36,
+                        fontSize: wide ? 48 : 30,
                         color: Colors.white,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  const IgnorePointer(
-                    child: Text(
-                      'Find a place that feels like you.\nWe’ll help bring the plan together.',
-                      style: TextStyle(
-                        color: Color(0xFFE7EEE8),
-                        fontSize: 14,
-                        height: 1.5,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
                   ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 520),
                     child: Focus(
@@ -258,7 +235,7 @@ class _DestinationSpotlightState extends State<DestinationSpotlight>
                         textInputAction: TextInputAction.search,
                         onSubmitted: (value) => widget.onSearch(value.trim()),
                         decoration: InputDecoration(
-                          hintText: 'Search destinations',
+                          hintText: 'Find a place',
                           prefixIcon: const Icon(Icons.search_rounded),
                           suffixIcon: IconButton(
                             tooltip: 'Search destinations',

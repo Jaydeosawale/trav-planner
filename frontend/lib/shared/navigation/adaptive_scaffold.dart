@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/responsive/responsive.dart';
 import '../../features/ai/presentation/pages/ai_search_page.dart';
-import '../../features/explore/presentation/pages/explore_page.dart';
+import '../../features/places/presentation/browse_places_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/trips/presentation/pages/my_trips_page.dart';
 import 'desktop_top_nav.dart';
@@ -47,7 +47,7 @@ class _AdaptiveScaffoldState extends State<AdaptiveScaffold> {
       return TickerMode(
         enabled: index == _selectedIndex,
         child: switch (index) {
-          1 => const ExplorePage(),
+          1 => const BrowsePlacesPage(),
           2 => const AISearchPage(),
           3 => const MyTripsPage(),
           4 => const ProfilePage(),

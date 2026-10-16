@@ -24,7 +24,6 @@ from app.modules.place.schema import PlacePaginatedResponse
 from app.modules.place.schema import PlaceResponse
 from app.modules.place.service import PlaceService
 
-
 router = APIRouter()
 
 service = PlaceService()
@@ -35,6 +34,7 @@ service = PlaceService()
 # IMPORTANT:
 # Must be before /{place_id}
 # ==========================================================
+
 
 @router.get(
     "/search",
@@ -70,6 +70,7 @@ async def search_places(
     category_id: str | None = Query(
         default=None,
     ),
+    has_photo: bool = Query(default=False),
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -103,16 +104,21 @@ async def search_places(
         city_id=city_id,
         place_type=place_type,
         category_id=category_id,
+        has_photo=has_photo,
     )
 
-    pages = (
-        (total + size - 1) // size
-        if total > 0
-        else 0
-    )
+    pages = (total + size - 1) // size if total > 0 else 0
 
     data = PlacePaginatedResponse(
-        items=places,
+        items=[
+            PlaceResponse.model_validate(place).model_copy(
+                update={
+                    "city_name": place.city.name if place.city else None,
+                    "country_id": place.city.country_id if place.city else None,
+                }
+            )
+            for place in places
+        ],
         total=total,
         page=page,
         size=size,
@@ -128,6 +134,7 @@ async def search_places(
 # ==========================================================
 # Get All
 # ==========================================================
+
 
 @router.get(
     "/",
@@ -149,10 +156,7 @@ async def get_places(
     )
 
     return success_response(
-        data=[
-            PlaceResponse.model_validate(place)
-            for place in places
-        ],
+        data=[PlaceResponse.model_validate(place) for place in places],
         message="Places retrieved successfully",
     )
 
@@ -160,6 +164,7 @@ async def get_places(
 # ==========================================================
 # Get By ID
 # ==========================================================
+
 
 @router.get(
     "/{place_id}",
@@ -188,6 +193,7 @@ async def get_place(
 # ==========================================================
 # Get By Slug
 # ==========================================================
+
 
 @router.get(
     "/slug/{slug}",
