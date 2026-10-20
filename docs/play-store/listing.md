@@ -1,6 +1,6 @@
 # Trav
 
-Short description (77 characters max used below):
+Short description (75 characters; Play limit 80):
 Discover places, explore nearby and create personalised AI travel itineraries.
 
 Full description:
@@ -29,4 +29,4 @@ Release notes:
 First Google Play release of Trav: place discovery, optional Nearby location, AI planning, saved places and editable trips. Includes in-app AI-content reporting and privacy/account-deletion links.
 
 Status:
-Play Console record created. Privacy and no-ads declarations saved. Not submitted or publicly available yet.
+Play Console record created. Privacy, reviewer access, no-ads, IARC rating, adult audience, government and financial declarations saved. Live normal reviewer login, AI chat with persisted session and in-app reporting API verified (HTTP 201). Signed AAB built and signature verified. Not submitted or publicly available yet.

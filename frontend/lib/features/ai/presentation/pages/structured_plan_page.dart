@@ -534,6 +534,10 @@ class _StructuredPlanPageState extends ConsumerState<StructuredPlanPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              const Text(
+                'Your prompts and trip preferences are sent to Gemini or Groq to generate a plan. Provider retention and use may apply. Avoid sensitive details. AI suggestions can be inaccurate.',
+              ),
+              const SizedBox(height: 16),
               if (_draft == null)
                 Form(
                   key: _form,

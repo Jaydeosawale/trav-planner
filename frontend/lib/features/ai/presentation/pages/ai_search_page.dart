@@ -432,6 +432,10 @@ class _AISearchPageState extends State<AISearchPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                const Text(
+                  'Your prompts and trip preferences are sent to Gemini or Groq to generate a plan. Provider retention and use may apply. Avoid sensitive details. AI suggestions can be inaccurate.',
+                ),
+                const SizedBox(height: 16),
                 if (_lastMessage == null && _session == null) ...[
                   Container(
                     padding: const EdgeInsets.all(24),
