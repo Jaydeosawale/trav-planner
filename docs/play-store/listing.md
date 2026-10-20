@@ -28,5 +28,7 @@ Delete account and data: https://jaydeo-sawale-portfolio.vercel.app/trav/delete-
 Release notes:
 First Google Play release of Trav: place discovery, optional Nearby location, AI planning, saved places and editable trips. Includes in-app AI-content reporting and privacy/account-deletion links.
 
+Initial country: India only (user selected; free-tier Gemini).
+
 Status:
-Play Console record created. Privacy, reviewer access, no-ads, IARC rating, adult audience, government and financial declarations saved. Live normal reviewer login, AI chat with persisted session and in-app reporting API verified (HTTP 201). Signed AAB built and signature verified. Not submitted or publicly available yet.
+Play Console record created. Privacy, reviewer access, no-ads, IARC rating, adult audience, government and financial declarations saved. Live normal reviewer login, AI chat with persisted session and in-app reporting API verified (HTTP 201). Signed AAB built and signature verified. Data Safety and health declarations saved. Store category/contact and listing remain. Not submitted or publicly available yet.

@@ -30,3 +30,5 @@ providers and server logging. No Firebase, advertising or analytics SDK was foun
 
 Reference: https://support.google.com/googleplay/android-developer/answer/10787469
 Review the generated Console preview before saving the imported CSV.
+
+Gemini unpaid-service terms permit model/product improvement and human review. AI-sharing purposes include functionality and analytics for this provider use. Terms: https://ai.google.dev/gemini-api/terms . Initial countries must satisfy the provider region restrictions; EEA/UK/Switzerland require paid service.
