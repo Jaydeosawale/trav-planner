@@ -2,6 +2,10 @@
 
 App: Trav · com.jaydeo.travplanner · free
 Console app ID: 4972372695843640924
+Internal track: 4701587607702177977
+Production track: 4697294356896467671
+First production availability: India only (user-approved).
+Gemini free-tier region restrictions: https://ai.google.dev/gemini-api/terms
 Public privacy: https://jaydeo-sawale-portfolio.vercel.app/trav/privacy/
 Public deletion: https://jaydeo-sawale-portfolio.vercel.app/trav/delete-account/
 Support: jaydeep.sawale97@gmail.com

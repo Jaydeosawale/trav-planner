@@ -1,0 +1,1 @@
+Four genuine 1080×1920 Android emulator screenshots were verified in the saved Play Console listing on 20 October 2026. The user added the screenshots to the listing. Images are unaltered native Android Studio captures. The home image is also retained under its earlier descriptive filename. Order in Console: 185251, 190317, 190222, 190420.

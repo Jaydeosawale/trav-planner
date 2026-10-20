@@ -31,4 +31,10 @@ First Google Play release of Trav: place discovery, optional Nearby location, AI
 Initial country: India only (user selected; free-tier Gemini).
 
 Status:
-Play Console record created. Privacy, reviewer access, no-ads, IARC rating, adult audience, government and financial declarations saved. Live normal reviewer login, AI chat with persisted session and in-app reporting API verified (HTTP 201). Signed AAB built and signature verified. Data Safety and health declarations saved. Store category/contact and listing remain. Not submitted or publicly available yet.
+Production submission queued on 20 October 2026 (IST). Play Console shows Changes in review. Automatic quick checks are running; changes proceed to review after checks pass. Production country: India only. Managed publishing is off, so an approved release can publish automatically. The app is not confirmed publicly available yet.
+
+Version 22 (1.0.21) is available to internal testers (released 7:06 PM IST). Google accepted the bundle, reports approximately 73 MB new-install download size and 19,292 supported devices, and production validation showed Ready to release. Store listing includes four genuine native 1080×1920 screenshots attached by the user. Advertising ID declaration completed as No; the built APK contains no AD_ID permission. All initial setup declarations and India country selection are saved.
+
+Evidence screenshot: outputs/Trav-Play-Submitted.png in the task workspace.
+
+Internal tester access verified: selected Jaydeo email list has 2 users. Opt-in link: https://play.google.com/apps/internaltest/4701587607702177977 .
