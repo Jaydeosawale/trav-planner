@@ -3,12 +3,14 @@ class ApiResponse<T> {
   final T? data;
   final String? message;
   final String? error;
+  final int? statusCode;
 
   const ApiResponse({
     required this.success,
     this.data,
     this.message,
     this.error,
+    this.statusCode,
   });
 
   factory ApiResponse.fromJson(

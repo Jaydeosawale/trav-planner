@@ -1,3 +1,5 @@
+import 'package:trav_planner/features/auth/presentation/providers/auth_provider.dart';
+import 'package:trav_planner/features/auth/data/models/user_model.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,6 +7,20 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:trav_planner/features/ai/presentation/pages/structured_plan_page.dart';
 import 'package:trav_planner/features/explore/presentation/pages/nearby_places_page.dart';
 import 'package:trav_planner/features/booking/presentation/pages/booking_links_page.dart';
+
+class NearbyTestAuth extends AuthNotifier {
+  @override
+  AuthState build() => AuthState.authenticated(
+    user: UserModel(
+      id: 'test-user',
+      email: 'nearby@example.test',
+      fullName: 'Nearby tester',
+      isActive: true,
+      createdAt: DateTime(2026),
+      role: 'user',
+    ),
+  );
+}
 
 void main() {
   testWidgets('daily plan requires review and saves only selected activities', (
@@ -147,6 +163,7 @@ void main() {
                     'id': 'pune',
                     'name': 'Pune',
                     'country_id': 'india',
+                    'state_id': 'mh',
                     'latitude': 18.52,
                     'longitude': 73.85,
                   },
@@ -156,10 +173,31 @@ void main() {
           } else if (o.path == '/countries/active') {
             data = {
               'data': [
-                {'id': 'india', 'name': 'India'},
+                {'id': 'india', 'name': 'India', 'iso2': 'IN'},
+              ],
+            };
+          } else if (o.path == '/discovery/locations') {
+            data = {
+              'items': [
+                {
+                  'id': 'small-town',
+                  'name': 'Pune district town',
+                  'country': 'IN',
+                  'country_name': 'India',
+                  'region_name': 'Maharashtra',
+                  'latitude': 18.6,
+                  'longitude': 73.9,
+                },
+              ],
+            };
+          } else if (o.path == '/states/country/india') {
+            data = {
+              'data': [
+                {'id': 'mh', 'name': 'Maharashtra'},
               ],
             };
           } else {
+            expect(o.path, '/discovery/nearby');
             expect(o.method, 'POST');
             expect(o.data['radius_km'], 5);
             data = {
@@ -180,14 +218,22 @@ void main() {
         },
       ),
     );
-    await tester.pumpWidget(MaterialApp(home: NearbyPlacesPage(client: dio)));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [authProvider.overrideWith(NearbyTestAuth.new)],
+        child: MaterialApp(home: NearbyPlacesPage(client: dio)),
+      ),
+    );
     await tester.enterText(find.byType(TextField), 'Pune');
     await tester.tap(find.text('Find location'));
     await tester.pumpAndSettle();
+    expect(find.text('Pune district town'), findsOneWidget);
+    expect(find.text('Maharashtra · India'), findsNWidgets(2));
     await tester.tap(find.widgetWithText(ListTile, 'Pune'));
     await tester.pumpAndSettle();
     expect(find.text('Nearby museum'), findsOneWidget);
     expect(paths, contains('/discovery/nearby'));
+    expect(paths, contains('/discovery/locations'));
     expect(paths.any((p) => p.startsWith('/ai')), isFalse);
     expect(tester.takeException(), isNull);
   });

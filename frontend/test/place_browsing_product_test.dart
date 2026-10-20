@@ -138,7 +138,7 @@ void main() {
       await tester.tap(find.widgetWithText(ChoiceChip, 'Food'));
       await tester.pumpAndSettle();
       expect(queries.last.type, 'restaurant');
-      await tester.tap(find.widgetWithText(OutlinedButton, 'Filters'));
+      await tester.tap(find.byTooltip('Filters'));
       await tester.pumpAndSettle();
       await tester.tap(find.byType(DropdownButtonFormField<String>));
       await tester.pumpAndSettle();
@@ -215,7 +215,7 @@ void main() {
       await tester.tap(find.text('Include places without photos'));
       await tester.pumpAndSettle();
       expect(queries.last.photosOnly, false);
-      expect(find.text('Photo not available'), findsOneWidget);
+      expect(find.text('No photo yet'), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );

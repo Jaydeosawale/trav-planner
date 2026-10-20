@@ -11,7 +11,8 @@ import 'forgot_password_page.dart';
 import 'signup_page.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
-  const LoginPage({super.key});
+  const LoginPage({super.key, this.returnToCaller = false});
+  final bool returnToCaller;
 
   @override
   ConsumerState<LoginPage> createState() => _LoginPageState();
@@ -65,7 +66,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     if (!success) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Login failed. Please check your email and password.'),
+          content: Text(
+            'Couldn’t sign in. Check your connection and account details, then try again.',
+          ),
         ),
       );
 
@@ -87,6 +90,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       return;
     }
 
+    if (widget.returnToCaller) {
+      Navigator.of(context).pop(true);
+      return;
+    }
     if (user.isAdmin) {
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (_) => const AdminDashboardPage()),

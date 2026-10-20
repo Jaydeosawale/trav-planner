@@ -7,7 +7,7 @@ final authRepositoryProvider = Provider<AuthRepository>(
   (ref) => AuthRepository.instance,
 );
 
-enum AuthStatus { checking, authenticated, unauthenticated }
+enum AuthStatus { checking, authenticated, unauthenticated, unavailable }
 
 class AuthState {
   final AuthStatus status;
@@ -23,6 +23,8 @@ class AuthState {
   const AuthState.unauthenticated()
     : status = AuthStatus.unauthenticated,
       user = null;
+
+  const AuthState.unavailable() : status = AuthStatus.unavailable, user = null;
 
   // ========================================================
   // Role helpers
@@ -72,37 +74,15 @@ class AuthNotifier extends Notifier<AuthState> {
         return;
       }
 
-      // ------------------------------------------------------
-      // Access token expired.
-      // Try refresh token.
-      // ------------------------------------------------------
-
-      final refreshResponse = await _repository.refreshToken();
-
-      if (!refreshResponse.success) {
+      // The network client already handles a single coordinated token refresh.
+      if ([401, 403].contains(response.statusCode)) {
         await _repository.logout();
-
         state = const AuthState.unauthenticated();
-        return;
-      }
-
-      // ------------------------------------------------------
-      // Get current user using new access token.
-      // ------------------------------------------------------
-
-      final refreshedUser = await _repository.getCurrentUser();
-
-      if (refreshedUser.success && refreshedUser.data != null) {
-        state = AuthState.authenticated(user: refreshedUser.data);
       } else {
-        await _repository.logout();
-
-        state = const AuthState.unauthenticated();
+        state = const AuthState.unavailable();
       }
     } catch (_) {
-      await _repository.logout();
-
-      state = const AuthState.unauthenticated();
+      state = const AuthState.unavailable();
     }
   }
 
@@ -145,10 +125,12 @@ class AuthNotifier extends Notifier<AuthState> {
       // Login succeeded but profile failed.
       // ------------------------------------------------------
 
-      await _repository.logout();
-
-      state = const AuthState.unauthenticated();
-
+      if ([401, 403].contains(userResponse.statusCode)) {
+        await _repository.logout();
+        state = const AuthState.unauthenticated();
+      } else {
+        state = const AuthState.unavailable();
+      }
       return false;
     } catch (_) {
       state = const AuthState.unauthenticated();

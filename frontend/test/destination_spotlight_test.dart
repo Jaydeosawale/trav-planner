@@ -23,10 +23,8 @@ void main() {
     (tester) async {
       await show(tester);
       expect(find.text('Bali, Indonesia'), findsOneWidget);
-      expect(
-        find.byType(IconButton),
-        findsOneWidget,
-      ); // The destination search action.
+      expect(find.byType(IconButton), findsNothing);
+      expect(find.byType(TextField), findsNothing);
       for (final place in ['Goa, India', 'Paris, France', 'Bali, Indonesia']) {
         await tester.pump(const Duration(seconds: 5));
         await tester.pumpAndSettle();
@@ -38,14 +36,14 @@ void main() {
     },
   );
 
-  testWidgets('Reduced motion and typing keep destination steady', (
+  testWidgets('Reduced motion and keyboard focus keep destination steady', (
     tester,
   ) async {
     await show(tester, reduced: true);
     await tester.pump(const Duration(seconds: 10));
     expect(find.text('Bali, Indonesia'), findsOneWidget);
     await show(tester);
-    await tester.tap(find.byType(TextField));
+    Focus.of(tester.element(find.text('Bali, Indonesia'))).requestFocus();
     await tester.pumpAndSettle();
     await tester.pump(const Duration(seconds: 10));
     expect(find.text('Bali, Indonesia'), findsOneWidget);

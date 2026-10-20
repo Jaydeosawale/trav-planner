@@ -1,3 +1,4 @@
+import 'package:url_launcher/url_launcher.dart';
 import 'package:trav_planner/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -119,27 +120,6 @@ class ProfilePage extends ConsumerWidget {
               ).push(MaterialPageRoute(builder: (_) => const SavedPage())),
             ),
 
-            _ProfileMenuItem(
-              icon: Icons.person_outline_rounded,
-              title: 'Edit Profile',
-              subtitle: 'Update your personal information',
-              onTap: () {},
-            ),
-
-            _ProfileMenuItem(
-              icon: Icons.settings_outlined,
-              title: 'Settings',
-              subtitle: 'Manage app preferences',
-              onTap: () {},
-            ),
-
-            _ProfileMenuItem(
-              icon: Icons.lock_outline_rounded,
-              title: 'Security',
-              subtitle: 'Password and account security',
-              onTap: () {},
-            ),
-
             const SizedBox(height: 26),
 
             // ========================================================
@@ -157,13 +137,6 @@ class ProfilePage extends ConsumerWidget {
             const SizedBox(height: 12),
 
             _ProfileMenuItem(
-              icon: Icons.notifications_none_rounded,
-              title: 'Notifications',
-              subtitle: 'Manage travel and trip notifications',
-              onTap: () {},
-            ),
-
-            _ProfileMenuItem(
               icon: Icons.travel_explore_rounded,
               title: 'Travel Preferences',
               subtitle: 'Customize your travel experience',
@@ -172,6 +145,19 @@ class ProfilePage extends ConsumerWidget {
                   builder: (_) => const TravelPreferencesPage(),
                 ),
               ),
+            ),
+
+            _ProfileMenuItem(
+              icon: Icons.privacy_tip_outlined,
+              title: 'Privacy policy',
+              subtitle: 'How Trav handles your data',
+              onTap: () => _openPolicy(context, 'privacy'),
+            ),
+            _ProfileMenuItem(
+              icon: Icons.person_remove_outlined,
+              title: 'Delete account and data',
+              subtitle: 'Request permanent removal of your account',
+              onTap: () => _openPolicy(context, 'delete-account'),
             ),
 
             const SizedBox(height: 30),
@@ -207,6 +193,31 @@ class ProfilePage extends ConsumerWidget {
   // ==========================================================
   // Initials
   // ==========================================================
+
+  static Future<void> _openPolicy(BuildContext context, String page) async {
+    final url = Uri.parse(
+      'https://jaydeo-sawale-portfolio.vercel.app/trav/$page/',
+    );
+    try {
+      if (await launchUrl(url, mode: LaunchMode.externalApplication)) return;
+    } catch (_) {
+      /* Show a copyable address when no browser is available. */
+    }
+    if (!context.mounted) return;
+    await showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Open in your browser'),
+        content: SelectableText(url.toString()),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
 
   static String _initials(String name) {
     final parts = name

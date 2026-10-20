@@ -133,3 +133,6 @@ async def forget_session(session_id: str, current_user: User = Depends(get_curre
 
 from .structured_router import router as structured_router
 router.include_router(structured_router)
+
+from .reports_router import router as reports_router
+router.include_router(reports_router)

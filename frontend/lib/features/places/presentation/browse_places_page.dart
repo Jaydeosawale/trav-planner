@@ -1,3 +1,7 @@
+import 'package:dio/dio.dart';
+import '../../auth/presentation/widgets/require_sign_in.dart';
+import '../data/place_area.dart';
+import 'area_selector.dart';
 import '../../maps/places_map.dart';
 import '../../destinations/data/place.dart';
 import 'place_details_page.dart';
@@ -25,10 +29,47 @@ class _BrowsePlacesPageState extends ConsumerState<BrowsePlacesPage> {
   Timer? _debounce;
   int _page = 1;
   bool _map = false;
+  bool _discovering = false;
+  String? _discoveryNotice;
+  List<TravelPlace> _additional = [];
+  List<TravelPlace> get _visibleAdditional {
+    final known = <String>{};
+    for (var page = 1; page <= _page; page++) {
+      known.addAll(
+        ref
+                .read(placeCatalogueProvider(_query.copyWith(page: page)))
+                .asData
+                ?.value
+                .items
+                .map((p) => p.id) ??
+            <String>[],
+      );
+    }
+    return _additional
+        .where(
+          (place) =>
+              !known.contains(place.id) &&
+              (!_query.photosOnly || place.imageUrl != null) &&
+              (_query.type == 'all' || place.type == _query.type) &&
+              (_query.search.isEmpty ||
+                  '${place.name} ${place.description ?? ''}'
+                      .toLowerCase()
+                      .contains(_query.search.toLowerCase())),
+        )
+        .toList();
+  }
+
   @override
   void initState() {
     super.initState();
     _scroll.addListener(_next);
+    final area = ref.read(chosenPlaceAreaProvider);
+    if (_query.search.isEmpty &&
+        _query.cityId == null &&
+        area != null &&
+        (_query.countryId == null || area.countryId == _query.countryId)) {
+      _query = _query.copyWith(cityId: area.cityId, countryId: area.countryId);
+    }
   }
 
   void _change(PlaceQuery query) {
@@ -36,7 +77,55 @@ class _BrowsePlacesPageState extends ConsumerState<BrowsePlacesPage> {
     setState(() {
       _query = query.copyWith(page: 1, size: 20, search: _search.text);
       _page = 1;
+      _additional = [];
+      _discoveryNotice = null;
     });
+  }
+
+  void _selectArea(PlaceArea area) {
+    _search.clear();
+    _change(
+      _query.copyWith(
+        cityId: area.cityId,
+        countryId: area.countryId,
+        search: '',
+        photosOnly: false,
+      ),
+    );
+  }
+
+  Future<void> _discover() async {
+    if (_discovering || _query.cityId == null) return;
+    if (!await ensureSignedIn(context, ref)) return;
+    if (!mounted) return;
+    setState(() {
+      _discovering = true;
+      _discoveryNotice = null;
+    });
+    final request = _query;
+    try {
+      final response = await ref
+          .read(placeAreaApiProvider)
+          .client
+          .get(
+            '/discovery/cities/${_query.cityId}',
+            options: Options(receiveTimeout: const Duration(seconds: 75)),
+            queryParameters: {
+              'kind': _query.type == 'all' ? 'local' : _query.type,
+            },
+          );
+      if (!mounted || request != _query) return;
+      setState(() {
+        _additional = (response.data['items'] as List)
+            .map((p) => TravelPlace.fromJson(Map<String, dynamic>.from(p)))
+            .toList();
+        _discoveryNotice = response.data['message']?.toString();
+      });
+    } catch (error) {
+      if (mounted) setState(() => _discoveryNotice = areaFailure(error));
+    } finally {
+      if (mounted) setState(() => _discovering = false);
+    }
   }
 
   void _next() {
@@ -63,6 +152,10 @@ class _BrowsePlacesPageState extends ConsumerState<BrowsePlacesPage> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<PlaceArea?>(chosenPlaceAreaProvider, (previous, next) {
+      if (next != null && previous?.cityId != next.cityId) _selectArea(next);
+    });
+    final area = ref.watch(chosenPlaceAreaProvider);
     final wide = MediaQuery.sizeOf(context).width >= 900;
     final mapped = <TravelPlace>[];
     if (_map) {
@@ -77,6 +170,7 @@ class _BrowsePlacesPageState extends ConsumerState<BrowsePlacesPage> {
         );
       }
     }
+    if (_map) mapped.addAll(_visibleAdditional);
     final current = ref.watch(
       placeCatalogueProvider(_query.copyWith(page: _page)),
     );
@@ -99,6 +193,24 @@ class _BrowsePlacesPageState extends ConsumerState<BrowsePlacesPage> {
                         'Find your next stop.',
                         style: Theme.of(context).textTheme.headlineMedium,
                       ),
+                      const SizedBox(height: 12),
+                      const AreaSelector(),
+                      if (_query.cityId != null && area != null) ...[
+                        Text(
+                          'Around ${area.name}${area.subtitle.isEmpty ? '' : ' · ${area.subtitle}'}',
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            ref.read(chosenPlaceAreaProvider.notifier).state =
+                                null;
+                            _search.clear();
+                            _change(
+                              _query.copyWith(clearCity: true, search: ''),
+                            );
+                          },
+                          child: const Text('Search worldwide'),
+                        ),
+                      ],
                       const SizedBox(height: 16),
                       TextField(
                         controller: _search,
@@ -125,6 +237,18 @@ class _BrowsePlacesPageState extends ConsumerState<BrowsePlacesPage> {
                         },
                       ),
                       const SizedBox(height: 12),
+                      if (_query.search.trim().length >= 2) ...[
+                        AreaCandidates(
+                          query: _query.search,
+                          countryId: _query.countryId,
+                          onSelected: _selectArea,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Places',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ],
                       PlaceCategoryBar(query: _query, onChanged: _change),
                       const SizedBox(height: 8),
                       Wrap(
@@ -135,7 +259,19 @@ class _BrowsePlacesPageState extends ConsumerState<BrowsePlacesPage> {
                           OutlinedButton.icon(
                             onPressed: () async {
                               final q = await showPlaceFilters(context, _query);
-                              if (q != null && mounted) _change(q);
+                              if (q != null && mounted) {
+                                if (q.countryId != _query.countryId) {
+                                  ref
+                                          .read(
+                                            chosenPlaceAreaProvider.notifier,
+                                          )
+                                          .state =
+                                      null;
+                                  _change(q.copyWith(clearCity: true));
+                                } else {
+                                  _change(q.copyWith(cityId: _query.cityId));
+                                }
+                              }
                             },
                             icon: const Icon(Icons.tune),
                             label: Text(
@@ -151,11 +287,38 @@ class _BrowsePlacesPageState extends ConsumerState<BrowsePlacesPage> {
                           if (_query.countryId != null)
                             ActionChip(
                               label: const Text('Clear country'),
-                              onPressed: () =>
-                                  _change(_query.copyWith(clearCountry: true)),
+                              onPressed: () {
+                                ref
+                                        .read(chosenPlaceAreaProvider.notifier)
+                                        .state =
+                                    null;
+                                _change(
+                                  _query.copyWith(
+                                    clearCountry: true,
+                                    clearCity: true,
+                                  ),
+                                );
+                              },
                             ),
                         ],
                       ),
+                      if (_query.cityId != null) ...[
+                        const SizedBox(height: 12),
+                        OutlinedButton.icon(
+                          onPressed: _discovering ? null : _discover,
+                          icon: const Icon(Icons.travel_explore),
+                          label: Text(
+                            _discovering
+                                ? 'Finding local places…'
+                                : 'Find more in this area',
+                          ),
+                        ),
+                        const Text(
+                          'Checks free sources only when you ask. Coverage and current hours may be incomplete.',
+                          style: TextStyle(fontSize: 12),
+                        ),
+                        if (_discoveryNotice != null) Text(_discoveryNotice!),
+                      ],
                       const SizedBox(height: 12),
                       SegmentedButton<bool>(
                         segments: const [
@@ -203,6 +366,20 @@ class _BrowsePlacesPageState extends ConsumerState<BrowsePlacesPage> {
               ] else
                 for (var page = 1; page <= _page; page++)
                   ..._pageSlivers(page, wide),
+              if (!_map && _visibleAdditional.isNotEmpty)
+                SliverPadding(
+                  padding: const EdgeInsets.all(20),
+                  sliver: SliverList.builder(
+                    itemCount: _visibleAdditional.length,
+                    itemBuilder: (_, index) => Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: SizedBox(
+                        height: 330,
+                        child: PlaceCard(place: _visibleAdditional[index]),
+                      ),
+                    ),
+                  ),
+                ),
               SliverPadding(
                 padding: const EdgeInsets.all(20),
                 sliver: SliverToBoxAdapter(
@@ -282,7 +459,7 @@ class _BrowsePlacesPageState extends ConsumerState<BrowsePlacesPage> {
         ),
       ],
       data: (result) => [
-        if (result.items.isEmpty && page == 1)
+        if (result.items.isEmpty && page == 1 && _visibleAdditional.isEmpty)
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(28),

@@ -4,8 +4,8 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../auth/presentation/pages/login_page.dart';
 import '../../../destinations/data/place.dart';
-import '../../../destinations/presentation/destination_details_page.dart';
-import '../../../explore/presentation/pages/explore_page.dart';
+import '../../../places/presentation/place_details_page.dart';
+import '../../../places/presentation/browse_places_page.dart';
 import '../saved_places_provider.dart';
 import '../save_place_button.dart';
 
@@ -88,7 +88,7 @@ class _SavedPageState extends ConsumerState<SavedPage> {
                                 action: 'Discover places',
                                 onAction: () => Navigator.of(context).push(
                                   MaterialPageRoute(
-                                    builder: (_) => const ExplorePage(),
+                                    builder: (_) => const BrowsePlacesPage(),
                                   ),
                                 ),
                               )
@@ -148,18 +148,9 @@ class _SavedPlaceCard extends StatelessWidget {
     margin: const EdgeInsets.only(bottom: 14),
     clipBehavior: Clip.antiAlias,
     child: InkWell(
-      onTap: place.cityId == null
-          ? null
-          : () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => DestinationDetailsPage(
-                  cityId: place.cityId!,
-                  name: place.name,
-                  center: place.point,
-                  initialPlace: place,
-                ),
-              ),
-            ),
+      onTap: () => Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (_) => PlaceDetailsPage(place: place))),
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: Row(

@@ -1,3 +1,4 @@
+import 'package:trav_planner/features/places/data/place_area.dart';
 import 'package:trav_planner/features/places/data/place_catalogue.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,6 +28,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          areaSearchProvider.overrideWith(
+            (ref, request) async => const PlaceAreaResults([]),
+          ),
           placeCatalogueProvider.overrideWith(
             (ref, query) async =>
                 const PlaceResults(items: [], total: 0, pages: 0),

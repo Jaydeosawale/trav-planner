@@ -1,11 +1,18 @@
+import 'package:trav_planner/core/widgets/ai_content_report_button.dart';
+import '../../../auth/presentation/widgets/require_sign_in.dart';
+import '../../../destinations/data/place.dart';
 import '../../../../core/widgets/place_source_credit.dart';
+
 import 'package:dio/dio.dart';
+
 import 'structured_plan_page.dart';
 import '../../../explore/presentation/pages/nearby_places_page.dart';
 import '../../../booking/presentation/pages/booking_links_page.dart';
+
 import 'package:trav_planner/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../core/widgets/travel_markdown.dart';
 import 'trip_brief_page.dart';
 import '../../../trips/presentation/pages/trip_editor_page.dart';
@@ -16,8 +23,14 @@ import '../../data/datasources/ai_api.dart';
 import '../../data/models/ai_response_model.dart';
 
 class AISearchPage extends StatefulWidget {
-  const AISearchPage({super.key, this.api, this.initialMessage});
+  const AISearchPage({
+    super.key,
+    this.api,
+    this.initialMessage,
+    this.initialPlace,
+  });
   final String? initialMessage;
+  final TravelPlace? initialPlace;
   final AIApi? api;
 
   @override
@@ -26,9 +39,20 @@ class AISearchPage extends StatefulWidget {
 
 class _AISearchPageState extends State<AISearchPage> {
   final TextEditingController _controller = TextEditingController();
+  final _scroll = ScrollController();
+  void _scrollToLatest() => WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (mounted && _scroll.hasClients) {
+      _scroll.animateTo(
+        _scroll.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOut,
+      );
+    }
+  });
   late final AIApi _api = widget.api ?? AIApi();
 
   bool _loading = false;
+  bool _authorizing = false;
   String? _savedTripId;
   Map<String, dynamic>? _session;
   bool _reviewing = false;
@@ -46,14 +70,26 @@ class _AISearchPageState extends State<AISearchPage> {
   @override
   void dispose() {
     _controller.dispose();
+    _scroll.dispose();
     super.dispose();
   }
 
   Future<void> _askAI([String? suggestion]) async {
     final message = (suggestion ?? _controller.text).trim();
 
-    if (message.isEmpty || _loading) {
+    if (message.isEmpty || _loading || _authorizing) {
       return;
+    }
+
+    if (widget.api == null) {
+      _authorizing = true;
+      bool signedIn;
+      try {
+        signedIn = await ensureSignedIn(context);
+      } finally {
+        _authorizing = false;
+      }
+      if (!signedIn || !mounted) return;
     }
 
     FocusScope.of(context).unfocus();
@@ -73,6 +109,7 @@ class _AISearchPageState extends State<AISearchPage> {
       _savedTripId = null;
     });
 
+    _scrollToLatest();
     try {
       final response = await _api.chat(
         message: message,
@@ -95,7 +132,7 @@ class _AISearchPageState extends State<AISearchPage> {
       setState(() {
         if (response.success) {
           _response = response;
-          _controller.clear();
+          if (_controller.text.trim() == message) _controller.clear();
           if (refreshed != null) {
             _session = refreshed;
           } else if (sessionId != null && _session == null) {
@@ -129,12 +166,15 @@ class _AISearchPageState extends State<AISearchPage> {
         setState(() {
           _loading = false;
         });
+        _scrollToLatest();
       }
     }
   }
 
   Future<void> _editBrief({bool newPlan = false}) async {
     if (_loading) return;
+    if (widget.api == null && !await ensureSignedIn(context)) return;
+    if (!mounted) return;
     final result = await Navigator.of(context).push<Map<String, dynamic>>(
       MaterialPageRoute(
         builder: (_) =>
@@ -158,6 +198,8 @@ class _AISearchPageState extends State<AISearchPage> {
 
   Future<void> _recentPlans() async {
     if (_loading) return;
+    if (widget.api == null && !await ensureSignedIn(context)) return;
+    if (!mounted) return;
     try {
       final plans = await _api.sessions();
       if (!mounted) return;
@@ -327,50 +369,111 @@ class _AISearchPageState extends State<AISearchPage> {
         backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
       ),
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            16,
+            8,
+            16,
+            12 + MediaQuery.viewInsetsOf(context).bottom,
+          ),
+          child: Center(
+            heightFactor: 1,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 700),
+              child: TextField(
+                controller: _controller,
+                enabled: !_loading,
+                maxLines: 3,
+                textInputAction: TextInputAction.newline,
+                decoration: InputDecoration(
+                  hintText: _lastMessage == null
+                      ? 'Where would you like to go? Tell me your dates and budget…'
+                      : 'Ask a follow-up or change your plans…',
+                  filled: true,
+                  fillColor: AppColors.surface,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(18),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.all(18),
+                  suffixIcon: _loading
+                      ? const Padding(
+                          padding: EdgeInsets.all(14),
+                          child: SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        )
+                      : IconButton(
+                          tooltip: 'Send message',
+                          style: IconButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                          ),
+                          onPressed: _askAI,
+                          icon: const Icon(Icons.arrow_upward_rounded),
+                        ),
+                ),
+                onSubmitted: (_) => _askAI(),
+              ),
+            ),
+          ),
+        ),
+      ),
       body: Center(
         child: SingleChildScrollView(
+          controller: _scroll,
           padding: const EdgeInsets.all(24),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 700),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      colors: [Color(0xFFE0ECFF), Color(0xFFD6F5EF)],
+                if (_lastMessage == null && _session == null) ...[
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: [Color(0xFFE0ECFF), Color(0xFFD6F5EF)],
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.auto_awesome_rounded,
+                      size: 40,
+                      color: AppColors.primary,
                     ),
                   ),
-                  child: const Icon(
-                    Icons.auto_awesome_rounded,
-                    size: 40,
-                    color: AppColors.primary,
+
+                  const SizedBox(height: 20),
+
+                  const Text(
+                    'Where will curiosity\ntake you?',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
                   ),
-                ),
 
-                const SizedBox(height: 20),
+                  const SizedBox(height: 10),
 
-                const Text(
-                  'Where will curiosity\ntake you?',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800),
-                ),
-
-                const SizedBox(height: 10),
-
-                Text(
-                  'Tell us your destination, dates and budget. We’ll help you put the journey together.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: AppColors.textSecondary,
+                  Text(
+                    'Tell us your destination, dates and budget. We’ll help you put the journey together.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
-                ),
 
-                const SizedBox(height: 28),
-
+                  const SizedBox(height: 28),
+                ],
+                if (widget.initialPlace != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Text('Planning around ${widget.initialPlace!.name}'),
+                  ),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
@@ -380,30 +483,34 @@ class _AISearchPageState extends State<AISearchPage> {
                           ? null
                           : () => Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder: (_) =>
-                                    StructuredPlanPage(session: _session),
+                                builder: (_) => StructuredPlanPage(
+                                  session: _session,
+                                  initialPlace: widget.initialPlace,
+                                ),
                               ),
                             ),
                       icon: const Icon(Icons.calendar_month_outlined),
                       label: const Text('Build daily plan'),
                     ),
-                    OutlinedButton.icon(
-                      onPressed: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const NearbyPlacesPage(),
+                    if (_lastMessage == null && _session == null)
+                      OutlinedButton.icon(
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const NearbyPlacesPage(),
+                          ),
                         ),
+                        icon: const Icon(Icons.near_me_outlined),
+                        label: const Text('Places nearby'),
                       ),
-                      icon: const Icon(Icons.near_me_outlined),
-                      label: const Text('Places nearby'),
-                    ),
-                    TextButton(
-                      onPressed: () => Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => const BookingLinksPage(),
+                    if (_lastMessage == null && _session == null)
+                      TextButton(
+                        onPressed: () => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const BookingLinksPage(),
+                          ),
                         ),
+                        child: const Text('Book travel directly'),
                       ),
-                      child: const Text('Book travel directly'),
-                    ),
                     OutlinedButton.icon(
                       onPressed: _loading
                           ? null
@@ -446,35 +553,36 @@ class _AISearchPageState extends State<AISearchPage> {
                 const SizedBox(height: 16),
                 const SizedBox(height: 24),
 
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  alignment: WrapAlignment.center,
-                  children: [
-                    _SuggestionChip(
-                      text: 'Plan a trip to Japan',
-                      onPressed: () {
-                        _useSuggestion('Plan a trip to Japan');
-                      },
-                    ),
-                    _SuggestionChip(
-                      text: 'Visa requirements',
-                      onPressed: () {
-                        _useSuggestion(
-                          'What are the current visa requirements for Japan for an Indian tourist?',
-                        );
-                      },
-                    ),
-                    _SuggestionChip(
-                      text: 'Best places in Goa',
-                      onPressed: () {
-                        _useSuggestion(
-                          'What are the best places to visit in Goa?',
-                        );
-                      },
-                    ),
-                  ],
-                ),
+                if (_lastMessage == null && _session == null)
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    alignment: WrapAlignment.center,
+                    children: [
+                      _SuggestionChip(
+                        text: 'Plan a trip to Japan',
+                        onPressed: () {
+                          _useSuggestion('Plan a trip to Japan');
+                        },
+                      ),
+                      _SuggestionChip(
+                        text: 'Visa requirements',
+                        onPressed: () {
+                          _useSuggestion(
+                            'What are the current visa requirements for Japan for an Indian tourist?',
+                          );
+                        },
+                      ),
+                      _SuggestionChip(
+                        text: 'Best places in Goa',
+                        onPressed: () {
+                          _useSuggestion(
+                            'What are the best places to visit in Goa?',
+                          );
+                        },
+                      ),
+                    ],
+                  ),
 
                 const SizedBox(height: 28),
 
@@ -519,10 +627,18 @@ class _AISearchPageState extends State<AISearchPage> {
                 if (_loading) const _LoadingCard(),
 
                 if (_error != null)
-                  _ErrorCard(message: _error!, onRetry: _askAI),
+                  _ErrorCard(
+                    message: _error!,
+                    onRetry: () => _askAI(_lastMessage),
+                  ),
 
                 if (_response != null) ...[
                   _ResponseCard(response: _response!),
+                  if (_session?['id'] != null)
+                    AIContentReportButton(
+                      sourceKind: 'chat',
+                      referenceId: _session!['id'].toString(),
+                    ),
                   const SizedBox(height: 16),
                   FilledButton.icon(
                     onPressed: _reviewing ? null : _reviewPlan,
@@ -544,43 +660,6 @@ class _AISearchPageState extends State<AISearchPage> {
                   ),
                 ],
                 const SizedBox(height: 16),
-                TextField(
-                  controller: _controller,
-                  enabled: !_loading,
-                  maxLines: 3,
-                  textInputAction: TextInputAction.newline,
-                  decoration: InputDecoration(
-                    hintText: _lastMessage == null
-                        ? 'Where would you like to go? Tell me your dates and budget…'
-                        : 'Ask a follow-up or change your plans…',
-                    filled: true,
-                    fillColor: AppColors.surface,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(18),
-                      borderSide: BorderSide.none,
-                    ),
-                    contentPadding: const EdgeInsets.all(18),
-                    suffixIcon: _loading
-                        ? const Padding(
-                            padding: EdgeInsets.all(14),
-                            child: SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            ),
-                          )
-                        : IconButton(
-                            tooltip: 'Send message',
-                            style: IconButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              foregroundColor: Colors.white,
-                            ),
-                            onPressed: _askAI,
-                            icon: const Icon(Icons.arrow_upward_rounded),
-                          ),
-                  ),
-                  onSubmitted: (_) => _askAI(),
-                ),
               ],
             ),
           ),

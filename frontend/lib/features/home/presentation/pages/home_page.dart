@@ -1,3 +1,5 @@
+import '../../../places/presentation/area_selector.dart';
+import '../../../places/data/place_area.dart';
 import '../../../places/presentation/browse_places_page.dart';
 import '../../../places/data/place_catalogue.dart';
 import '../widgets/home_places_section.dart';
@@ -41,6 +43,7 @@ class HomePage extends ConsumerWidget {
               onRefresh: () async {
                 ref.invalidate(bannersProvider);
                 ref.invalidate(destinationsProvider);
+                ref.invalidate(placeCatalogueProvider);
                 try {
                   await ref.read(bannersProvider.future);
                 } catch (_) {
@@ -51,7 +54,7 @@ class HomePage extends ConsumerWidget {
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: EdgeInsets.symmetric(
                   horizontal: wide ? 40 : 20,
-                  vertical: 24,
+                  vertical: 12,
                 ),
                 child: Center(
                   child: ConstrainedBox(
@@ -102,87 +105,19 @@ class HomePage extends ConsumerWidget {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 18),
+                          const SizedBox(height: 10),
                         ],
+                        const AreaSelector(),
+                        _HomeSearch(),
+                        const SizedBox(height: 12),
                         DestinationSpotlight(
                           banners:
                               ref.watch(bannersProvider).asData?.value ?? [],
-                          onSearch: (query) => Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => BrowsePlacesPage(
-                                initialQuery: PlaceQuery(search: query),
-                              ),
-                            ),
-                          ),
+                          onSearch: (_) {},
                         ),
                         const SizedBox(height: 14),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                    vertical: 12,
-                                  ),
-                                ),
-                                onPressed: () => Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => const NearbyPlacesPage(),
-                                  ),
-                                ),
-                                icon: const Icon(
-                                  Icons.near_me_outlined,
-                                  size: 17,
-                                ),
-                                label: const Text('Nearby', maxLines: 1),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                    vertical: 12,
-                                  ),
-                                ),
-                                onPressed: () => Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => const BookingLinksPage(),
-                                  ),
-                                ),
-                                icon: const Icon(
-                                  Icons.flight_takeoff,
-                                  size: 17,
-                                ),
-                                label: const Text('Book', maxLines: 1),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                    vertical: 12,
-                                  ),
-                                ),
-                                onPressed: () => Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => const SavedPage(),
-                                  ),
-                                ),
-                                icon: const Icon(
-                                  Icons.bookmark_border,
-                                  size: 17,
-                                ),
-                                label: const Text('Saved', maxLines: 1),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
+                        _HomeShortcuts(),
+                        const SizedBox(height: 14),
                         const HomePlacesSection(),
                         const SizedBox(height: 28),
                         Row(
@@ -486,4 +421,83 @@ class _TripShortcut extends StatelessWidget {
       ),
     ),
   );
+}
+
+class _HomeSearch extends StatefulWidget {
+  @override
+  State<_HomeSearch> createState() => _HomeSearchState();
+}
+
+class _HomeSearchState extends State<_HomeSearch> {
+  final _controller = TextEditingController();
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _search() => Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (_) => BrowsePlacesPage(
+        initialQuery: PlaceQuery(search: _controller.text.trim()),
+      ),
+    ),
+  );
+  @override
+  Widget build(BuildContext context) => TextField(
+    controller: _controller,
+    textInputAction: TextInputAction.search,
+    onSubmitted: (_) => _search(),
+    onTapOutside: (_) => FocusScope.of(context).unfocus(),
+    decoration: InputDecoration(
+      hintText: 'Town, landmark or café',
+      prefixIcon: const Icon(Icons.search_rounded),
+      suffixIcon: IconButton(
+        tooltip: 'Search places',
+        onPressed: _search,
+        icon: const Icon(Icons.arrow_forward_rounded),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+    ),
+  );
+}
+
+class _HomeShortcuts extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final actions = <(String, IconData, Widget)>[
+      ('Nearby', Icons.near_me_outlined, const NearbyPlacesPage()),
+      (
+        'Book',
+        Icons.flight_takeoff,
+        BookingLinksPage(destination: ref.watch(chosenPlaceAreaProvider)?.name),
+      ),
+      ('Saved', Icons.bookmark_border, const SavedPage()),
+    ];
+    final large = MediaQuery.textScalerOf(context).scale(14) > 21;
+    final children = actions
+        .map(
+          (action) => OutlinedButton.icon(
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+            ),
+            onPressed: () => Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => action.$3)),
+            icon: Icon(action.$2, size: 17),
+            label: Text(action.$1),
+          ),
+        )
+        .toList();
+    return large
+        ? Wrap(spacing: 8, runSpacing: 8, children: children)
+        : Row(
+            children: [
+              for (var i = 0; i < children.length; i++) ...[
+                if (i > 0) const SizedBox(width: 8),
+                Expanded(child: children[i]),
+              ],
+            ],
+          );
+  }
 }

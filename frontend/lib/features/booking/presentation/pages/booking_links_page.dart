@@ -2,7 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class BookingLinksPage extends StatefulWidget {
-  const BookingLinksPage({super.key});
+  const BookingLinksPage({
+    super.key,
+    this.destination,
+    this.startDate,
+    this.endDate,
+    this.travelers,
+  });
+  final String? destination;
+  final DateTime? startDate, endDate;
+  final int? travelers;
   @override
   State<BookingLinksPage> createState() => _BookingLinksPageState();
 }
@@ -37,7 +46,7 @@ class _BookingLinksPageState extends State<BookingLinksPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Book travel')),
+    appBar: AppBar(title: const Text('Compare & book')),
     body: SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Center(
@@ -47,13 +56,46 @@ class _BookingLinksPageState extends State<BookingLinksPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Text(
-                'Your journey, your choice.',
+                'Find your way there.',
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
               const SizedBox(height: 12),
               const Text(
-                'Search and book directly with a travel provider. You don’t need the AI planner.',
+                'Compare travel options, then book and pay securely on the supplier’s website.',
               ),
+              if (widget.destination?.trim().isNotEmpty == true ||
+                  widget.startDate != null ||
+                  widget.travelers != null) ...[
+                const SizedBox(height: 16),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Your trip reference',
+                          style: TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                        if (widget.destination?.trim().isNotEmpty == true)
+                          Text(widget.destination!.trim()),
+                        if (widget.startDate != null)
+                          Text(
+                            '${_date(widget.startDate!)}${widget.endDate == null ? '' : ' – ${_date(widget.endDate!)}'}',
+                          ),
+                        if (widget.travelers != null && widget.travelers! > 0)
+                          Text(
+                            '${widget.travelers} traveler${widget.travelers == 1 ? '' : 's'}',
+                          ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Enter these details on the supplier’s site. They are not transferred automatically.',
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(height: 20),
               Wrap(
                 spacing: 8,
@@ -164,3 +206,5 @@ class _BookingLinksPageState extends State<BookingLinksPage> {
     ),
   );
 }
+
+String _date(DateTime value) => '${value.day}/${value.month}/${value.year}';

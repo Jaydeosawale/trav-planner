@@ -7,18 +7,21 @@ class PlaceQuery {
   const PlaceQuery({
     this.type = 'all',
     this.countryId,
+    this.cityId,
     this.photosOnly = false,
     this.search = '',
     this.page = 1,
     this.size = 20,
   });
   final String type, search;
-  final String? countryId;
+  final String? countryId, cityId;
   final bool photosOnly;
   final int page, size;
   PlaceQuery copyWith({
     String? type,
     String? countryId,
+    String? cityId,
+    bool clearCity = false,
     bool clearCountry = false,
     bool? photosOnly,
     String? search,
@@ -27,6 +30,7 @@ class PlaceQuery {
   }) => PlaceQuery(
     type: type ?? this.type,
     countryId: clearCountry ? null : countryId ?? this.countryId,
+    cityId: clearCity ? null : cityId ?? this.cityId,
     photosOnly: photosOnly ?? this.photosOnly,
     search: search ?? this.search,
     page: page ?? this.page,
@@ -37,13 +41,14 @@ class PlaceQuery {
       other is PlaceQuery &&
       other.type == type &&
       other.countryId == countryId &&
+      other.cityId == cityId &&
       other.photosOnly == photosOnly &&
       other.search == search &&
       other.page == page &&
       other.size == size;
   @override
   int get hashCode =>
-      Object.hash(type, countryId, photosOnly, search, page, size);
+      Object.hash(type, countryId, cityId, photosOnly, search, page, size);
 }
 
 class PlaceResults {
@@ -67,6 +72,7 @@ final placeCatalogueProvider = FutureProvider.autoDispose
           'size': query.size,
           if (query.type != 'all') 'place_type': query.type,
           if (query.countryId != null) 'country_id': query.countryId,
+          if (query.cityId != null) 'city_id': query.cityId,
           if (query.photosOnly) 'has_photo': true,
           if (query.search.trim().isNotEmpty) 'search': query.search.trim(),
         },

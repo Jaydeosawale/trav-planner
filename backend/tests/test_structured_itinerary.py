@@ -342,3 +342,63 @@ async def test_json_mode_is_opt_in_on_existing_free_providers():
     assert seen[-1]['config'].response_mime_type == 'application/json'
     await gemini.generate('Plain chat')
     assert seen[-1]['config'].response_mime_type is None
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("hidden", [False, True])
+async def test_nearby_distant_or_hidden_cached_record_does_not_suppress_lookup(monkeypatch, hidden):
+    from datetime import timedelta
+    from app.services.discovery import nearby, world
+    engine, sessions = await fixture()
+    calls = []
+    async def discovery(db, city, kind):
+        calls.append((city, kind))
+        return {"items": [], "message": "Partial city-centre coverage."}
+    monkeypatch.setattr(nearby, "discover", discovery)
+    async with sessions() as db:
+        candidate = {
+            "id": "cached-cafe", "city_id": "city", "name": "Other café",
+            "place_type": "cafe", "latitude": 18.52 if hidden else 18.62,
+            "longitude": 73.85, "provider": "osm", "is_discovery": True,
+        }
+        await world.cache_put(db, candidate["id"], "candidate", candidate, timedelta(days=1))
+        if hidden:
+            db.add(Place(id=candidate["id"], city_id="city", name="Hidden café",
+                         slug="hidden-cafe", place_type="cafe", is_active=False))
+        await db.commit()
+        result = await nearby.search(db, NearbyRequest(latitude=18.52, longitude=73.85,
+                                                       radius_km=1, kind="cafe"))
+        assert calls == [("city", "cafe")]
+        assert result["items"] == []
+        assert result["coverage"]["complete"] is False
+        assert "may cover less" in result["distance_note"]
+    await engine.dispose()
+
+
+@pytest.mark.asyncio
+async def test_selected_place_is_required_in_plan_and_wrong_city_rejected(monkeypatch):
+    engine, sessions = await fixture()
+    calls = []
+    async def provider(*args, **kwargs):
+        prompt = json.loads(kwargs["prompt"])
+        calls.append(prompt)
+        return (SimpleNamespace(provider="groq", content=json.dumps({
+            "title": "Plan", "days": [{"title": "Day one", "activities": [{
+                "title": "Rest", "place_id": None, "kind": "rest"}]}]})), "", ["groq"])
+    monkeypatch.setattr(plans.free_runtime, "run", provider)
+    async with sessions() as db:
+        request = plans.GeneratePlan(city_id="city", start_date=date(2026,10,20),
+                                    end_date=date(2026,10,20), selected_place_ids=["museum"])
+        with pytest.raises(HTTPException) as exc:
+            await plans.generate(db, "owner", request)
+        assert exc.value.status_code == 502
+        assert len(calls) == 1 and calls[0]["selected_place_ids"] == ["p1"]
+        assert await db.scalar(select(func.count()).select_from(ItineraryDraft)) == 0
+        db.add(Place(id="elsewhere", city_id="other-city", name="Elsewhere",
+                     slug="elsewhere", place_type="museum"))
+        await db.commit()
+        request.selected_place_ids = ["elsewhere"]
+        with pytest.raises(HTTPException) as exc:
+            await plans.generate(db, "owner", request)
+        assert exc.value.status_code == 409 and len(calls) == 1
+    await engine.dispose()

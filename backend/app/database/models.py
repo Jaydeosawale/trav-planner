@@ -42,3 +42,5 @@ from app.services.ai.conversations import PlannerConversation
 from app.services.discovery.models import DiscoveryCache, DiscoveryBudget
 
 from app.services.ai.itinerary_models import ItineraryDraft
+
+from app.services.ai.content_reports import AIContentReport
