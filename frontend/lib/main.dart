@@ -1,3 +1,4 @@
+import 'widgets/web_play_store_frame.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -19,6 +20,9 @@ class TravPlannerApp extends StatelessWidget {
     return MaterialApp(
       title: 'Trav Planner',
       debugShowCheckedModeBanner: false,
+      builder: (context, child) => WebPlayStoreFrame(
+        child: child ?? const SizedBox.shrink(),
+      ),
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: ThemeMode.light,
