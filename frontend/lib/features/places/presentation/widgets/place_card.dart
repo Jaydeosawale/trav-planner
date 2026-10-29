@@ -1,9 +1,9 @@
+import '../../../../app/router/navigation_actions.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../destinations/data/place.dart';
 import '../../../saved/presentation/save_place_button.dart';
 import '../../data/place_catalogue.dart';
-import '../place_details_page.dart';
 
 class PlaceCard extends StatelessWidget {
   const PlaceCard({super.key, required this.place});
@@ -14,9 +14,7 @@ class PlaceCard extends StatelessWidget {
     borderRadius: BorderRadius.circular(24),
     clipBehavior: Clip.antiAlias,
     child: InkWell(
-      onTap: () => Navigator.of(
-        context,
-      ).push(MaterialPageRoute(builder: (_) => PlaceDetailsPage(place: place))),
+      onTap: () => openPlace(context, place),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -63,15 +61,30 @@ class PlaceCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  place.name,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                    height: 1.2,
-                  ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        place.name,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          height: 1.2,
+                        ),
+                      ),
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.only(left: 6),
+                      child: Icon(
+                        Icons.arrow_forward_rounded,
+                        size: 18,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 5),
                 Text(
@@ -91,7 +104,7 @@ class PlaceCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       color: AppColors.textSecondary,
-                      fontSize: 9,
+                      fontSize: 11,
                     ),
                   ),
                 ],
@@ -110,19 +123,15 @@ class PlacePhoto extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Widget fallback() => ColoredBox(
-      color: const Color(0xFFE1EBE6),
+      color: AppColors.surfaceVariant,
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.landscape_outlined,
-              size: 40,
-              color: AppColors.ocean,
-            ),
+            Icon(_placeIcon(place.type), size: 40, color: AppColors.ocean),
             const SizedBox(height: 8),
             const Text(
-              'Photo not available',
+              'No photo yet',
               style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
             ),
           ],
@@ -134,11 +143,12 @@ class PlacePhoto extends StatelessWidget {
         ? Image.network(
             url!,
             fit: BoxFit.cover,
+            semanticLabel: 'Photo of ${place.name}',
             cacheWidth: 1000,
             frameBuilder: (context, child, frame, sync) => sync || frame != null
                 ? child
                 : const ColoredBox(
-                    color: Color(0xFFE1EBE6),
+                    color: AppColors.surfaceVariant,
                     child: Center(
                       child: SizedBox(
                         width: 22,
@@ -153,3 +163,13 @@ class PlacePhoto extends StatelessWidget {
         : fallback();
   }
 }
+
+IconData _placeIcon(String type) => switch (type) {
+  'restaurant' => Icons.restaurant_outlined,
+  'cafe' => Icons.local_cafe_outlined,
+  'hotel' => Icons.bed_outlined,
+  'museum' => Icons.museum_outlined,
+  'park' => Icons.park_outlined,
+  'worship' => Icons.temple_hindu_outlined,
+  _ => Icons.location_on_outlined,
+};

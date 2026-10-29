@@ -325,3 +325,20 @@ def test_discovery_migration_preserves_existing_tables(monkeypatch):
             == "Preserve"
         )
     engine.dispose()
+
+
+@pytest.mark.asyncio
+async def test_general_attraction_search_retains_specific_source_category(monkeypatch):
+    calls = []
+    async def source(url, params, **kwargs):
+        calls.append(url)
+        if "sparql" in url:
+            assert "?root" in params["query"]
+            return {"results": {"bindings": [{"item": {"value": "http://www.wikidata.org/entity/Q123"},
+                "root": {"value": "http://www.wikidata.org/entity/Q22698"}}]}}
+        return {"entities": {"Q123": {"labels": {"en": {"value": "Local park"}},
+            "claims": {"P625": [{"mainsnak": {"datavalue": {"value": {
+                "latitude": 18.52, "longitude": 73.85, "globe": "http://www.wikidata.org/entity/Q2"}}}}]}}}}
+    monkeypatch.setattr(world, "request_json", source)
+    items = await world.wikidata("city", 18.52, 73.85, "attraction")
+    assert items[0]["place_type"] == "park" and len(calls) == 2

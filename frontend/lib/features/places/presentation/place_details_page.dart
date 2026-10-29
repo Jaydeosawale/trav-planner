@@ -1,3 +1,4 @@
+import 'place_trip_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_colors.dart';
@@ -83,15 +84,16 @@ class PlaceDetailsPage extends StatelessWidget {
                   runSpacing: 8,
                   children: [
                     SavePlaceButton(place: place),
+                    PlaceTripPicker(place: place),
                     if (place.point != null)
                       FilledButton.icon(
                         icon: const Icon(Icons.directions_outlined),
                         label: const Text('Directions'),
                         onPressed: () => _open(
                           context,
-                          Uri.https('www.google.com', '/maps/search/', {
+                          Uri.https('www.google.com', '/maps/dir/', {
                             'api': '1',
-                            'query':
+                            'destination':
                                 '${place.point!.latitude},${place.point!.longitude}',
                           }),
                         ),
@@ -153,6 +155,7 @@ class PlaceDetailsPage extends StatelessWidget {
                         onPressed: () => Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (_) => AISearchPage(
+                              initialPlace: place,
                               initialMessage:
                                   'Help me plan a visit to ${place.name}${place.cityName == null ? '' : ' in ${place.cityName}'}. Ask my dates, interests and budget; check current access and availability.',
                             ),

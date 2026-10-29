@@ -21,7 +21,6 @@ class DestinationSpotlight extends StatefulWidget {
 class _DestinationSpotlightState extends State<DestinationSpotlight>
     with WidgetsBindingObserver {
   final _pages = PageController();
-  final _search = TextEditingController();
   bool _hovered = false;
   bool _focused = false;
   Timer? _timer;
@@ -99,7 +98,6 @@ class _DestinationSpotlightState extends State<DestinationSpotlight>
     _timer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     _pages.dispose();
-    _search.dispose();
     super.dispose();
   }
 
@@ -109,171 +107,154 @@ class _DestinationSpotlightState extends State<DestinationSpotlight>
     final label = _index < widget.banners.length
         ? widget.banners[_index].title
         : _places[_index - widget.banners.length].$1;
-    return MouseRegion(
-      onEnter: (_) {
-        _hovered = true;
+    return Focus(
+      onFocusChange: (value) {
+        _focused = value;
         _schedule();
       },
-      onExit: (_) {
-        _hovered = false;
-        _schedule();
-      },
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: NotificationListener<ScrollNotification>(
-                onNotification: (notification) {
-                  if (notification is ScrollStartNotification &&
-                      notification.dragDetails != null) {
-                    _interaction(true);
-                  } else if (notification is ScrollEndNotification) {
-                    _interaction(false);
-                  }
-                  return false;
-                },
-                child: PageView.builder(
-                  controller: _pages,
-                  itemCount: _count,
-                  onPageChanged: (index) {
-                    setState(() => _index = index);
-                    _schedule();
-                  },
-                  itemBuilder: (context, index) {
-                    if (index < widget.banners.length) {
-                      return Image.network(
-                        widget.banners[index].imageUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, error, stack) => Image.asset(
-                          'assets/images/destinations/bali_1.jpg',
-                          fit: BoxFit.cover,
-                        ),
-                      );
+      child: MouseRegion(
+        onEnter: (_) {
+          _hovered = true;
+          _schedule();
+        },
+        onExit: (_) {
+          _hovered = false;
+          _schedule();
+        },
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: NotificationListener<ScrollNotification>(
+                  onNotification: (notification) {
+                    if (notification is ScrollStartNotification &&
+                        notification.dragDetails != null) {
+                      _interaction(true);
+                    } else if (notification is ScrollEndNotification) {
+                      _interaction(false);
                     }
-                    return Image.asset(
-                      'assets/images/destinations/${_places[index - widget.banners.length].$2}_1.jpg',
-                      fit: BoxFit.cover,
-                    );
+                    return false;
                   },
+                  child: PageView.builder(
+                    controller: _pages,
+                    itemCount: _count,
+                    onPageChanged: (index) {
+                      setState(() => _index = index);
+                      _schedule();
+                    },
+                    itemBuilder: (context, index) {
+                      if (index < widget.banners.length) {
+                        return Image.network(
+                          widget.banners[index].imageUrl,
+                          fit: BoxFit.cover,
+                          semanticLabel: widget.banners[index].title,
+                          errorBuilder: (_, error, stack) =>
+                              const ColoredBox(color: AppColors.ocean),
+                        );
+                      }
+                      return Image.asset(
+                        'assets/images/destinations/${_places[index - widget.banners.length].$2}_1.jpg',
+                        fit: BoxFit.cover,
+                        semanticLabel:
+                            _places[index - widget.banners.length].$1,
+                      );
+                    },
+                  ),
                 ),
               ),
-            ),
-            const Positioned.fill(
-              child: IgnorePointer(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [Color(0x20123E46), Color(0xEF102F39)],
+              const Positioned.fill(
+                child: IgnorePointer(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Color(0x20123E46), Color(0xEF102F39)],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.all(wide ? 32 : 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  IgnorePointer(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 9,
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(wide ? 24 : 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    IgnorePointer(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 9,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.background,
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.location_on_outlined,
+                              size: 18,
+                              color: AppColors.ocean,
+                            ),
+                            const SizedBox(width: 6),
+                            Flexible(
+                              child: Text(
+                                label,
+                                maxLines: 2,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.ocean,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      decoration: BoxDecoration(
-                        color: AppColors.background,
-                        borderRadius: BorderRadius.circular(24),
+                    ),
+                    SizedBox(height: wide ? 18 : 10),
+                    IgnorePointer(
+                      child: Text(
+                        'Somewhere worth going.',
+                        style: Theme.of(context).textTheme.displayLarge
+                            ?.copyWith(
+                              fontSize: wide ? 32 : 22,
+                              color: Colors.white,
+                            ),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.location_on_outlined,
-                            size: 18,
-                            color: AppColors.ocean,
-                          ),
-                          const SizedBox(width: 6),
-                          Flexible(
-                            child: Text(
-                              label,
-                              maxLines: 2,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.ocean,
+                    ),
+                    const SizedBox(height: 16),
+                    Semantics(
+                      label:
+                          'Featured destination ${_index + 1} of $_count: $label',
+                      child: ExcludeSemantics(
+                        child: Wrap(
+                          spacing: 7,
+                          children: List.generate(
+                            _count,
+                            (index) => Container(
+                              width: index == _index ? 22 : 7,
+                              height: 7,
+                              decoration: BoxDecoration(
+                                color: index == _index
+                                    ? AppColors.sunset
+                                    : Colors.white54,
+                                borderRadius: BorderRadius.circular(8),
                               ),
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: wide ? 28 : 20),
-                  IgnorePointer(
-                    child: Text(
-                      'Somewhere\nworth going.',
-                      style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                        fontSize: wide ? 48 : 30,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 520),
-                    child: Focus(
-                      onFocusChange: (value) {
-                        _focused = value;
-                        _schedule();
-                      },
-                      child: TextField(
-                        controller: _search,
-                        textInputAction: TextInputAction.search,
-                        onSubmitted: (value) => widget.onSearch(value.trim()),
-                        decoration: InputDecoration(
-                          hintText: 'Find a place',
-                          prefixIcon: const Icon(Icons.search_rounded),
-                          suffixIcon: IconButton(
-                            tooltip: 'Search destinations',
-                            onPressed: () =>
-                                widget.onSearch(_search.text.trim()),
-                            icon: const Icon(Icons.arrow_forward_rounded),
-                          ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 20),
-                  Semantics(
-                    label:
-                        'Featured destination ${_index + 1} of $_count: $label',
-                    child: ExcludeSemantics(
-                      child: Wrap(
-                        spacing: 7,
-                        children: List.generate(
-                          _count,
-                          (index) => Container(
-                            width: index == _index ? 22 : 7,
-                            height: 7,
-                            decoration: BoxDecoration(
-                              color: index == _index
-                                  ? AppColors.sunset
-                                  : Colors.white54,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

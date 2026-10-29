@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/responsive/responsive.dart';
 import '../../features/ai/presentation/pages/ai_search_page.dart';
@@ -13,12 +14,14 @@ class AdaptiveScaffold extends StatefulWidget {
   final Widget body;
   final Widget? floatingActionButton;
   final PreferredSizeWidget? appBar;
+  final StatefulNavigationShell? navigationShell;
 
   const AdaptiveScaffold({
     super.key,
     required this.body,
     this.floatingActionButton,
     this.appBar,
+    this.navigationShell,
   });
 
   @override
@@ -34,32 +37,40 @@ class _AdaptiveScaffoldState extends State<AdaptiveScaffold> {
 
   void _onNavigationSelected(int index) {
     FocusScope.of(context).unfocus();
+    if (widget.navigationShell != null) {
+      widget.navigationShell!.goBranch(index);
+      return;
+    }
     setState(() {
       _selectedIndex = index;
       _visited.add(index);
     });
   }
 
-  Widget _buildBody() => IndexedStack(
-    index: _selectedIndex,
-    children: List.generate(5, (index) {
-      if (!_visited.contains(index)) return const SizedBox.shrink();
-      return TickerMode(
-        enabled: index == _selectedIndex,
-        child: switch (index) {
-          1 => const BrowsePlacesPage(),
-          2 => const AISearchPage(),
-          3 => const MyTripsPage(),
-          4 => const ProfilePage(),
-          _ => widget.body,
-        },
+  Widget _buildBody() =>
+      widget.navigationShell ??
+      IndexedStack(
+        index: _selectedIndex,
+        children: List.generate(5, (index) {
+          if (!_visited.contains(index)) return const SizedBox.shrink();
+          return TickerMode(
+            enabled: index == _selectedIndex,
+            child: switch (index) {
+              1 => const BrowsePlacesPage(),
+              2 => const AISearchPage(),
+              3 => const MyTripsPage(),
+              4 => const ProfilePage(),
+              _ => widget.body,
+            },
+          );
+        }),
       );
-    }),
-  );
 
   @override
   Widget build(BuildContext context) {
     final body = _buildBody();
+    final selectedIndex =
+        widget.navigationShell?.currentIndex ?? _selectedIndex;
 
     // ==========================================================
     // Desktop / Web
@@ -68,7 +79,7 @@ class _AdaptiveScaffoldState extends State<AdaptiveScaffold> {
     if (_isDesktop(context)) {
       return Scaffold(
         appBar: DesktopTopNav(
-          selectedIndex: _selectedIndex,
+          selectedIndex: selectedIndex,
           onDestinationSelected: _onNavigationSelected,
         ),
         body: body,
@@ -87,7 +98,7 @@ class _AdaptiveScaffoldState extends State<AdaptiveScaffold> {
         body: Row(
           children: [
             TabletNavigationRail(
-              selectedIndex: _selectedIndex,
+              selectedIndex: selectedIndex,
               onDestinationSelected: _onNavigationSelected,
             ),
             const VerticalDivider(width: 1),
@@ -106,7 +117,7 @@ class _AdaptiveScaffoldState extends State<AdaptiveScaffold> {
       appBar: widget.appBar,
       floatingActionButton: widget.floatingActionButton,
       bottomNavigationBar: MobileBottomNav(
-        currentIndex: _selectedIndex,
+        currentIndex: selectedIndex,
         onTap: _onNavigationSelected,
       ),
       body: body,

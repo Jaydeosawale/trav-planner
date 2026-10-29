@@ -1,4 +1,6 @@
-import '../../../places/presentation/browse_places_page.dart';
+import '../../../../app/router/navigation_actions.dart';
+import '../../../places/presentation/area_selector.dart';
+import '../../../places/data/place_area.dart';
 import '../../../places/data/place_catalogue.dart';
 import '../widgets/home_places_section.dart';
 import '../../../booking/presentation/pages/booking_links_page.dart';
@@ -22,7 +24,8 @@ import '../../../saved/presentation/pages/saved_page.dart';
 import '../providers/home_provider.dart';
 
 class HomePage extends ConsumerWidget {
-  const HomePage({super.key});
+  const HomePage({super.key, this.embedded = false});
+  final bool embedded;
 
   void _explore(BuildContext context, [String query = '']) => Navigator.of(
     context,
@@ -31,207 +34,132 @@ class HomePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authProvider).user;
-    return AdaptiveScaffold(
-      body: SafeArea(
-        bottom: false,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final wide = constraints.maxWidth >= 900;
-            return RefreshIndicator(
-              onRefresh: () async {
-                ref.invalidate(bannersProvider);
-                ref.invalidate(destinationsProvider);
-                try {
-                  await ref.read(bannersProvider.future);
-                } catch (_) {
-                  /* Provider displays the retry state. */
-                }
-              },
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: EdgeInsets.symmetric(
-                  horizontal: wide ? 40 : 20,
-                  vertical: 24,
-                ),
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 1120),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (constraints.maxWidth < 1024) ...[
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const BrandLogo(size: 42),
-                              Semantics(
-                                label: user == null
-                                    ? 'Sign in'
-                                    : 'Open profile',
-                                button: true,
-                                child: InkWell(
-                                  borderRadius: BorderRadius.circular(28),
-                                  onTap: () => Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (_) => user == null
-                                          ? const LoginPage()
-                                          : const ProfilePage(),
-                                    ),
+    final content = SafeArea(
+      bottom: false,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final wide = constraints.maxWidth >= 900;
+          return RefreshIndicator(
+            onRefresh: () async {
+              ref.invalidate(bannersProvider);
+              ref.invalidate(destinationsProvider);
+              ref.invalidate(placeCatalogueProvider);
+              try {
+                await ref.read(bannersProvider.future);
+              } catch (_) {
+                /* Provider displays the retry state. */
+              }
+            },
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.symmetric(
+                horizontal: wide ? 40 : 20,
+                vertical: 12,
+              ),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1120),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (constraints.maxWidth < 1024) ...[
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const BrandLogo(size: 42),
+                            Semantics(
+                              label: user == null ? 'Sign in' : 'Open profile',
+                              button: true,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(28),
+                                onTap: () => Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => user == null
+                                        ? const LoginPage()
+                                        : const ProfilePage(),
                                   ),
-                                  child: Container(
-                                    width: 48,
-                                    height: 48,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: AppColors.surface,
-                                      border: Border.all(
-                                        color: AppColors.border,
-                                      ),
-                                    ),
-                                    alignment: Alignment.center,
-                                    child: user == null
-                                        ? const Icon(Icons.person_outline)
-                                        : Text(
-                                            _initials(user.fullName),
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.w700,
-                                            ),
+                                ),
+                                child: Container(
+                                  width: 48,
+                                  height: 48,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: AppColors.surface,
+                                    border: Border.all(color: AppColors.border),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: user == null
+                                      ? const Icon(Icons.person_outline)
+                                      : Text(
+                                          _initials(user.fullName),
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w700,
                                           ),
-                                  ),
+                                        ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 18),
-                        ],
-                        DestinationSpotlight(
-                          banners:
-                              ref.watch(bannersProvider).asData?.value ?? [],
-                          onSearch: (query) => Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => BrowsePlacesPage(
-                                initialQuery: PlaceQuery(search: query),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                    vertical: 12,
-                                  ),
-                                ),
-                                onPressed: () => Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => const NearbyPlacesPage(),
-                                  ),
-                                ),
-                                icon: const Icon(
-                                  Icons.near_me_outlined,
-                                  size: 17,
-                                ),
-                                label: const Text('Nearby', maxLines: 1),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                    vertical: 12,
-                                  ),
-                                ),
-                                onPressed: () => Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => const BookingLinksPage(),
-                                  ),
-                                ),
-                                icon: const Icon(
-                                  Icons.flight_takeoff,
-                                  size: 17,
-                                ),
-                                label: const Text('Book', maxLines: 1),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                    vertical: 12,
-                                  ),
-                                ),
-                                onPressed: () => Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => const SavedPage(),
-                                  ),
-                                ),
-                                icon: const Icon(
-                                  Icons.bookmark_border,
-                                  size: 17,
-                                ),
-                                label: const Text('Saved', maxLines: 1),
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 24),
-                        const HomePlacesSection(),
-                        const SizedBox(height: 28),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                'Somewhere new?',
-                                style: Theme.of(context).textTheme.titleLarge,
-                              ),
-                            ),
-                            TextButton(
-                              onPressed: () => _explore(context),
-                              child: const Text('Destinations'),
-                            ),
-                          ],
-                        ),
-                        const Text(
-                          'Choose a destination for more local places.',
-                        ),
-                        const SizedBox(height: 16),
-                        _DestinationCollection(
-                          onExplore: (query) => _explore(context, query),
-                        ),
-                        const SizedBox(height: 28),
-                        if (wide)
-                          const Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(flex: 6, child: _PlannerPanel()),
-                              SizedBox(width: 24),
-                              Expanded(flex: 4, child: _TripShortcut()),
-                            ],
-                          )
-                        else ...[
-                          const _PlannerPanel(),
-                          const SizedBox(height: 16),
-                          const _TripShortcut(),
-                        ],
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 10),
                       ],
-                    ),
+                      const AreaSelector(),
+                      _HomeSearch(),
+                      const SizedBox(height: 12),
+                      DestinationSpotlight(
+                        banners: ref.watch(bannersProvider).asData?.value ?? [],
+                        onSearch: (_) {},
+                      ),
+                      const SizedBox(height: 14),
+                      _HomeShortcuts(),
+                      const SizedBox(height: 14),
+                      const HomePlacesSection(),
+                      const SizedBox(height: 28),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Somewhere new?',
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () => _explore(context),
+                            child: const Text('Destinations'),
+                          ),
+                        ],
+                      ),
+                      const Text('Choose a destination for more local places.'),
+                      const SizedBox(height: 16),
+                      _DestinationCollection(
+                        onExplore: (query) => _explore(context, query),
+                      ),
+                      const SizedBox(height: 28),
+                      if (wide)
+                        const Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(flex: 6, child: _PlannerPanel()),
+                            SizedBox(width: 24),
+                            Expanded(flex: 4, child: _TripShortcut()),
+                          ],
+                        )
+                      else ...[
+                        const _PlannerPanel(),
+                        const SizedBox(height: 16),
+                        const _TripShortcut(),
+                      ],
+                      const SizedBox(height: 24),
+                    ],
                   ),
                 ),
               ),
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
     );
+    return embedded ? content : AdaptiveScaffold(body: content);
   }
 
   static String _initials(String name) {
@@ -486,4 +414,78 @@ class _TripShortcut extends StatelessWidget {
       ),
     ),
   );
+}
+
+class _HomeSearch extends StatefulWidget {
+  @override
+  State<_HomeSearch> createState() => _HomeSearchState();
+}
+
+class _HomeSearchState extends State<_HomeSearch> {
+  final _controller = TextEditingController();
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _search() =>
+      openPlaceSearch(context, PlaceQuery(search: _controller.text.trim()));
+  @override
+  Widget build(BuildContext context) => TextField(
+    controller: _controller,
+    textInputAction: TextInputAction.search,
+    onSubmitted: (_) => _search(),
+    onTapOutside: (_) => FocusScope.of(context).unfocus(),
+    decoration: InputDecoration(
+      hintText: 'Town, landmark or café',
+      prefixIcon: const Icon(Icons.search_rounded),
+      suffixIcon: IconButton(
+        tooltip: 'Search places',
+        onPressed: _search,
+        icon: const Icon(Icons.arrow_forward_rounded),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+    ),
+  );
+}
+
+class _HomeShortcuts extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final actions = <(String, IconData, Widget)>[
+      ('Nearby', Icons.near_me_outlined, const NearbyPlacesPage()),
+      (
+        'Book',
+        Icons.flight_takeoff,
+        BookingLinksPage(destination: ref.watch(chosenPlaceAreaProvider)?.name),
+      ),
+      ('Saved', Icons.bookmark_border, const SavedPage()),
+    ];
+    final large = MediaQuery.textScalerOf(context).scale(14) > 21;
+    final children = actions
+        .map(
+          (action) => OutlinedButton.icon(
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+            ),
+            onPressed: () => Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => action.$3)),
+            icon: Icon(action.$2, size: 17),
+            label: Text(action.$1),
+          ),
+        )
+        .toList();
+    return large
+        ? Wrap(spacing: 8, runSpacing: 8, children: children)
+        : Row(
+            children: [
+              for (var i = 0; i < children.length; i++) ...[
+                if (i > 0) const SizedBox(width: 8),
+                Expanded(child: children[i]),
+              ],
+            ],
+          );
+  }
 }

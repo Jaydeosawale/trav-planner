@@ -6,7 +6,13 @@ import '../../data/trips_api.dart';
 final tripsApiProvider = Provider<TripsApi>((ref) => TripsApi());
 
 class TripEditorPage extends ConsumerStatefulWidget {
-  const TripEditorPage({super.key, this.trip, this.draftNotes});
+  const TripEditorPage({
+    super.key,
+    this.trip,
+    this.draftNotes,
+    this.initialCity,
+  });
+  final Map<String, dynamic>? initialCity;
   final Map<String, dynamic>? trip;
   final String? draftNotes;
   @override
@@ -31,7 +37,11 @@ class _TripEditorPageState extends ConsumerState<TripEditorPage> {
   void initState() {
     super.initState();
     final trip = widget.trip ?? {};
-    _title.text = trip['title']?.toString() ?? '';
+    _city = widget.initialCity;
+    _query.text = _city?['name']?.toString() ?? '';
+    _title.text =
+        trip['title']?.toString() ??
+        (_city == null ? '' : '${_city!['name']} trip');
     _travelers.text = (trip['travelers'] ?? 1).toString();
     _budget.text = trip['budget_amount']?.toString() ?? '';
     _currency.text = trip['budget_currency']?.toString() ?? 'INR';

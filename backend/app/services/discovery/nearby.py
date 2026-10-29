@@ -78,11 +78,23 @@ async def search(db, payload, *, enrich=True):
             .limit(500)
         )
     ).all()
-    matching_cached = any(
-        payload.kind == "all" or json.loads(r.value).get("place_type") == payload.kind
-        for r in rows
-    )
-    published_query = select(Place.id).where(
+    # A cache entry is coverage only if it is visible and actually inside the
+    # selected radius. Distant or admin-hidden records must not suppress lookup.
+    groups = {}
+    for row in rows:
+        groups.setdefault(row.city_id, []).append(json.loads(row.value))
+    matching_cached = False
+    for city_id, candidates in groups.items():
+        for item in await visible(db, candidates, city_id):
+            x, y = item.get("latitude"), item.get("longitude")
+            if x is None or y is None:
+                continue
+            if payload.kind != "all" and item.get("place_type") != payload.kind:
+                continue
+            if distance(lat, lon, float(x), float(y)) <= payload.radius_km:
+                matching_cached = True
+                break
+    published_query = select(Place).where(
         Place.city_id.in_(city_names),
         Place.is_active.is_(True),
         Place.is_deleted.is_(False),
@@ -90,7 +102,13 @@ async def search(db, payload, *, enrich=True):
     )
     if payload.kind != "all":
         published_query = published_query.where(Place.place_type == payload.kind)
-    matching_published = await db.scalar(published_query.limit(1))
+    matching_published = any(
+        p.latitude is not None
+        and p.longitude is not None
+        and distance(lat, lon, float(p.latitude), float(p.longitude))
+        <= payload.radius_km
+        for p in (await db.scalars(published_query.limit(500))).all()
+    )
     notice = ""
     if (
         enrich
@@ -99,8 +117,7 @@ async def search(db, payload, *, enrich=True):
         and cities
         and (payload.kind in KINDS or payload.kind == "all")
     ):
-        cached_cities = {r.city_id for r in rows}
-        source_city = next((c for c in cities if c.id in cached_cities), cities[0])
+        source_city = cities[0]
         result = await discover(
             db, source_city.id, "local" if payload.kind == "all" else payload.kind
         )
@@ -169,5 +186,14 @@ async def search(db, payload, *, enrich=True):
             if output
             else "No matching listings are available in this area yet. Try a larger radius, another category or explore a city."
         ),
-        "distance_note": "Straight-line distances, not walking routes. Hours, prices and availability are unverified.",
+        "coverage": {
+            "requested_radius_km": payload.radius_km,
+            "scope": "stored_places_and_public_city_centres",
+            "complete": False,
+        },
+        "distance_note": (
+            "Straight-line distances, not walking routes. Additional free discovery "
+            "searches public city centres and may cover less than your selected radius. "
+            "Results are partial; hours, prices and availability are unverified."
+        ),
     }

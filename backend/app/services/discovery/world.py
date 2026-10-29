@@ -223,7 +223,7 @@ async def wikidata(city_id, lat, lon, kind):
         if kind != "attraction"
         else "wd:Q570116 wd:Q33506 wd:Q4989906 wd:Q22698 wd:Q40080"
     )
-    query = f"""SELECT DISTINCT ?item ?coord WHERE {{
+    query = f"""SELECT DISTINCT ?item ?coord ?root WHERE {{
       SERVICE wikibase:around {{ ?item wdt:P625 ?coord .
         bd:serviceParam wikibase:center "Point({lon} {lat})"^^geo:wktLiteral .
         bd:serviceParam wikibase:radius "15" . }}
@@ -234,10 +234,14 @@ async def wikidata(city_id, lat, lon, kind):
         "https://query.wikidata.org/sparql", {"query": query, "format": "json"}
     )
     ids = []
+    matched_roots = {}
     for result in data.get("results", {}).get("bindings", []):
         q = result.get("item", {}).get("value", "").rsplit("/", 1)[-1]
-        if re.fullmatch(r"Q[1-9][0-9]*", q) and q not in ids:
-            ids.append(q)
+        if re.fullmatch(r"Q[1-9][0-9]*", q):
+            root = result.get("root", {}).get("value", "").rsplit("/", 1)[-1]
+            matched_roots.setdefault(q, set()).add(root)
+            if q not in ids:
+                ids.append(q)
     if not ids:
         return []
     entities = (
@@ -280,6 +284,17 @@ async def wikidata(city_id, lat, lon, kind):
         name = entity.get("labels", {}).get("en", {}).get("value")
         if not name or len(name) > 200:
             continue
+        # The SPARQL root includes subclasses; a general attraction search
+        # must not erase a museum/park's actual source classification.
+        classes = matched_roots.get(q, set()) | {
+            c.get("mainsnak", {}).get("datavalue", {}).get("value", {}).get("id")
+            for c in claims.get("P31", [])
+            if c.get("rank") != "deprecated"
+        }
+        place_type = next(
+            (k for k in ("museum", "park", "beach", "heritage") if KINDS[k] in classes),
+            kind,
+        )
         image = claims.get("P18", [])
         filename = (
             image[0].get("mainsnak", {}).get("datavalue", {}).get("value")
@@ -292,7 +307,7 @@ async def wikidata(city_id, lat, lon, kind):
                 "city_id": city_id,
                 "name": name,
                 "slug": "wd-" + q.lower(),
-                "place_type": kind,
+                "place_type": place_type,
                 "description": entity.get("descriptions", {})
                 .get("en", {})
                 .get("value", "")[:1000],

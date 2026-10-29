@@ -28,9 +28,39 @@ class _PlacesMapState extends State<PlacesMap> {
   bool _ready = false;
   bool _failed = false;
 
+  bool _userPanned = false;
+  List<LatLng> get _points => [
+    if (widget.center != null) widget.center!,
+    ...widget.places.where((p) => p.point != null).map((p) => p.point!),
+  ];
+  void _fitResults() {
+    if (!_ready || _points.isEmpty) return;
+    if (_points.length == 1) {
+      _controller.move(_points.first, 13);
+    } else {
+      _controller.fitCamera(
+        CameraFit.bounds(
+          bounds: LatLngBounds.fromPoints(_points),
+          padding: const EdgeInsets.all(48),
+          maxZoom: 14,
+        ),
+      );
+    }
+    _userPanned = false;
+  }
+
   @override
   void didUpdateWidget(covariant PlacesMap oldWidget) {
     super.didUpdateWidget(oldWidget);
+    final areaChanged = oldWidget.center != widget.center;
+    final resultsChanged =
+        oldWidget.places.map((p) => '${p.id}:${p.point}').join('|') !=
+        widget.places.map((p) => '${p.id}:${p.point}').join('|');
+    if (areaChanged || (resultsChanged && !_userPanned)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _ready) _fitResults();
+      });
+    }
     if (_ready && oldWidget.selectedId != widget.selectedId) {
       final selected = widget.places.where((p) => p.id == widget.selectedId);
       if (selected.isNotEmpty && selected.first.point != null) {
@@ -92,6 +122,9 @@ class _PlacesMapState extends State<PlacesMap> {
                     )
                   : null,
               onMapReady: () => _ready = true,
+              onPositionChanged: (_, hasGesture) {
+                if (hasGesture) _userPanned = true;
+              },
             ),
             children: [
               TileLayer(
@@ -144,6 +177,14 @@ class _PlacesMapState extends State<PlacesMap> {
                 ],
               ),
             ],
+          ),
+        ),
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton.icon(
+            onPressed: _fitResults,
+            icon: const Icon(Icons.center_focus_strong, size: 16),
+            label: const Text('Recenter results'),
           ),
         ),
         // Outside the map canvas so sheets and cards cannot obscure attribution.

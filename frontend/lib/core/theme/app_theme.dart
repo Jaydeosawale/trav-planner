@@ -10,8 +10,8 @@ class AppTheme {
       onPrimary: AppColors.onPrimary,
       primaryContainer: AppColors.surfaceVariant,
       onPrimaryContainer: AppColors.textPrimary,
-      secondary: AppColors.accent,
-      onSecondary: AppColors.background,
+      secondary: AppColors.secondary,
+      onSecondary: Colors.white,
       secondaryContainer: AppColors.surfaceVariant,
       onSecondaryContainer: AppColors.textPrimary,
       tertiary: AppColors.warning,
@@ -127,7 +127,7 @@ class AppTheme {
       iconTheme: const IconThemeData(color: AppColors.textSecondary),
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.surface,
-        selectedColor: AppColors.surfaceVariant,
+        selectedColor: const Color(0xFFDCEAFF),
         labelStyle: const TextStyle(
           fontFamily: 'Inter',
           color: AppColors.textPrimary,

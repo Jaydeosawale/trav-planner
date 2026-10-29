@@ -1,3 +1,5 @@
+import '../../../auth/presentation/widgets/require_sign_in.dart';
+import 'planning_brief_values.dart';
 import '../../../../core/widgets/place_source_credit.dart';
 import 'dart:ui' as ui;
 import 'package:flutter/rendering.dart';
@@ -14,8 +16,14 @@ import '../../../destinations/data/place.dart';
 import '../../../maps/places_map.dart';
 
 class StructuredPlanPage extends ConsumerStatefulWidget {
-  const StructuredPlanPage({super.key, this.client, this.session});
+  const StructuredPlanPage({
+    super.key,
+    this.client,
+    this.session,
+    this.initialPlace,
+  });
   final Dio? client;
+  final TravelPlace? initialPlace;
   final Map<String, dynamic>? session;
   @override
   ConsumerState<StructuredPlanPage> createState() => _StructuredPlanPageState();
@@ -36,19 +44,39 @@ class _StructuredPlanPageState extends ConsumerState<StructuredPlanPage> {
   final Set<String> _selected = {};
   String? _notice, _tripId;
   bool _busy = false, _map = false;
+  bool _authorizing = false;
   Dio get _client => widget.client ?? ApiClient.dio;
   @override
   void initState() {
     super.initState();
     final b = widget.session?['brief'] as Map?;
-    _query.text = b?['destination']?.toString() ?? '';
-    _travelers.text = b?['travelers']?.toString() ?? '1';
+    final values = PlanningBriefValues(b ?? {});
+    _query.text =
+        b?['destination']?.toString() ?? widget.initialPlace?.cityName ?? '';
+    _travelers.text = values.travelers;
+    if (values.start != null) _start = values.start!;
+    if (values.end != null) _end = values.end!;
+    if ([
+      'INR',
+      'USD',
+      'EUR',
+      'GBP',
+      'JPY',
+      'AUD',
+      'CAD',
+    ].contains(values.currency)) {
+      _currency = values.currency!;
+    }
+    _budget.text = values.amount ?? '';
     _preferences.text = [
-      b?['interests'],
-      b?['food'],
-      b?['pace'],
-      b?['transport'],
-    ].where((x) => x != null && x.toString().isNotEmpty).join('; ');
+      values.context,
+      if (widget.initialPlace != null)
+        'Include ${widget.initialPlace!.name} (place ID: ${widget.initialPlace!.id}) in the selected destination where practical.',
+    ].where((x) => x.isNotEmpty).join('; ');
+    final place = widget.initialPlace;
+    if (place?.cityId != null) {
+      _city = {'id': place!.cityId, 'name': place.cityName ?? _query.text};
+    }
   }
 
   @override
@@ -156,6 +184,7 @@ class _StructuredPlanPageState extends ConsumerState<StructuredPlanPage> {
   }
 
   Future<void> _generate() async {
+    if (_busy || _authorizing) return;
     if (!_form.currentState!.validate()) return;
     if (_city == null) {
       setState(() => _notice = 'Choose a destination from the city results.');
@@ -164,6 +193,16 @@ class _StructuredPlanPageState extends ConsumerState<StructuredPlanPage> {
     if (_end.isBefore(_start) || _end.difference(_start).inDays > 6) {
       setState(() => _notice = 'Choose between one and seven days.');
       return;
+    }
+    if (widget.client == null) {
+      _authorizing = true;
+      bool signedIn;
+      try {
+        signedIn = await ensureSignedIn(context);
+      } finally {
+        _authorizing = false;
+      }
+      if (!signedIn || !mounted) return;
     }
     setState(() {
       _busy = true;
@@ -174,6 +213,9 @@ class _StructuredPlanPageState extends ConsumerState<StructuredPlanPage> {
         '/ai/itinerary-drafts',
         data: {
           'city_id': _city!['id'],
+          if (widget.initialPlace != null &&
+              widget.initialPlace!.cityId == _city!['id'])
+            'selected_place_ids': [widget.initialPlace!.id],
           'start_date': _date(_start),
           'end_date': _date(_end),
           'travelers': int.parse(_travelers.text),

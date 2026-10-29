@@ -1,3 +1,6 @@
+import '../../../../app/router/navigation_actions.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../auth/presentation/widgets/require_sign_in.dart';
 import '../../../../core/widgets/place_source_credit.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:dio/dio.dart';
@@ -5,20 +8,19 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../../core/network/api_client.dart';
-import '../../../trips/data/trips_api.dart';
+import '../../../places/data/place_area.dart';
 import '../../../destinations/data/place.dart';
-import '../../../destinations/presentation/destination_details_page.dart';
 import '../../../maps/places_map.dart';
 
-class NearbyPlacesPage extends StatefulWidget {
+class NearbyPlacesPage extends ConsumerStatefulWidget {
   const NearbyPlacesPage({super.key, this.client, this.initialKind = 'all'});
   final String initialKind;
   final Dio? client;
   @override
-  State<NearbyPlacesPage> createState() => _NearbyPlacesPageState();
+  ConsumerState<NearbyPlacesPage> createState() => _NearbyPlacesPageState();
 }
 
-class _NearbyPlacesPageState extends State<NearbyPlacesPage> {
+class _NearbyPlacesPageState extends ConsumerState<NearbyPlacesPage> {
   final _query = TextEditingController();
   List<Map<String, dynamic>> _cities = [];
   List<Map<String, dynamic>>? _items;
@@ -50,21 +52,24 @@ class _NearbyPlacesPageState extends State<NearbyPlacesPage> {
       _notice = null;
     });
     try {
-      var rows = await TripsApi(client: _client).cities(_query.text.trim());
-      if (rows.isEmpty) {
-        final r = await _client.get(
-          '/discovery/locations',
-          queryParameters: {'q': _query.text.trim()},
-        );
-        rows = (r.data['items'] as List)
-            .map(
-              (e) => {
-                ...Map<String, dynamic>.from(e),
-                'source_id': e['id'],
-                'country': e['country_name'],
-              },
-            )
-            .toList();
+      final result = await PlaceAreaApi(
+        client: _client,
+      ).search(_query.text.trim());
+      final rows = result.items
+          .map(
+            (area) => <String, dynamic>{
+              'id': area.cityId,
+              'source_id': area.sourceId,
+              'name': area.name,
+              'country': area.countryName,
+              'region_name': area.regionName,
+              'latitude': area.latitude,
+              'longitude': area.longitude,
+            },
+          )
+          .toList();
+      if (mounted && result.notice != null) {
+        setState(() => _notice = result.notice);
       }
       if (mounted) setState(() => _cities = rows);
     } catch (_) {
@@ -78,6 +83,8 @@ class _NearbyPlacesPageState extends State<NearbyPlacesPage> {
 
   Future<void> _choose(Map<String, dynamic> c) async {
     if (c['source_id'] != null) {
+      if (!await ensureSignedIn(context, ref)) return;
+      if (!mounted) return;
       try {
         c = Map<String, dynamic>.from(
           (await _client.post(
@@ -145,6 +152,8 @@ class _NearbyPlacesPageState extends State<NearbyPlacesPage> {
 
   Future<void> _search() async {
     if (_origin == null) return;
+    if (!await ensureSignedIn(context, ref)) return;
+    if (!mounted) return;
     setState(() {
       _busy = true;
       _notice = null;
@@ -168,11 +177,13 @@ class _NearbyPlacesPageState extends State<NearbyPlacesPage> {
           _notice = '${r.data['message']}\n${r.data['distance_note']}';
         });
       }
-    } catch (_) {
+    } catch (error) {
       if (mounted) {
         setState(
-          () =>
-              _notice = 'Nearby search is unavailable. Sign in and try again.',
+          () => _notice =
+              error is DioException && error.response?.statusCode == 401
+              ? 'Sign in to search nearby. Your chosen area is kept.'
+              : 'Nearby places couldn’t load. Your area and filters are kept; try again.',
         );
       }
     } finally {
@@ -207,16 +218,7 @@ class _NearbyPlacesPageState extends State<NearbyPlacesPage> {
 
   void _open(Map<String, dynamic> item) {
     final p = TravelPlace.fromJson(item);
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => DestinationDetailsPage(
-          cityId: p.cityId!,
-          name: item['city_name']?.toString() ?? p.name,
-          center: p.point,
-          initialPlace: p,
-        ),
-      ),
-    );
+    openPlace(context, p);
   }
 
   @override
@@ -237,7 +239,7 @@ class _NearbyPlacesPageState extends State<NearbyPlacesPage> {
                 ),
                 const SizedBox(height: 12),
                 const Text(
-                  'Choose a city or use your location. Open map searches use the nearest city centre, never your GPS coordinates. Source coverage and business details may be incomplete.',
+                  'Choose a town or use your location. Local discovery checks known public town centres; coverage and business details may be incomplete.',
                 ),
                 const SizedBox(height: 16),
                 TextField(
@@ -265,7 +267,9 @@ class _NearbyPlacesPageState extends State<NearbyPlacesPage> {
                   ListTile(
                     title: Text(c['name'].toString()),
                     subtitle: Text(
-                      '${c['country'] ?? ''} · ${c['latitude']}, ${c['longitude']}',
+                      [c['region_name'], c['country']]
+                          .where((v) => v != null && v.toString().isNotEmpty)
+                          .join(' · '),
                     ),
                     onTap: _busy ? null : () => _choose(c),
                   ),
@@ -303,7 +307,13 @@ class _NearbyPlacesPageState extends State<NearbyPlacesPage> {
                             ),
                           )
                           .toList(),
-                  onChanged: _busy ? null : (v) => setState(() => _kind = v!),
+                  onChanged: _busy
+                      ? null
+                      : (v) => setState(() {
+                          _kind = v!;
+                          _items = null;
+                          _notice = 'Search to update this category.';
+                        }),
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<double>(
@@ -317,7 +327,13 @@ class _NearbyPlacesPageState extends State<NearbyPlacesPage> {
                         ),
                       )
                       .toList(),
-                  onChanged: _busy ? null : (r) => setState(() => _radius = r!),
+                  onChanged: _busy
+                      ? null
+                      : (r) => setState(() {
+                          _radius = r!;
+                          _items = null;
+                          _notice = 'Search to update this radius.';
+                        }),
                 ),
                 if (_origin != null) ...[
                   const SizedBox(height: 12),

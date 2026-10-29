@@ -1,10 +1,11 @@
+import '../../../../app/router/navigation_actions.dart';
+import '../../../places/data/place_area.dart';
 import '../../../explore/presentation/pages/nearby_places_page.dart';
 import '../../../explore/presentation/pages/explore_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/widgets/place_source_credit.dart';
 import '../../../places/data/place_catalogue.dart';
-import '../../../places/presentation/browse_places_page.dart';
 import '../../../places/presentation/widgets/place_card.dart';
 import '../../../places/presentation/widgets/place_filters.dart';
 
@@ -16,14 +17,22 @@ class HomePlacesSection extends ConsumerStatefulWidget {
 
 class _HomePlacesSectionState extends ConsumerState<HomePlacesSection> {
   PlaceQuery _query = const PlaceQuery(photosOnly: true, size: 8);
-  void _change(PlaceQuery q) =>
-      setState(() => _query = q.copyWith(size: 8, page: 1));
-  void _browse() => Navigator.of(context).push(
-    MaterialPageRoute(builder: (_) => BrowsePlacesPage(initialQuery: _query)),
-  );
+  void _change(PlaceQuery q) {
+    if (q.countryId != _query.countryId) {
+      ref.read(chosenPlaceAreaProvider.notifier).state = null;
+    }
+    setState(() => _query = q.copyWith(size: 8, page: 1));
+  }
+
+  void _browse() => openPlaceSearch(context, _query);
   @override
   Widget build(BuildContext context) {
-    final places = ref.watch(placeCatalogueProvider(_query));
+    final area = ref.watch(chosenPlaceAreaProvider);
+    final effectiveQuery = _query.copyWith(
+      cityId: area?.cityId,
+      clearCity: area?.cityId == null,
+    );
+    final places = ref.watch(placeCatalogueProvider(effectiveQuery));
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -31,38 +40,26 @@ class _HomePlacesSectionState extends ConsumerState<HomePlacesSection> {
           children: [
             Expanded(
               child: Text(
-                'Places worth a look',
+                'Places to explore',
                 style: Theme.of(context).textTheme.titleLarge,
               ),
             ),
-            TextButton(onPressed: _browse, child: const Text('See all')),
-          ],
-        ),
-        const Text('A little inspiration. A place to start.'),
-        const SizedBox(height: 12),
-        PlaceCategoryBar(query: _query, onChanged: _change),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            OutlinedButton.icon(
+            IconButton(
+              tooltip: 'Filters',
+              icon: const Icon(Icons.tune, size: 20),
               onPressed: () async {
                 final q = await showPlaceFilters(context, _query);
                 if (q != null && mounted) _change(q);
               },
-              icon: const Icon(Icons.tune, size: 18),
-              label: Text(placeCountryName(ref, _query) ?? 'Filters'),
             ),
-            FilterChip(
-              label: const Text('Photos only'),
-              selected: _query.photosOnly,
-              onSelected: (v) => _change(_query.copyWith(photosOnly: v)),
-            ),
+            TextButton(onPressed: _browse, child: const Text('See all')),
           ],
         ),
-        const SizedBox(height: 16),
+        if (placeCountryName(ref, _query) case final country?)
+          Text(country, style: Theme.of(context).textTheme.bodySmall),
+        const SizedBox(height: 4),
+        PlaceCategoryBar(query: _query, onChanged: _change),
+        const SizedBox(height: 10),
         places.when(
           loading: () => const SizedBox(
             height: 140,
@@ -75,7 +72,7 @@ class _HomePlacesSectionState extends ConsumerState<HomePlacesSection> {
                 const Text('Places are taking a little longer to load.'),
                 TextButton(
                   onPressed: () =>
-                      ref.invalidate(placeCatalogueProvider(_query)),
+                      ref.invalidate(placeCatalogueProvider(effectiveQuery)),
                   child: const Text('Retry places'),
                 ),
               ],
@@ -125,13 +122,15 @@ class _HomePlacesSectionState extends ConsumerState<HomePlacesSection> {
               : Column(
                   children: [
                     SizedBox(
-                      height: 300,
+                      height:
+                          245 +
+                          (MediaQuery.textScalerOf(context).scale(14) - 14) * 6,
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
                         itemCount: result.items.length,
                         separatorBuilder: (_, _) => const SizedBox(width: 16),
                         itemBuilder: (_, i) => SizedBox(
-                          width: 250,
+                          width: 240,
                           child: PlaceCard(place: result.items[i]),
                         ),
                       ),

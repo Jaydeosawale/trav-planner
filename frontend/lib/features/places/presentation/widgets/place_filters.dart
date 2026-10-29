@@ -13,7 +13,7 @@ class PlaceCategoryBar extends StatelessWidget {
   final ValueChanged<PlaceQuery> onChanged;
   @override
   Widget build(BuildContext context) => SizedBox(
-    height: 48,
+    height: MediaQuery.textScalerOf(context).scale(14) > 21 ? 72 : 48,
     child: ListView.separated(
       scrollDirection: Axis.horizontal,
       itemCount: placeCategories.length,
@@ -73,7 +73,7 @@ class _PlaceFiltersState extends ConsumerState<_PlaceFilters> {
                   ? _query.countryId
                   : 'world',
               isExpanded: true,
-              decoration: const InputDecoration(labelText: 'Where'),
+              decoration: const InputDecoration(labelText: 'Country'),
               items: [
                 const DropdownMenuItem(
                   value: 'world',
@@ -102,7 +102,9 @@ class _PlaceFiltersState extends ConsumerState<_PlaceFilters> {
           SwitchListTile.adaptive(
             contentPadding: EdgeInsets.zero,
             title: const Text('Photos only'),
-            subtitle: const Text('Show places with a photo available in Trav.'),
+            subtitle: const Text(
+              'May hide small places without a photo. Image availability can change.',
+            ),
             value: _query.photosOnly,
             onChanged: (v) => setState(
               () => _query = _query.copyWith(photosOnly: v, page: 1),
@@ -117,6 +119,7 @@ class _PlaceFiltersState extends ConsumerState<_PlaceFilters> {
             onPressed: () => setState(
               () => _query = PlaceQuery(
                 type: widget.query.type,
+                cityId: widget.query.cityId,
                 search: widget.query.search,
                 size: widget.query.size,
               ),

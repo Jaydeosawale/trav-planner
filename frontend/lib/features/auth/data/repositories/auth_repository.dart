@@ -47,7 +47,11 @@ class AuthRepository {
 
       return apiResponse;
     } catch (e) {
-      return ApiResponse(success: false, error: e.toString());
+      return ApiResponse(
+        success: false,
+        error: e.toString(),
+        statusCode: e is DioException ? e.response?.statusCode : null,
+      );
     }
   }
 
@@ -71,7 +75,11 @@ class AuthRepository {
         (json) => json as Map<String, dynamic>,
       );
     } catch (e) {
-      return ApiResponse(success: false, error: e.toString());
+      return ApiResponse(
+        success: false,
+        error: e.toString(),
+        statusCode: e is DioException ? e.response?.statusCode : null,
+      );
     }
   }
 
@@ -88,7 +96,11 @@ class AuthRepository {
         (json) => UserModel.fromJson(json as Map<String, dynamic>),
       );
     } catch (e) {
-      return ApiResponse<UserModel>(success: false, error: e.toString());
+      return ApiResponse<UserModel>(
+        success: false,
+        error: e.toString(),
+        statusCode: e is DioException ? e.response?.statusCode : null,
+      );
     }
   }
 
@@ -105,7 +117,11 @@ class AuthRepository {
         (json) => UserModel.fromJson(json as Map<String, dynamic>),
       );
     } catch (e) {
-      return ApiResponse<UserModel>(success: false, error: e.toString());
+      return ApiResponse<UserModel>(
+        success: false,
+        error: e.toString(),
+        statusCode: e is DioException ? e.response?.statusCode : null,
+      );
     }
   }
 
@@ -151,7 +167,11 @@ class AuthRepository {
 
       return apiResponse;
     } catch (e) {
-      return ApiResponse(success: false, error: e.toString());
+      return ApiResponse(
+        success: false,
+        error: e.toString(),
+        statusCode: e is DioException ? e.response?.statusCode : null,
+      );
     }
   }
 
