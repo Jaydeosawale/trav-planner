@@ -1,3 +1,4 @@
+import 'widgets/web_play_store_frame.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -34,8 +35,9 @@ class TravPlannerApp extends ConsumerWidget {
       darkTheme: AppTheme.dark,
       themeMode: ThemeMode.light,
       routerConfig: ref.watch(appRouterProvider),
-      builder: (_, child) =>
-          SessionRestorer(child: child ?? const SizedBox.shrink()),
+      builder: (_, child) => WebPlayStoreFrame(
+        child: SessionRestorer(child: child ?? const SizedBox.shrink()),
+      ),
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:trav_planner/core/widgets/ai_content_report_button.dart';
 import '../../../auth/presentation/widgets/require_sign_in.dart';
 import '../../../destinations/data/place.dart';
 import '../../../../core/widgets/place_source_credit.dart';
@@ -427,6 +428,10 @@ class _AISearchPageState extends State<AISearchPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                const Text(
+                  'Your prompts and trip preferences are sent to Gemini or Groq to generate a plan. Gemini’s free service may use submissions to improve its models. Do not include personal, sensitive or confidential details. AI suggestions can be inaccurate.',
+                ),
+                const SizedBox(height: 16),
                 if (_lastMessage == null && _session == null) ...[
                   Container(
                     padding: const EdgeInsets.all(24),
@@ -629,6 +634,11 @@ class _AISearchPageState extends State<AISearchPage> {
 
                 if (_response != null) ...[
                   _ResponseCard(response: _response!),
+                  if (_session?['id'] != null)
+                    AIContentReportButton(
+                      sourceKind: 'chat',
+                      referenceId: _session!['id'].toString(),
+                    ),
                   const SizedBox(height: 16),
                   FilledButton.icon(
                     onPressed: _reviewing ? null : _reviewPlan,

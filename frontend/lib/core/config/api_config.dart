@@ -16,7 +16,7 @@ class ApiConfig {
 
     switch (AppEnvironment.current) {
       case Environment.production:
-        return "https://api.travplanner.com/api/v1";
+        return "https://jaydeo-trav-planner-api.onrender.com/api/v1";
 
       case Environment.staging:
         return "https://staging-api.travplanner.com/api/v1";

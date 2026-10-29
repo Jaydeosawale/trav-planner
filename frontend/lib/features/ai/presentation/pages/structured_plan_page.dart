@@ -1,3 +1,4 @@
+import 'package:trav_planner/core/widgets/ai_content_report_button.dart';
 import '../../../auth/presentation/widgets/require_sign_in.dart';
 import 'planning_brief_values.dart';
 import '../../../../core/widgets/place_source_credit.dart';
@@ -413,6 +414,11 @@ class _StructuredPlanPageState extends ConsumerState<StructuredPlanPage> {
           'AI suggestions, not confirmed bookings. Durations are estimates; verify hours, access and travel arrangements. Untick activities you don’t want. You can edit and reorder the saved itinerary later.',
         ),
         const SizedBox(height: 12),
+        AIContentReportButton(
+          sourceKind: 'itinerary',
+          referenceId: _draft!['id'].toString(),
+          client: _client,
+        ),
         TextField(
           controller: _title,
           enabled: !_busy && _tripId == null,
@@ -523,6 +529,10 @@ class _StructuredPlanPageState extends ConsumerState<StructuredPlanPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              const Text(
+                'Your prompts and trip preferences are sent to Gemini or Groq to generate a plan. Gemini’s free service may use submissions to improve its models. Do not include personal, sensitive or confidential details. AI suggestions can be inaccurate.',
+              ),
+              const SizedBox(height: 16),
               if (_draft == null)
                 Form(
                   key: _form,

@@ -37,5 +37,5 @@ jobs:
           python-version: '3.12'
       - run: pip install -r requirements/development.txt
         working-directory: backend
-      - run: python -m pytest tests/test_deployment.py tests/test_auth_recovery.py tests/test_public_places.py tests/test_saved_places.py tests/test_zero_cost_routing.py tests/test_planner_conversations.py tests/test_catalogue_bootstrap.py tests/test_world_discovery.py tests/test_world_locations.py tests/test_structured_itinerary.py tests/test_open_map.py tests/test_geoapify.py -q
+      - run: python -m pytest tests/test_deployment.py tests/test_auth_recovery.py tests/test_public_places.py tests/test_saved_places.py tests/test_zero_cost_routing.py tests/test_planner_conversations.py tests/test_catalogue_bootstrap.py tests/test_world_discovery.py tests/test_world_locations.py tests/test_structured_itinerary.py tests/test_open_map.py tests/test_geoapify.py tests/test_ai_content_reports.py -q
         working-directory: backend
