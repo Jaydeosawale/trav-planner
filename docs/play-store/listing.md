@@ -25,16 +25,21 @@ Questions or account deletion requests: jaydeep.sawale97@gmail.com
 Privacy: https://jaydeo-sawale-portfolio.vercel.app/trav/privacy/
 Delete account and data: https://jaydeo-sawale-portfolio.vercel.app/trav/delete-account/
 
-Release notes:
-First Google Play release of Trav: place discovery, optional Nearby location, AI planning, saved places and editable trips. Includes in-app AI-content reporting and privacy/account-deletion links.
+Release notes for 1.0.22:
+Bigger destination banners with search inside and area selection in the header.
+Easier town and place discovery with clearer filters.
+Add places to an existing trip or create a new trip.
+Improved AI chat and transfer of dates, budget and selected places into plans.
+Better navigation and connection recovery.
 
 Initial country: India only (user selected; free-tier Gemini).
 
-Status:
-Production submission queued on 20 October 2026 (IST). Play Console shows Changes in review. Automatic quick checks are running; changes proceed to review after checks pass. Production country: India only. Managed publishing is off, so an approved release can publish automatically. The app is not confirmed publicly available yet.
+Status (verified in Play Console, 29 October 2026):
+Current public release 1.0.21 / version code 22 was published on 22 October 2026 at 100% rollout.
+Update 1.0.22 / version code 23, production release ID 2, is submitted as “Trav 1.0.22 - discovery and planning”. Publishing overview shows “Changes in review”; automatic quick checks are running and the release proceeds to review after they pass. The new update is not yet confirmed published.
 
-Version 22 (1.0.21) is available to internal testers (released 7:06 PM IST). Google accepted the bundle, reports approximately 73 MB new-install download size and 19,292 supported devices, and production validation showed Ready to release. Store listing includes four genuine native 1080×1920 screenshots attached by the user. Advertising ID declaration completed as No; the built APK contains no AD_ID permission. All initial setup declarations and India country selection are saved.
+Managed publishing is off, so approval can publish the update automatically. Rollout is 100% of the existing targeted users; country availability remains India only. Google accepted the signed bundle, displayed “Ready to release”, reported 73 MB for new installs and 2.09 MB for updates, and showed zero devices losing support. Target SDK36, min SDK24 and all three existing native architectures are retained.
 
-Evidence screenshot: outputs/Trav-Play-Submitted.png in the task workspace.
+Existing store listing, privacy/deletion links, AI processing disclosure, reporting controls, reviewer access and screenshots remain in place. No monetisation or country expansion was requested. The signed bundle hash and validation details are in build-verification.json.
 
-Internal tester access verified: selected Jaydeo email list has 2 users. Opt-in link: https://play.google.com/apps/internaltest/4701587607702177977 .
+Internal tester opt-in link retained: https://play.google.com/apps/internaltest/4701587607702177977 .

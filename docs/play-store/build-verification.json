@@ -1,19 +1,28 @@
 {
   "package": "com.jaydeo.travplanner",
   "name": "Trav",
-  "versionName": "1.0.21",
-  "versionCode": 22,
+  "versionName": "1.0.22",
+  "versionCode": 23,
   "targetSdk": 36,
   "minSdk": 24,
   "country": "India",
+  "sourceCommit": "c3f675e489fb52754a70f1f064f09adea975b081",
   "artifacts": {
-    "Trav-1.0.21-play-release.aab": {
-      "bytes": 124190267,
-      "sha256": "5ba0c2a53c198f317a93e65190f6bbe2ae2361d3af059ec8280c7d201e73c5d7"
-    },
-    "Trav-1.0.21-android-arm64.apk": {
-      "bytes": 86331623,
-      "sha256": "f167da7bbd3fd7b22db40189fb10bb1e3739f8468d2e1b860364d7207a8d0996"
+    "Trav-1.0.22-play-release.aab": {
+      "bytes": 124612881,
+      "sha256": "606da2f32d7a62aed7e3b40348238ac62d2626d7aa64838c7bf2ca6774959b65"
     }
-  }
+  },
+  "googleValidation": {
+    "status": "Ready to release",
+    "newInstallSize": "73 MB",
+    "estimatedUpdateSize": "2.09 MB",
+    "devicesNoLongerSupported": 0,
+    "rolloutPercent": 100,
+    "releaseId": 2,
+    "releaseName": "Trav 1.0.22 - discovery and planning"
+  },
+  "submissionStatus": "Changes in review; Google quick checks running",
+  "submissionDate": "2026-10-29",
+  "managedPublishing": false
 }

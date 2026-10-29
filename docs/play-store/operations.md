@@ -53,3 +53,10 @@ Verify account login, guest discovery, AI planning, saving and reporting against
 production backend. Use only a dedicated normal reviewer account in Play Console.
 Privacy/deletion pages must remain reachable without login. Record build hashes and
 Google's final validation results. App creation is not publication.
+
+
+## Update submitted — 29 October 2026
+
+Trav 1.0.22 / versionCode23 was uploaded as the signed all-architecture bundle and accepted by production validation. Production release2 is submitted for review; the publishing page shows Changes in review while Google quick checks run. Managed publishing remains off and rollout is100% within existing country targeting (India). Public version1.0.21 remains live until Google publishes the update.
+
+Verification in this submission: source commitc3f675e, valid bundle signature, all3 native architectures, no lost device support according to Play, health/privacy/deletion URLsHTTP200 and protected reporting endpointHTTP401 without credentials. Automated app/backend regressions and live public discovery were checked in the build task. Fresh private-account AI generation and administrator-report review were not repeated in the submission turn. No review credentials or API keys were changed or exposed.
