@@ -40,86 +40,95 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   return router;
 });
 
-GoRouter createAppRouter({String? initialLocation}) => GoRouter(
-  initialLocation: initialLocation,
-  routes: [
-    GoRoute(path: '/', builder: (_, _) => const SplashPage()),
-    StatefulShellRoute.indexedStack(
-      builder: (_, _, shell) => AdaptiveScaffold(
-        navigationShell: shell,
-        body: const SizedBox.shrink(),
-      ),
-      branches: [
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: '/home',
-              builder: (_, _) => const HomePage(embedded: true),
-            ),
-          ],
+GoRouter createAppRouter({String? initialLocation}) {
+  // Every pushed URL has an ID-based loader or a safe expired-link state.
+  // Reflect those routes in the browser so published places can be reopened.
+  GoRouter.optionURLReflectsImperativeAPIs = true;
+  return GoRouter(
+    initialLocation: initialLocation,
+    routes: [
+      GoRoute(path: '/', builder: (_, _) => const SplashPage()),
+      StatefulShellRoute.indexedStack(
+        builder: (_, _, shell) => AdaptiveScaffold(
+          navigationShell: shell,
+          body: const SizedBox.shrink(),
         ),
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: '/explore',
-              builder: (_, state) => BrowsePlacesPage(
-                key: state.pageKey,
-                initialQuery: placeQueryFromUri(state.uri),
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/home',
+                builder: (_, _) => const HomePage(embedded: true),
               ),
-            ),
-          ],
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/explore',
+                builder: (_, state) => BrowsePlacesPage(
+                  key: state.pageKey,
+                  initialQuery: placeQueryFromUri(state.uri),
+                ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/planner',
+                builder: (_, _) => const AISearchPage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/trips',
+                builder: (_, _) => const SessionGate(child: MyTripsPage()),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/profile',
+                builder: (_, _) => const SessionGate(child: ProfilePage()),
+              ),
+            ],
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/places/:id',
+        builder: (_, state) => state.extra is TravelPlace
+            ? PlaceDetailsPage(place: state.extra! as TravelPlace)
+            : _LinkedPlace(id: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/trips/:id',
+        builder: (_, state) => SessionGate(
+          child: TripDetailsPage(id: state.pathParameters['id']!),
         ),
-        StatefulShellBranch(
-          routes: [
-            GoRoute(path: '/planner', builder: (_, _) => const AISearchPage()),
-          ],
+      ),
+      GoRoute(path: '/login', builder: (_, _) => const LoginPage()),
+      GoRoute(
+        path: '/admin',
+        builder: (_, _) =>
+            const SessionGate(admin: true, child: AdminDashboardPage()),
+      ),
+    ],
+    errorBuilder: (context, _) => Scaffold(
+      appBar: AppBar(title: const Text('Page unavailable')),
+      body: Center(
+        child: FilledButton(
+          onPressed: () => context.go('/home'),
+          child: const Text('Explore Trav'),
         ),
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: '/trips',
-              builder: (_, _) => const SessionGate(child: MyTripsPage()),
-            ),
-          ],
-        ),
-        StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: '/profile',
-              builder: (_, _) => const SessionGate(child: ProfilePage()),
-            ),
-          ],
-        ),
-      ],
-    ),
-    GoRoute(
-      path: '/places/:id',
-      builder: (_, state) => state.extra is TravelPlace
-          ? PlaceDetailsPage(place: state.extra! as TravelPlace)
-          : _LinkedPlace(id: state.pathParameters['id']!),
-    ),
-    GoRoute(
-      path: '/trips/:id',
-      builder: (_, state) =>
-          SessionGate(child: TripDetailsPage(id: state.pathParameters['id']!)),
-    ),
-    GoRoute(path: '/login', builder: (_, _) => const LoginPage()),
-    GoRoute(
-      path: '/admin',
-      builder: (_, _) =>
-          const SessionGate(admin: true, child: AdminDashboardPage()),
-    ),
-  ],
-  errorBuilder: (context, _) => Scaffold(
-    appBar: AppBar(title: const Text('Page unavailable')),
-    body: Center(
-      child: FilledButton(
-        onPressed: () => context.go('/home'),
-        child: const Text('Explore Trav'),
       ),
     ),
-  ),
-);
+  );
+}
 
 /// Restore a session even when a browser opens directly on a place or trip.
 class SessionRestorer extends ConsumerStatefulWidget {
@@ -154,8 +163,9 @@ class SessionGate extends ConsumerWidget {
     if (auth.isAuthenticated && (!admin || auth.isAdmin)) {
       return child;
     }
-    if (auth.status == AuthStatus.checking)
+    if (auth.status == AuthStatus.checking) {
       return const Center(child: CircularProgressIndicator());
+    }
     return Scaffold(
       body: Center(
         child: Padding(

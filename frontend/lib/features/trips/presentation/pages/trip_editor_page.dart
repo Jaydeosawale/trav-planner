@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../auth/presentation/widgets/require_sign_in.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../data/trips_api.dart';
@@ -141,6 +142,7 @@ class _TripEditorPageState extends ConsumerState<TripEditorPage> {
       if (widget.trip != null) 'status': _status,
     };
     try {
+      if (!await ensureSignedIn(context, ref) || !mounted) return;
       final trip = await ref
           .read(tripsApiProvider)
           .save(payload, id: widget.trip?['id']?.toString());

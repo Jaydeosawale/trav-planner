@@ -54,6 +54,13 @@ void main() {
       await tester.pumpAndSettle();
       expect(requests.last.search, 'Mahabaleshwar');
       expect(requests.last.type, 'cafe');
+      await tester.enterText(find.byType(TextField), 'Pune');
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pumpAndSettle();
+      expect(
+        router.routeInformationProvider.value.uri.queryParameters['search'],
+        'Pune',
+      );
       await tester.tap(find.text('Home').last);
       await tester.pumpAndSettle();
       expect(router.routeInformationProvider.value.uri.path, '/home');
@@ -61,16 +68,25 @@ void main() {
       await tester.pumpAndSettle();
       expect(
         router.routeInformationProvider.value.uri.queryParameters['search'],
-        'Mahabaleshwar',
+        'Pune',
       );
-      expect(find.widgetWithText(TextField, 'Mahabaleshwar'), findsOneWidget);
+      expect(find.widgetWithText(TextField, 'Pune'), findsOneWidget);
       router.push('/places/museum');
       await tester.pumpAndSettle();
       expect(find.text('Sourced museum'), findsOneWidget);
+      expect(
+        router.routeInformationParser
+            .restoreRouteInformation(
+              router.routerDelegate.currentConfiguration,
+            )!
+            .uri
+            .path,
+        '/places/museum',
+      );
       expect(find.text('Add to trip'), findsOneWidget);
       router.pop();
       await tester.pumpAndSettle();
-      expect(find.widgetWithText(TextField, 'Mahabaleshwar'), findsOneWidget);
+      expect(find.widgetWithText(TextField, 'Pune'), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );

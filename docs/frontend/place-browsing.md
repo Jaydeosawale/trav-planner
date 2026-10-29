@@ -17,3 +17,19 @@ The live catalogue checked before deployment had 16 places, 12 photo links and s
 ## Verification
 
 Backend suite: 58 passing tests. Flutter: 49 existing/product tests passed; final four focused tests include image CDN normalisation, category/country/photo propagation, map switching, details-to-AI navigation and narrow Home rendering. CI runs the full suite on push. Rendered previews use explicitly labelled Paris UI fixtures, not production POI claims.
+
+## 1.0.22 — connected discovery and planning (29 October 2026)
+
+The app now uses a state-preserving routed shell for Home, Explore, Planner, Trips and Profile. Search/filter choices can be restored from `/explore` query parameters, and published places have `/places/:id` loaders. Trips use an authenticated link route. Existing password-reset fragments, the web Play Store banner, privacy links and AI content reporting are retained. Unknown, expired or unavailable links offer a recovery action.
+
+Home has a compact Ocean Escape layout and an independent search field. Location lookup merges stored cities with the existing locally hosted settlement index, keeping regional/country labels. Selecting an area scopes the catalogue, and additional source discovery requires an explicit action. Guests can browse published data and search location names; resolving a new location, saving or generating a plan prompts sign-in and resumes the action. No new paid provider or external per-keystroke POI request is introduced.
+
+Home, Nearby and Saved share a place-detail presentation. Place cards link to that route, Directions uses a destination directions URL, and Add to trip offers an existing day or a new trip. Source candidates are resolved before an itinerary item is written. The picker checks the latest day for duplicates and keeps the source place ID. Trip creation can resume after sign-in without discarding form values.
+
+The AI composer stays anchored, and the intro collapses during a conversation. Exact brief dates, budget/currency and party size are copied into daily-plan review; uncertain natural-language values remain visible context. Selected-place IDs are included in generation, checked against the selected destination and validated in the returned plan. A missing required place rejects the draft rather than silently substituting it. Existing free-provider controls and AI content reports remain active.
+
+Session recovery now distinguishes invalid credentials from connectivity/server errors, shares one refresh across concurrent requests and limits original-request retries. Nearby checks visible cache entries against the actual requested distance, chooses the nearest known source city and explicitly describes partial city-centre coverage. Map results can be recentered; changed areas refit the viewport without continually overriding deliberate panning.
+
+Validation: 67 Flutter tests and 64 backend tests passed after integrating the latest Play-release changes. Additional final routing/trip checks passed. Analysis has no errors or warnings; existing informational lints remain. Mobile renders include 360×800 and 200% text checks. No database migration was added for these features.
+
+Remaining scope: free sources still do not cover every locality/business or live availability. Nearby external discovery remains centred on known public towns and can cover less than a user's selected radius. Existing generic catalogue classifications need editorial review; new Wikidata retrieval retains source-specific park/museum categories. Broad local-script alias expansion, offline trip packs and advanced personalised recommendations remain future work. Publishing a new Play Store release is separate from preparing an Android artifact.
