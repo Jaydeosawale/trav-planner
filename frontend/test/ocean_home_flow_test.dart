@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:trav_planner/core/theme/app_theme.dart';
 import 'package:trav_planner/features/home/presentation/pages/home_page.dart';
+import 'package:trav_planner/features/home/presentation/widgets/destination_spotlight.dart';
 import 'package:trav_planner/features/home/presentation/providers/home_provider.dart';
 import 'package:trav_planner/features/places/data/place_area.dart';
 import 'package:trav_planner/features/places/data/place_catalogue.dart';
@@ -58,6 +59,15 @@ void main() {
       expect(find.text('Paris · Change'), findsOneWidget);
       expect(find.byType(TextField), findsOneWidget);
       if (scale == 1) {
+        final banner = tester.getRect(find.byType(DestinationSpotlight));
+        final search = tester.getRect(find.byType(TextField));
+        expect(banner.height, greaterThanOrEqualTo(260));
+        expect(search.top, greaterThan(banner.top));
+        expect(search.bottom, lessThan(banner.bottom));
+        expect(
+          tester.getRect(find.text('Paris · Change')).bottom,
+          lessThan(banner.top),
+        );
         final name = tester.getRect(find.text('An afternoon in Paris'));
         expect(
           name.bottom,

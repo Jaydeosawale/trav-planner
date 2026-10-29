@@ -131,3 +131,16 @@ async def test_photo_country_totals_and_hidden_geography(api):
     assert (await client.get("/api/v1/places/search?country_id=country")).json()[
         "data"
     ]["items"] == []
+
+
+@pytest.mark.asyncio
+async def test_sights_include_existing_landmarks_without_changing_other_categories(api):
+    client, _, sessions = api
+    async with sessions() as db:
+        db.add(Place(id="sight", city_id="city", name="Historic landmark",
+                     slug="historic-sight", place_type="landmark"))
+        await db.commit()
+    sights = (await client.get("/api/v1/places/search?place_type=attraction")).json()["data"]
+    assert any(p["id"] == "sight" for p in sights["items"])
+    museums = (await client.get("/api/v1/places/search?place_type=museum")).json()["data"]
+    assert all(p["id"] != "sight" for p in museums["items"])

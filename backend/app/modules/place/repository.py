@@ -262,7 +262,10 @@ class PlaceRepository(BaseRepository[Place]):
 
         if place_type:
             filters.append(
-                Place.place_type == place_type,
+                Place.place_type.in_(
+                    ("attraction", "landmark", "monument")
+                    if place_type == "attraction" else (place_type,)
+                ),
             )
 
         # ------------------------------------------------------

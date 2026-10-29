@@ -126,14 +126,28 @@ class _AreaCandidatesState extends ConsumerState<AreaCandidates> {
 }
 
 class AreaSelector extends ConsumerWidget {
-  const AreaSelector({super.key, this.onChanged});
+  const AreaSelector({super.key, this.onChanged, this.compact = false});
+  final bool compact;
   final ValueChanged<PlaceArea>? onChanged;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final area = ref.watch(chosenPlaceAreaProvider);
     return OutlinedButton.icon(
-      icon: const Icon(Icons.location_on_outlined),
-      label: Text(area == null ? 'Choose an area' : '${area.name} · Change'),
+      style: compact
+          ? OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+              minimumSize: const Size(0, 44),
+            )
+          : null,
+      icon: Icon(Icons.location_on_outlined, size: compact ? 17 : 22),
+      label: Text(
+        area == null
+            ? (compact ? 'Choose area' : 'Choose an area')
+            : '${area.name} · Change',
+        maxLines: compact ? 1 : 2,
+        overflow: TextOverflow.ellipsis,
+        style: compact ? const TextStyle(fontSize: 12) : null,
+      ),
       onPressed: () => showModalBottomSheet<void>(
         context: context,
         isScrollControlled: true,

@@ -66,7 +66,10 @@ class HomePage extends ConsumerWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const BrandLogo(size: 42),
+                            const BrandLogo(size: 30),
+                            const SizedBox(width: 8),
+                            const Expanded(child: AreaSelector(compact: true)),
+                            const SizedBox(width: 8),
                             Semantics(
                               label: user == null ? 'Sign in' : 'Open profile',
                               button: true,
@@ -103,16 +106,14 @@ class HomePage extends ConsumerWidget {
                         ),
                         const SizedBox(height: 10),
                       ],
-                      const AreaSelector(),
-                      _HomeSearch(),
-                      const SizedBox(height: 12),
                       DestinationSpotlight(
                         banners: ref.watch(bannersProvider).asData?.value ?? [],
                         onSearch: (_) {},
+                        search: _HomeSearch(),
                       ),
-                      const SizedBox(height: 14),
+                      const SizedBox(height: 10),
                       _HomeShortcuts(),
-                      const SizedBox(height: 14),
+                      const SizedBox(height: 8),
                       const HomePlacesSection(),
                       const SizedBox(height: 28),
                       Row(
@@ -439,6 +440,8 @@ class _HomeSearchState extends State<_HomeSearch> {
     onTapOutside: (_) => FocusScope.of(context).unfocus(),
     decoration: InputDecoration(
       hintText: 'Town, landmark or café',
+      filled: true,
+      fillColor: AppColors.surface,
       prefixIcon: const Icon(Icons.search_rounded),
       suffixIcon: IconButton(
         tooltip: 'Search places',

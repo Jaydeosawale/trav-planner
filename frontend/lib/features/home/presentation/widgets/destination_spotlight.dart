@@ -10,9 +10,11 @@ class DestinationSpotlight extends StatefulWidget {
     super.key,
     required this.banners,
     required this.onSearch,
+    this.search,
   });
   final List<BannerModel> banners;
   final ValueChanged<String> onSearch;
+  final Widget? search;
 
   @override
   State<DestinationSpotlight> createState() => _DestinationSpotlightState();
@@ -178,7 +180,12 @@ class _DestinationSpotlightState extends State<DestinationSpotlight>
               ),
               Container(
                 width: double.infinity,
-                padding: EdgeInsets.all(wide ? 24 : 16),
+                constraints: BoxConstraints(
+                  minHeight: widget.search == null
+                      ? (wide ? 260 : 200)
+                      : (wide ? 340 : 260),
+                ),
+                padding: EdgeInsets.all(wide ? 32 : 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -216,18 +223,25 @@ class _DestinationSpotlightState extends State<DestinationSpotlight>
                         ),
                       ),
                     ),
-                    SizedBox(height: wide ? 18 : 10),
+                    SizedBox(height: wide ? 40 : 24),
                     IgnorePointer(
                       child: Text(
                         'Somewhere worth going.',
                         style: Theme.of(context).textTheme.displayLarge
                             ?.copyWith(
-                              fontSize: wide ? 32 : 22,
+                              fontSize: wide ? 44 : 30,
                               color: Colors.white,
                             ),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    if (widget.search != null) ...[
+                      const SizedBox(height: 20),
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 560),
+                        child: widget.search!,
+                      ),
+                    ],
+                    const SizedBox(height: 18),
                     Semantics(
                       label:
                           'Featured destination ${_index + 1} of $_count: $label',

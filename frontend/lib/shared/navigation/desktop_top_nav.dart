@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../features/places/presentation/area_selector.dart';
 import '../../core/theme/app_colors.dart';
 import '../widgets/brand_logo.dart';
 
@@ -21,6 +22,13 @@ class DesktopTopNav extends StatelessWidget implements PreferredSizeWidget {
     title: Row(
       children: [
         const BrandLogo(size: 34),
+        if (selectedIndex == 0) ...[
+          const SizedBox(width: 20),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 180),
+            child: const AreaSelector(compact: true),
+          ),
+        ],
         const Spacer(),
         ...[
           'Home',
