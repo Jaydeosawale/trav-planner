@@ -1,3 +1,4 @@
+import '../../../places/data/nearby_origin.dart';
 import '../../../../app/router/navigation_actions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../auth/presentation/widgets/require_sign_in.dart';
@@ -13,8 +14,16 @@ import '../../../destinations/data/place.dart';
 import '../../../maps/places_map.dart';
 
 class NearbyPlacesPage extends ConsumerStatefulWidget {
-  const NearbyPlacesPage({super.key, this.client, this.initialKind = 'all'});
+  const NearbyPlacesPage({
+    super.key,
+    this.client,
+    this.initialKind = 'all',
+    this.initialOrigin,
+    this.useCurrentLocation = false,
+  });
   final String initialKind;
+  final LatLng? initialOrigin;
+  final bool useCurrentLocation;
   final Dio? client;
   @override
   ConsumerState<NearbyPlacesPage> createState() => _NearbyPlacesPageState();
@@ -39,6 +48,25 @@ class _NearbyPlacesPageState extends ConsumerState<NearbyPlacesPage> {
       )
       .toList();
   Dio get _client => widget.client ?? ApiClient.dio;
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialOrigin != null) {
+      _origin = widget.initialOrigin;
+      _location = 'Your selected current location';
+    }
+    if (widget.useCurrentLocation || widget.initialOrigin != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        if (widget.useCurrentLocation) {
+          _gps();
+        } else {
+          _search();
+        }
+      });
+    }
+  }
+
   @override
   void dispose() {
     _query.dispose();
@@ -111,6 +139,7 @@ class _NearbyPlacesPageState extends ConsumerState<NearbyPlacesPage> {
 
   Future<void> _gps() async {
     if (_busy) return;
+    if (!await ensureSignedIn(context, ref) || !mounted) return;
     setState(() {
       _busy = true;
       _notice = null;
@@ -132,6 +161,11 @@ class _NearbyPlacesPageState extends ConsumerState<NearbyPlacesPage> {
         ),
       );
       if (!mounted) return;
+      ref.read(chosenPlaceAreaProvider.notifier).state = null;
+      ref.read(nearbyOriginProvider.notifier).state = LatLng(
+        p.latitude,
+        p.longitude,
+      );
       setState(() {
         _origin = LatLng(p.latitude, p.longitude);
         _location = 'Your selected current location';

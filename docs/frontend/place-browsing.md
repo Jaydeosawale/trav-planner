@@ -163,3 +163,11 @@ photo treatment on the phone first; supersede the build 30 store bundle.
 - Published destinations resolve by exact destination slug/name or the banner’s configured destination ID/slug. Unknown targets show a retry state rather than opening an unrelated location.
 - Regional fallback slides use country-qualified hubs: Bali starts around Ubud in Indonesia; Goa starts around Panjim in India. The details description explicitly identifies the starting town. Paris uses its published destination.
 - Verified the Ubud and Panjim identities against the live public catalogue. Seven focused slideshow, navigation and small-screen browsing checks pass; changed Dart files have no analyzer issues.
+
+### Build 33: location-aware day ideas and fewer planner questions
+
+- “What kind of day?” shows the chosen town, or explicitly shared current location. Selecting a category opens that area and category immediately. Without either, a small sheet offers town entry or an explicit current-location request, retaining the selected category.
+- Day cards use compact spacing and distinct, matching icon badges and text colours for cafés, viewpoints, food, parks, museums and beaches.
+- Nearby search accepts an existing session location and category, searching immediately without requesting GPS again. A new GPS request requires sign-in and explicit action. Successful GPS selection switches from the previous destination town; the coordinate is held in memory only and clears when the account changes.
+- AI starters reuse the explicitly chosen town where available and no longer tell the model to interview the user. The destination is the only mandatory draft input; ambiguous names may need a country. Missing optional details use a clearly labelled relaxed three-day/moderate-spend draft, with supplied duration and preferences taking precedence. No extra confirmation is required for drafting; booking/payment confirmations remain unchanged.
+- Planner instructions limit necessary clarification to one short question and 25 words, and keep the draft itself concise. These are model instructions, not a guarantee about every provider response.

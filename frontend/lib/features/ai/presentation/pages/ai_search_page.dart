@@ -1,3 +1,4 @@
+import '../../../places/data/place_area.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import 'package:trav_planner/core/widgets/ai_content_report_button.dart';
 import '../../../auth/presentation/widgets/require_sign_in.dart';
@@ -580,7 +581,7 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
                         ),
                         const SizedBox(height: 8),
                         const Text(
-                          'Start with an idea. We’ll plan it together.',
+                          'Tell us a place. Fine-tune the plan anytime.',
                           textAlign: TextAlign.center,
                           style: TextStyle(color: AppColors.textSecondary),
                         ),
@@ -590,7 +591,9 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
                             Expanded(
                               child: OutlinedButton.icon(
                                 onPressed: () => _useSuggestion(
-                                  'Help me plan a trip. Ask me what you need to know first.',
+                                  ref.read(chosenPlaceAreaProvider) == null
+                                      ? 'Help me plan a trip.'
+                                      : 'Plan a trip to ${ref.read(chosenPlaceAreaProvider)!.name}, ${ref.read(chosenPlaceAreaProvider)!.countryName}. Use sensible defaults for anything I have not specified.',
                                 ),
                                 icon: const Icon(Icons.route_outlined),
                                 label: const Text('Plan a trip'),
@@ -600,7 +603,9 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
                             Expanded(
                               child: OutlinedButton.icon(
                                 onPressed: () => _useSuggestion(
-                                  'Help me find places to visit. Ask which area and what I enjoy.',
+                                  ref.read(chosenPlaceAreaProvider) == null
+                                      ? 'Help me find places to visit.'
+                                      : 'Suggest places to visit in ${ref.read(chosenPlaceAreaProvider)!.name}, ${ref.read(chosenPlaceAreaProvider)!.countryName}.',
                                 ),
                                 icon: const Icon(Icons.explore_outlined),
                                 label: const Text('Find places'),

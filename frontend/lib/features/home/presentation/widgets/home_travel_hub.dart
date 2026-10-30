@@ -1,3 +1,6 @@
+import '../../../places/presentation/area_selector.dart';
+import '../../../places/data/nearby_origin.dart';
+import '../../../explore/presentation/pages/nearby_places_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/router/navigation_actions.dart';
@@ -25,6 +28,101 @@ class HomeTravelHub extends ConsumerWidget {
         ? savedState?.asData?.value ?? []
         : [];
     final area = ref.watch(chosenPlaceAreaProvider);
+    final origin = ref.watch(nearbyOriginProvider);
+    Future<void> chooseDayArea(String? type) async {
+      final choice = await showModalBottomSheet<String>(
+        context: context,
+        useSafeArea: true,
+        showDragHandle: true,
+        isScrollControlled: true,
+        builder: (sheetContext) => SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Where is your day happening?',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Choose a town or share your location to find places around you.',
+                ),
+                const SizedBox(height: 12),
+                ListTile(
+                  leading: const Icon(
+                    Icons.location_city_rounded,
+                    color: AppColors.primary,
+                  ),
+                  title: const Text('Enter a town'),
+                  subtitle: const Text(
+                    'Explore here or somewhere you’re going',
+                  ),
+                  onTap: () => Navigator.pop(sheetContext, 'town'),
+                ),
+                ListTile(
+                  leading: const Icon(
+                    Icons.my_location_rounded,
+                    color: AppColors.secondary,
+                  ),
+                  title: const Text('Use my location'),
+                  subtitle: const Text(
+                    'Location permission is requested only when you choose this',
+                  ),
+                  onTap: () => Navigator.pop(sheetContext, 'gps'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      if (!context.mounted) return;
+      if (choice == 'town') {
+        await showPlaceAreaPicker(
+          context,
+          onChanged: (selected) {
+            if (type != null && context.mounted) {
+              // Close the picker before navigating to the selected category.
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (context.mounted) {
+                  openPlaceSearch(
+                    context,
+                    PlaceQuery(type: type, cityId: selected.cityId),
+                  );
+                }
+              });
+            }
+          },
+        );
+      } else if (choice == 'gps') {
+        await Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => NearbyPlacesPage(
+              initialKind: type ?? 'all',
+              useCurrentLocation: true,
+            ),
+          ),
+        );
+      }
+    }
+
+    void openDay(String type) {
+      if (area?.cityId != null) {
+        openPlaceSearch(context, PlaceQuery(type: type, cityId: area!.cityId));
+      } else if (origin != null) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) =>
+                NearbyPlacesPage(initialKind: type, initialOrigin: origin),
+          ),
+        );
+      } else {
+        chooseDayArea(type);
+      }
+    }
+
     final counts = <String, int>{};
     for (final place in saved) {
       counts[place.type] = (counts[place.type] ?? 0) + 1;
@@ -148,43 +246,94 @@ class HomeTravelHub extends ConsumerWidget {
           style: Theme.of(context).textTheme.titleLarge,
         ),
         const SizedBox(height: 6),
-        const Text('A few ways to start your next adventure.'),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Padding(
+              padding: EdgeInsets.only(top: 3),
+              child: Icon(
+                Icons.location_on_outlined,
+                size: 17,
+                color: AppColors.primary,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text(
+                area != null
+                    ? 'Ideas around ${area.name}'
+                    : origin != null
+                    ? 'Near your shared location'
+                    : 'Choose a town or use your location',
+                style: const TextStyle(color: AppColors.textSecondary),
+              ),
+            ),
+            TextButton(
+              onPressed: () => chooseDayArea(null),
+              child: Text(
+                area != null || origin != null ? 'Change' : 'Set area',
+              ),
+            ),
+          ],
+        ),
         const SizedBox(height: 16),
         LayoutBuilder(
           builder: (context, constraints) {
             final columns = constraints.maxWidth < 300 ? 1 : 2;
-            Widget card((String, String, String, IconData, Color) idea) =>
-                Material(
-                  color: idea.$5,
+            Widget card((String, String, String, IconData, Color) idea) {
+              final ink = switch (idea.$3) {
+                'cafe' => const Color(0xFF79502E),
+                'viewpoint' => const Color(0xFF2452A1),
+                'restaurant' => const Color(0xFFAA461A),
+                'park' => const Color(0xFF23704C),
+                'museum' => const Color(0xFF6945A0),
+                _ => const Color(0xFF146A87),
+              };
+              return Material(
+                color: idea.$5,
+                borderRadius: BorderRadius.circular(20),
+                child: InkWell(
                   borderRadius: BorderRadius.circular(20),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(20),
-                    onTap: () => browse(idea.$3),
-                    child: Padding(
-                      padding: const EdgeInsets.all(18),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Icon(idea.$4, color: AppColors.ocean),
-                          const SizedBox(height: 16),
-                          Text(
-                            idea.$1,
-                            style: const TextStyle(fontWeight: FontWeight.w700),
+                  onTap: () => openDay(idea.$3),
+                  child: Padding(
+                    padding: const EdgeInsets.all(14),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: ink.withValues(alpha: .12),
+                            borderRadius: BorderRadius.circular(14),
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            idea.$2,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: AppColors.textSecondary,
-                            ),
+                          child: Icon(idea.$4, color: ink, size: 25),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          idea.$1,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: ink,
+                            fontSize: 14,
+                            height: 1.25,
                           ),
-                        ],
-                      ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          idea.$2,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                );
+                ),
+              );
+            }
+
             return Column(
               children: [
                 for (var i = 0; i < ideas.length; i += columns)

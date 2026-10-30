@@ -118,11 +118,15 @@ def test_planning_phase_strips_only_leading_protocol_marker():
     assert response_stage('[TRAV_PLAN]suffix') == ('[TRAV_PLAN]suffix', 'answer')
 
 
-def test_planner_instructions_collect_details_before_generating():
+def test_planner_instructions_minimize_questions_and_draft_with_defaults():
     from app.agents.travel_planner import TravelPlanningAgent
     prompt = TravelPlanningAgent.system_prompt.fget(None)
-    assert 'Ask at most two short questions' in prompt
-    assert 'Do not write a full itinerary while essential details are missing' in prompt
+    assert 'Ask at most one short question' in prompt
+    assert 'no\n  more than 25 words' in prompt
+    assert 'destination is the only required input' in prompt
+    assert 'Do not ask for confirmation before drafting' in prompt
+    assert 'relaxed 3-day draft' in prompt
+    assert 'do not authorize booking, payments' in prompt
     assert '[TRAV_QUESTION]' in prompt and '[TRAV_PLAN]' in prompt
     assert 'repeat facts' in prompt
 

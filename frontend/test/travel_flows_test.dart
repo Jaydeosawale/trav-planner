@@ -1,3 +1,4 @@
+import 'package:latlong2/latlong.dart';
 import 'package:trav_planner/features/auth/presentation/providers/auth_provider.dart';
 import 'package:trav_planner/features/auth/data/models/user_model.dart';
 import 'package:dio/dio.dart';
@@ -251,4 +252,46 @@ void main() {
     expect(find.text('Continue to IRCTC'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+  testWidgets(
+    'An already shared location opens the chosen day category automatically',
+    (tester) async {
+      final requests = <RequestOptions>[];
+      final dio = Dio()
+        ..interceptors.add(
+          InterceptorsWrapper(
+            onRequest: (o, h) {
+              requests.add(o);
+              h.resolve(
+                Response(
+                  requestOptions: o,
+                  data: {
+                    'items': [],
+                    'message': 'No cafés in this area',
+                    'distance_note': 'Straight-line distances',
+                  },
+                ),
+              );
+            },
+          ),
+        );
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [authProvider.overrideWith(NearbyTestAuth.new)],
+          child: MaterialApp(
+            home: NearbyPlacesPage(
+              client: dio,
+              initialKind: 'cafe',
+              initialOrigin: const LatLng(18.52, 73.85),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(requests.length, 1);
+      expect(requests.single.path, '/discovery/nearby');
+      expect(requests.single.data['kind'], 'cafe');
+      expect(requests.single.data['latitude'], 18.52);
+      expect(tester.takeException(), isNull);
+    },
+  );
 }

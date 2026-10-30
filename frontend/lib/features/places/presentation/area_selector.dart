@@ -125,6 +125,16 @@ class _AreaCandidatesState extends ConsumerState<AreaCandidates> {
   }
 }
 
+Future<void> showPlaceAreaPicker(
+  BuildContext context, {
+  ValueChanged<PlaceArea>? onChanged,
+}) => showModalBottomSheet<void>(
+  context: context,
+  isScrollControlled: true,
+  useSafeArea: true,
+  builder: (_) => _AreaSheet(onChanged: onChanged),
+);
+
 class AreaSelector extends ConsumerWidget {
   const AreaSelector({super.key, this.onChanged, this.compact = false});
   final bool compact;
@@ -148,12 +158,7 @@ class AreaSelector extends ConsumerWidget {
         overflow: TextOverflow.ellipsis,
         style: compact ? const TextStyle(fontSize: 12) : null,
       ),
-      onPressed: () => showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
-        useSafeArea: true,
-        builder: (_) => _AreaSheet(onChanged: onChanged),
-      ),
+      onPressed: () => showPlaceAreaPicker(context, onChanged: onChanged),
     );
   }
 }
