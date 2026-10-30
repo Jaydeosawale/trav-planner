@@ -179,3 +179,9 @@ photo treatment on the phone first; supersede the build 30 store bundle.
 - Chat accepts an optional validated location context. Coordinates must be finite and within geographic bounds; the server rounds them again before passing transient context to the planner. Named destinations take precedence. Later requests without location do not inherit that transient location from conversation storage.
 - Local day plans use the explicitly shared origin with nearby tools rather than asking for the same town. Undecided travelers get up to three short destination ideas. Follow-up edits revise the existing plan without restarting the interview. Drafts still need no optional-input checklist or confirmation; real external booking/payment actions retain their confirmation rules.
 - Android already declared foreground location permissions. Added the iOS foreground permission explanation. No background location permission or tracking is introduced.
+
+### Build 35: native permission and GPS enablement
+
+- “Use my location” checks foreground permission and requests the native permission prompt if needed. After permission, the Android fused location provider can show its native GPS-enable resolution dialog. Removed the premature GPS-enabled check that prevented this dialog.
+- If permission is already granted, it obtains a fresh fix without asking again. A denied permission never fetches a fix. Declined/unavailable GPS offers device location settings, while permanently denied app permission offers app settings.
+- Nearby and AI Planner use the same permission/location service. Four direct platform-contract tests cover first use, existing permission, denied permission and disabled GPS; all ten focused location/nearby tests pass. No background tracking is requested.

@@ -6,7 +6,7 @@ import '../../../../core/widgets/place_source_credit.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
+import '../../../places/data/current_location.dart';
 import 'package:latlong2/latlong.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../places/data/place_area.dart';
@@ -145,21 +145,7 @@ class _NearbyPlacesPageState extends ConsumerState<NearbyPlacesPage> {
       _notice = null;
     });
     try {
-      if (!await Geolocator.isLocationServiceEnabled()) throw Exception();
-      var permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-      }
-      if (permission == LocationPermission.denied ||
-          permission == LocationPermission.deniedForever) {
-        throw Exception();
-      }
-      final p = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.medium,
-          timeLimit: Duration(seconds: 20),
-        ),
-      );
+      final p = await ref.read(currentLocationServiceProvider).request();
       if (!mounted) return;
       ref.read(chosenPlaceAreaProvider.notifier).state = null;
       ref.read(nearbyOriginProvider.notifier).state = LatLng(
@@ -172,12 +158,29 @@ class _NearbyPlacesPageState extends ConsumerState<NearbyPlacesPage> {
         _cities = [];
       });
       await _search();
-    } catch (_) {
+    } catch (error) {
       if (mounted) {
-        setState(
-          () => _notice =
-              'Location is unavailable or permission was declined. Search a city instead.',
-        );
+        final failure = error is LocationAccessFailure
+            ? error
+            : const LocationAccessFailure(
+                'Location is unavailable. Try again or enter a town.',
+              );
+        setState(() => _notice = failure.message);
+        if (failure.openSettings || failure.deviceLocationSettings) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(failure.message),
+              action: SnackBarAction(
+                label: 'Settings',
+                onPressed: () => failure.deviceLocationSettings
+                    ? ref
+                          .read(currentLocationServiceProvider)
+                          .openDeviceSettings()
+                    : ref.read(currentLocationServiceProvider).openSettings(),
+              ),
+            ),
+          );
+        }
       }
     } finally {
       if (mounted) setState(() => _busy = false);

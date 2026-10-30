@@ -135,11 +135,14 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(failure.message),
-          action: failure.openSettings
+          action: failure.openSettings || failure.deviceLocationSettings
               ? SnackBarAction(
                   label: 'Settings',
-                  onPressed: () =>
-                      ref.read(currentLocationServiceProvider).openSettings(),
+                  onPressed: () => failure.deviceLocationSettings
+                      ? ref
+                            .read(currentLocationServiceProvider)
+                            .openDeviceSettings()
+                      : ref.read(currentLocationServiceProvider).openSettings(),
                 )
               : null,
         ),
