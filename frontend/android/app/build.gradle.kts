@@ -5,6 +5,8 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+val isTravPreview = providers.gradleProperty("travPreview").getOrElse("false") == "true"
+
 val releaseSigning = Properties()
 val signingFile = rootProject.file("key.properties")
 if (signingFile.exists()) signingFile.inputStream().use { releaseSigning.load(it) }
@@ -24,7 +26,8 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.jaydeo.travplanner"
+        applicationId = if (isTravPreview) "com.jaydeo.travplanner.preview" else "com.jaydeo.travplanner"
+        manifestPlaceholders["travAppLabel"] = if (isTravPreview) "Trav Test" else "Trav"
 
         minSdk = flutter.minSdkVersion
         targetSdk = 36

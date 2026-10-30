@@ -80,3 +80,23 @@ verification requires an older Play-installed version containing this feature
 and a higher version available to the same account, with matching package/signing.
 The prompt helps with releases after 1.0.23; older versions lack the feature.
 See https://developer.android.com/guide/playcore/in-app-updates/test.
+
+## Installing a local test beside the Play Store app
+
+The connected Samsung's Play install uses Google Play's app-signing certificate,
+which differs from the local upload certificate. Do not uninstall or clear it.
+For safe local review build with:
+
+```
+flutter build apk --release --target-platform android-arm64 \
+  --android-project-arg=travPreview=true \
+  --dart-define=APP_ENV=production \
+  --dart-define=API_BASE_URL=https://jaydeo-trav-planner-api.onrender.com/api/v1
+```
+
+The optional Gradle flag produces `com.jaydeo.travplanner.preview`, displayed as
+**Trav Test**. It uses the same live backend but separate local app storage, so
+sign in privately again if needed. With no flag, package ID and label remain
+`com.jaydeo.travplanner` / Trav for normal releases. Play in-app update checks are
+not available for this sideloaded preview. No Google Play update is authorized
+for 1.0.24 until the user finishes testing and requests publication again.
