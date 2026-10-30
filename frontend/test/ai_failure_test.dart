@@ -10,6 +10,7 @@ class FailedAI extends AIApi {
   Future<AIResponseModel> chat({
     required String message,
     String? sessionId,
+    Map<String, double>? location,
   }) async => const AIResponseModel(
     success: false,
     content: 'AI is temporarily unavailable.',

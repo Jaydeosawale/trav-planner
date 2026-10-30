@@ -1,3 +1,5 @@
+import '../../../places/data/current_location.dart';
+import '../../../places/data/nearby_origin.dart';
 import '../../../places/data/place_area.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import 'package:trav_planner/core/widgets/ai_content_report_button.dart';
@@ -63,6 +65,7 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
     }
   }
 
+  bool _locating = false;
   bool _loading = false;
   bool _authorizing = false;
   String? _savedTripId;
@@ -87,10 +90,69 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
     super.dispose();
   }
 
+  Future<void> _shareLocation() async {
+    if (_locating || _loading) return;
+    final accepted = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Plan around you?'),
+        content: const Text(
+          'Share your approximate current location with Trav and its AI provider for nearby ideas. It stays in this app session. You can remove it anytime or enter a town instead.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Not now'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Use current location'),
+          ),
+        ],
+      ),
+    );
+    if (accepted != true || !mounted) return;
+    final account = ref.read(authProvider).user?.id;
+    setState(() => _locating = true);
+    try {
+      final position = await ref.read(currentLocationServiceProvider).request();
+      if (!mounted || account != ref.read(authProvider).user?.id) return;
+      ref.read(nearbyOriginProvider.notifier).state = position;
+      ref.read(aiLocationEnabledProvider.notifier).state = true;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Location shared. Try “Plan a day near me”.'),
+        ),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ref.read(aiLocationEnabledProvider.notifier).state = false;
+      final failure = error is LocationAccessFailure
+          ? error
+          : const LocationAccessFailure(
+              'Couldn’t get your location. Try again or enter a town.',
+            );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(failure.message),
+          action: failure.openSettings
+              ? SnackBarAction(
+                  label: 'Settings',
+                  onPressed: () =>
+                      ref.read(currentLocationServiceProvider).openSettings(),
+                )
+              : null,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _locating = false);
+    }
+  }
+
   Future<void> _askAI([String? suggestion]) async {
     final message = (suggestion ?? _controller.text).trim();
 
-    if (message.isEmpty || _loading || _authorizing) {
+    if (message.isEmpty || _loading || _authorizing || _locating) {
       return;
     }
 
@@ -127,6 +189,14 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
       final response = await _api.chat(
         message: message,
         sessionId: _session?['id']?.toString(),
+        location:
+            ref.read(aiLocationEnabledProvider) &&
+                ref.read(nearbyOriginProvider) != null
+            ? {
+                'latitude': ref.read(nearbyOriginProvider)!.latitude,
+                'longitude': ref.read(nearbyOriginProvider)!.longitude,
+              }
+            : null,
       );
       Map<String, dynamic>? refreshed;
       final sessionId =
@@ -428,6 +498,12 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
                   enabled: !_loading,
                   onSelected: (value) {
                     switch (value) {
+                      case 'location':
+                        _shareLocation();
+                      case 'clear_location':
+                        ref.read(aiLocationEnabledProvider.notifier).state =
+                            false;
+                        ref.read(nearbyOriginProvider.notifier).state = null;
                       case 'new':
                         _newChat();
                       case 'details':
@@ -461,6 +537,15 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
                   },
                   itemBuilder: (_) => [
                     const PopupMenuItem(value: 'new', child: Text('New chat')),
+                    const PopupMenuItem(
+                      value: 'location',
+                      child: Text('Use current location'),
+                    ),
+                    if (ref.watch(aiLocationEnabledProvider))
+                      const PopupMenuItem(
+                        value: 'clear_location',
+                        child: Text('Remove shared location'),
+                      ),
                     const PopupMenuItem(
                       value: 'details',
                       child: Text('Trip details'),
@@ -515,6 +600,29 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
                       maxLines: 4,
                       textInputAction: TextInputAction.newline,
                       decoration: InputDecoration(
+                        prefixIcon: _locating
+                            ? const Padding(
+                                padding: EdgeInsets.all(15),
+                                child: SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                              )
+                            : IconButton(
+                                tooltip: ref.watch(aiLocationEnabledProvider)
+                                    ? 'Location shared · refresh'
+                                    : 'Use my location',
+                                onPressed: _loading ? null : _shareLocation,
+                                icon: Icon(
+                                  ref.watch(aiLocationEnabledProvider)
+                                      ? Icons.my_location
+                                      : Icons.location_searching,
+                                  color: AppColors.primary,
+                                ),
+                              ),
                         hintText: _lastMessage == null
                             ? 'Ask Trav to plan a trip…'
                             : 'Ask a follow-up or change your plans…',
@@ -542,7 +650,7 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
                                   backgroundColor: AppColors.primary,
                                   foregroundColor: Colors.white,
                                 ),
-                                onPressed: _askAI,
+                                onPressed: _locating ? null : _askAI,
                                 icon: const Icon(Icons.arrow_upward_rounded),
                               ),
                       ),

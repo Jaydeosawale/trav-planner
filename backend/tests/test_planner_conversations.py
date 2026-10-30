@@ -99,13 +99,16 @@ async def test_successful_first_message_creates_owned_conversation(monkeypatch):
         return AgentResponse(content='A sourced suggestion', agent='test')
     monkeypatch.setattr('app.agents.travel_planner.TravelPlanningAgent.run',run)
     async with AsyncClient(transport=ASGITransport(app=app),base_url='http://test') as c:
-        r=await c.post('/ai/chat',json={'message':'Pune museums'})
+        r=await c.post('/ai/chat',json={'message':'Pune museums', 'location': {'latitude': 18.520432, 'longitude': 73.856742}})
         assert r.status_code==200
         ident=r.json()['data']['metadata']['session_id']
         saved=(await c.get('/ai/sessions/'+ident)).json()
         assert len(saved['turns'])==2
+        assert 'latitude=18.52, longitude=73.857' in seen[0]
+        assert '18.52' not in str(saved) and '73.857' not in str(saved)
         await c.post('/ai/chat',json={'message':'Less walking','session_id':ident})
         assert 'Pune museums' in seen[-1] and 'Less walking' in seen[-1]
+        assert 'latitude=' not in seen[-1]
         assert len((await c.get('/ai/sessions/'+ident)).json()['turns'])==4
     await engine.dispose()
 
@@ -163,3 +166,11 @@ async def test_chat_questions_are_free_and_only_five_plans_can_be_delivered(monk
         await client.delete('/ai/sessions/'+ident)
         assert (await client.get('/ai/plan-usage')).json()['remaining'] == 0
     await engine.dispose()
+
+
+def test_chat_location_rejects_invalid_coordinates():
+    from app.api.v1.ai.schema import AIChatRequest
+    from pydantic import ValidationError
+    for latitude, longitude in [(91, 0), (0, 181), (float('nan'), 0), (0, float('inf'))]:
+        with pytest.raises(ValidationError):
+            AIChatRequest(message='Near me', location={'latitude': latitude, 'longitude': longitude})

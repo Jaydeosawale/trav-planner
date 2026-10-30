@@ -17,6 +17,7 @@ class ConversationAI extends AIApi {
   Future<AIResponseModel> chat({
     required String message,
     String? sessionId,
+    Map<String, double>? location,
   }) async => AIResponseModel(
     success: true,
     content: 'Reply ${++messages}: $message',
@@ -32,16 +33,15 @@ class GuidedAI extends AIApi {
   Future<AIResponseModel> chat({
     required String message,
     String? sessionId,
+    Map<String, double>? location,
   }) async {
     messages.add(message);
-    final complete = messages.length >= 3;
+    final complete = messages.length >= 2;
     return AIResponseModel(
       success: true,
       content: complete
           ? 'Day 1: Explore Pune at an easy pace.'
-          : messages.length == 1
-          ? 'Which destination and how many days?'
-          : 'What budget and how many travelers?',
+          : 'Where would you like to go?',
       agent: 'test',
       data: {},
       metadata: {'planning_stage': complete ? 'plan' : 'questions'},
@@ -85,15 +85,12 @@ void main() {
     await tester.tap(find.text('Plan a trip'));
     await tester.pumpAndSettle();
     expect(find.text('Review & save to My Trips'), findsNothing);
-    for (final answer in [
-      'Pune for 2 days',
-      'INR 5000 for two people. Make the plan.',
-    ]) {
+    for (final answer in ['Pune for 2 days']) {
       await tester.enterText(find.byType(TextField), answer);
       await tester.tap(find.byTooltip('Send message'));
       await tester.pumpAndSettle();
     }
-    expect(api.messages, hasLength(3));
+    expect(api.messages, hasLength(2));
     expect(find.text('Review & save to My Trips'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });

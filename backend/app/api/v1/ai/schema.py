@@ -3,6 +3,11 @@ from __future__ import annotations
 from pydantic import BaseModel, Field
 
 
+class SharedLocation(BaseModel):
+    latitude: float = Field(ge=-90, le=90, allow_inf_nan=False)
+    longitude: float = Field(ge=-180, le=180, allow_inf_nan=False)
+
+
 class AIChatRequest(BaseModel):
     message: str = Field(
         min_length=1,
@@ -10,6 +15,7 @@ class AIChatRequest(BaseModel):
     )
 
     session_id: str | None = Field(default=None, max_length=36)
+    location: SharedLocation | None = None
 
 
 class AIChatData(BaseModel):

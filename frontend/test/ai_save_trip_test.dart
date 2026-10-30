@@ -19,6 +19,7 @@ class SuccessfulAI extends AIApi {
   Future<AIResponseModel> chat({
     required String message,
     String? sessionId,
+    Map<String, double>? location,
   }) async => const AIResponseModel(
     success: true,
     content: draft,
@@ -103,7 +104,7 @@ void main() {
         notes,
       );
       api.fail = false;
-    await tester.ensureVisible(find.text('Save trip'));
+      await tester.ensureVisible(find.text('Save trip'));
       await tester.tap(find.text('Save trip'));
       await tester.pumpAndSettle();
       expect(api.items.single['notes'], notes);

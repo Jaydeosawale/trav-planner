@@ -31,10 +31,15 @@ class AIApi {
   Future<AIResponseModel> chat({
     required String message,
     String? sessionId,
+    Map<String, double>? location,
   }) async {
     final response = await ApiClient.dio.post(
       '/ai/chat',
-      data: {'message': message, 'session_id': ?sessionId},
+      data: {
+        'message': message,
+        'session_id': ?sessionId,
+        'location': ?location,
+      },
     );
 
     final responseData = response.data;

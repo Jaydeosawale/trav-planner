@@ -22,6 +22,7 @@ class RetryPlanner extends AIApi {
   Future<AIResponseModel> chat({
     required String message,
     String? sessionId,
+    Map<String, double>? location,
   }) async {
     messages.add(message);
     return AIResponseModel(

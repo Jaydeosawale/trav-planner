@@ -60,7 +60,9 @@ async def chat_with_ai(
     context = AgentContext(
         user_id=str(current_user.id),
         session_id=request.session_id,
-        data={'planner_prompt': context_prompt(request.message, json.loads(row.brief_json), json.loads(row.turns_json))} if row else {},
+        data={'planner_prompt': context_prompt(
+            request.message, json.loads(row.brief_json) if row else {},
+            json.loads(row.turns_json) if row else [], request.location)},
     )
 
     result = await agent.run(

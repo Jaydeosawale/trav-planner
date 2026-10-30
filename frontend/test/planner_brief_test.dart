@@ -33,6 +33,7 @@ class MemoryPlanner extends AIApi {
   Future<AIResponseModel> chat({
     required String message,
     String? sessionId,
+    Map<String, double>? location,
   }) async {
     usedId = sessionId;
     saved!['turns'] = [
