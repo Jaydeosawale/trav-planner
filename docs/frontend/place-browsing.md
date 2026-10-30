@@ -65,3 +65,7 @@ private Vercel/Gmail delivery. Live recovery-status reports available; invalid
 credentials and reset tokens return 401. Local tests verify reset expiry, single
 use and session invalidation. No physical phone or fresh real-account email
 round-trip was tested; the user requested code checks only for now.
+
+Release status: 1.0.24 / build 25 is for testing only. The user explicitly
+requested no Google Play update on 30 October. Production remains 1.0.23.
+A production draft was opened but no 1.0.24 bundle was uploaded or submitted.
