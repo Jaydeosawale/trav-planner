@@ -462,7 +462,7 @@ class _AdminBannersPageState extends State<AdminBannersPage> {
         banner.imageUrl,
         width: width,
         height: height,
-        fit: BoxFit.contain,
+        fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) {
           return Container(
             width: width,

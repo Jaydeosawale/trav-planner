@@ -117,13 +117,19 @@ class _HeroBannerState extends ConsumerState<HeroBanner> {
   Widget _buildBannerImage(String imageUrl) {
     return Image.network(
       imageUrl,
-      fit: BoxFit.contain,
+      fit: BoxFit.cover,
       errorBuilder: (context, error, stackTrace) {
         return Container(color: AppColors.textPrimary);
       },
       loadingBuilder: (context, child, loadingProgress) {
         if (loadingProgress == null) {
-          return child;
+          return child
+              .animate(onPlay: (controller) => controller.repeat(reverse: true))
+              .scale(
+                begin: const Offset(1, 1),
+                end: const Offset(1.08, 1.08),
+                duration: 14.seconds,
+              );
         }
 
         return Container(

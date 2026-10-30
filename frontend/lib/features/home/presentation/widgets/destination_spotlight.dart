@@ -125,99 +125,136 @@ class _DestinationSpotlightState extends State<DestinationSpotlight>
         },
         child: ClipRRect(
           borderRadius: BorderRadius.circular(24),
-          child: ColoredBox(
-            color: AppColors.ocean,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Photo and controls have separate space: neither cropping nor
-                // large text obscures the landmark or other image subject.
-                SizedBox(
-                  height: wide ? 260 : 190,
-                  child: ColoredBox(
-                    color: AppColors.surfaceVariant,
-                    child: NotificationListener<ScrollNotification>(
-                      onNotification: (notification) {
-                        if (notification is ScrollStartNotification &&
-                            notification.dragDetails != null) {
-                          _interaction(true);
-                        } else if (notification is ScrollEndNotification) {
-                          _interaction(false);
-                        }
-                        return false;
-                      },
-                      child: PageView.builder(
-                        controller: _pages,
-                        itemCount: _count,
-                        onPageChanged: (index) {
-                          setState(() => _index = index);
-                          _schedule();
-                        },
-                        itemBuilder: (context, index) {
-                          if (index < widget.banners.length) {
-                            return Image.network(
-                              widget.banners[index].imageUrl,
-                              fit: BoxFit.contain,
-                              semanticLabel: widget.banners[index].title,
-                              errorBuilder: (_, _, _) =>
-                                  const ColoredBox(color: AppColors.ocean),
-                            );
-                          }
-                          return Image.asset(
-                            'assets/images/destinations/${_places[index - widget.banners.length].$2}_1.jpg',
-                            fit: BoxFit.contain,
-                            semanticLabel:
-                                _places[index - widget.banners.length].$1,
-                          );
-                        },
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: NotificationListener<ScrollNotification>(
+                  onNotification: (notification) {
+                    if (notification is ScrollStartNotification &&
+                        notification.dragDetails != null) {
+                      _interaction(true);
+                    } else if (notification is ScrollEndNotification) {
+                      _interaction(false);
+                    }
+                    return false;
+                  },
+                  child: PageView.builder(
+                    controller: _pages,
+                    itemCount: _count,
+                    onPageChanged: (index) {
+                      setState(() => _index = index);
+                      _schedule();
+                    },
+                    itemBuilder: (context, index) {
+                      if (index < widget.banners.length) {
+                        return Image.network(
+                          widget.banners[index].imageUrl,
+                          fit: BoxFit.cover,
+                          semanticLabel: widget.banners[index].title,
+                          errorBuilder: (_, error, stack) =>
+                              const ColoredBox(color: AppColors.ocean),
+                        );
+                      }
+                      return Image.asset(
+                        'assets/images/destinations/${_places[index - widget.banners.length].$2}_1.jpg',
+                        fit: BoxFit.cover,
+                        semanticLabel:
+                            _places[index - widget.banners.length].$1,
+                      );
+                    },
+                  ),
+                ),
+              ),
+              const Positioned.fill(
+                child: IgnorePointer(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Color(0x20123E46), Color(0xEF102F39)],
                       ),
                     ),
                   ),
                 ),
-                Padding(
-                  padding: EdgeInsets.fromLTRB(
-                    wide ? 24 : 16,
-                    12,
-                    wide ? 24 : 16,
-                    8,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(
-                        label,
-                        style: const TextStyle(
-                          color: Color(0xFFCFDFD7),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
+              ),
+              Container(
+                width: double.infinity,
+                constraints: BoxConstraints(
+                  minHeight: widget.search == null
+                      ? (wide ? 260 : 200)
+                      : (wide ? 360 : 320),
+                ),
+                padding: EdgeInsets.fromLTRB(
+                  wide ? 32 : 16,
+                  wide ? 32 : 16,
+                  wide ? 32 : 16,
+                  8,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    IgnorePointer(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 9,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.background,
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.location_on_outlined,
+                              size: 18,
+                              color: AppColors.ocean,
+                            ),
+                            const SizedBox(width: 6),
+                            Flexible(
+                              child: Text(
+                                label,
+                                maxLines: 2,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.ocean,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 6),
-                      Text(
+                    ),
+                    SizedBox(height: wide ? 40 : 24),
+                    IgnorePointer(
+                      child: Text(
                         'Somewhere worth going.',
-                        style: Theme.of(context).textTheme.headlineSmall
+                        style: Theme.of(context).textTheme.displayLarge
                             ?.copyWith(
-                              fontSize: wide ? 28 : 22,
+                              fontSize: wide ? 44 : 30,
                               color: Colors.white,
-                              fontWeight: FontWeight.w800,
                             ),
                       ),
-                      if (widget.search != null) ...[
-                        const SizedBox(height: 12),
-                        Align(
-                          alignment: Alignment.center,
-                          child: ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 560),
-                            child: widget.search!,
-                          ),
-                        ),
-                      ],
-                      const SizedBox(height: 8),
-                      Semantics(
-                        key: const ValueKey('destination-dots'),
-                        label:
-                            'Featured destination ${_index + 1} of $_count: $label',
-                        child: ExcludeSemantics(
+                    ),
+                    if (widget.search != null) ...[
+                      const SizedBox(height: 20),
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 560),
+                        child: widget.search!,
+                      ),
+                    ],
+                    const SizedBox(height: 8),
+                    Semantics(
+                      key: const ValueKey('destination-dots'),
+                      label:
+                          'Featured destination ${_index + 1} of $_count: $label',
+                      child: ExcludeSemantics(
+                        child: SizedBox(
+                          width: double.infinity,
                           child: Wrap(
                             alignment: WrapAlignment.center,
                             spacing: 7,
@@ -237,11 +274,11 @@ class _DestinationSpotlightState extends State<DestinationSpotlight>
                           ),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

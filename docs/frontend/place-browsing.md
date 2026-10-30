@@ -126,3 +126,13 @@ The user authorized Play publication again after installation on the phone. Buil
 28 must be installed/opened as Trav Test first, then the production package can be
 submitted. The separately installed older Trav Play app remains unchanged until
 Google approves/distributes the production release.
+
+## Build 29 clarification: preserve the original banner
+
+The user clarified that photo fitting applies to place/card/gallery/thumbnail
+images, not a redesign of the banner. Restore the original full-bleed banner and
+its image sizing, overlay text and slideshow. Retain the requested bottom search,
+no arrow, centered indicators and 8px gaps. The legacy banner and admin banner
+preview also retain their original image treatment. All other travel photos keep
+contain fitting. Other Home, authentication and AI Planner requirements remain
+unchanged. Install this corrected build on the phone before store submission.
