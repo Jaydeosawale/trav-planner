@@ -151,53 +151,64 @@ class HomeTravelHub extends ConsumerWidget {
         const Text('A few ways to start your next adventure.'),
         const SizedBox(height: 16),
         LayoutBuilder(
-          builder: (context, constraints) => Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: [
-              for (final idea in ideas)
-                SizedBox(
-                  width: constraints.maxWidth < 300
-                      ? constraints.maxWidth
-                      : (constraints.maxWidth - 12) / 2,
-                  height:
-                      170 +
-                      (MediaQuery.textScalerOf(context).scale(14) - 14) * 12,
-                  child: Material(
-                    color: idea.$5,
+          builder: (context, constraints) {
+            final columns = constraints.maxWidth < 300 ? 1 : 2;
+            Widget card((String, String, String, IconData, Color) idea) =>
+                Material(
+                  color: idea.$5,
+                  borderRadius: BorderRadius.circular(20),
+                  child: InkWell(
                     borderRadius: BorderRadius.circular(20),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(20),
-                      onTap: () => browse(idea.$3),
-                      child: Padding(
-                        padding: const EdgeInsets.all(18),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Icon(idea.$4, color: AppColors.ocean),
-                            const SizedBox(height: 16),
-                            Text(
-                              idea.$1,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w700,
-                              ),
+                    onTap: () => browse(idea.$3),
+                    child: Padding(
+                      padding: const EdgeInsets.all(18),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(idea.$4, color: AppColors.ocean),
+                          const SizedBox(height: 16),
+                          Text(
+                            idea.$1,
+                            style: const TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            idea.$2,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.textSecondary,
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              idea.$2,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                ),
-            ],
-          ),
+                );
+            return Column(
+              children: [
+                for (var i = 0; i < ideas.length; i += columns)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: IntrinsicHeight(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          for (
+                            var j = i;
+                            j < i + columns && j < ideas.length;
+                            j++
+                          ) ...[
+                            if (j > i) const SizedBox(width: 12),
+                            Expanded(child: card(ideas[j])),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          },
         ),
         const SizedBox(height: 20),
         Card(
