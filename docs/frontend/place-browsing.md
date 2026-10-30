@@ -147,3 +147,11 @@ landscape rendering tests verify that the sharp original corner markers remain
 visible. Both layers share Flutter's image provider/cache and the background is
 excluded from accessibility semantics. Profile stays out of mobile bottom tabs;
 the prior authentication, Home and AI planning features are retained.
+
+## Build 31 photo-fill tuning
+
+User feedback requested less blur and more visible photographic detail in the
+card fill. Reduce the backdrop blur from 16 to 4 and opacity from a pale .32 to
+.95. The complete foreground photo stays sharp and contain-fitted. The banner
+and all navigation/authentication/AI features remain unchanged. Install this
+photo treatment on the phone first; supersede the build 30 store bundle.

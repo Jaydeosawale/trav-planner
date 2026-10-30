@@ -20,12 +20,12 @@ class FullPhotoFrame extends StatelessWidget {
           ExcludeSemantics(
             child: ImageFiltered(
               imageFilter: ui.ImageFilter.blur(
-                sigmaX: 16,
-                sigmaY: 16,
+                sigmaX: 4,
+                sigmaY: 4,
                 tileMode: ui.TileMode.clamp,
               ),
               child: Opacity(
-                opacity: .32,
+                opacity: .95,
                 child: Image(
                   image: image.image,
                   fit: BoxFit.cover,
