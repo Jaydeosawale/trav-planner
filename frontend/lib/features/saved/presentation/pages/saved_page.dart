@@ -1,3 +1,4 @@
+import 'package:trav_planner/core/widgets/full_photo_frame.dart';
 import '../../../../app/router/navigation_actions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -167,10 +168,12 @@ class _SavedPlaceCard extends StatelessWidget {
                 width: 72,
                 height: 80,
                 child: place.imageUrl?.isNotEmpty == true
-                    ? Image.network(
-                        place.imageUrl!,
-                        fit: BoxFit.contain,
-                        errorBuilder: (_, _, _) => const _ImageFallback(),
+                    ? FullPhotoFrame(
+                        image: Image.network(
+                          place.imageUrl!,
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, _, _) => const _ImageFallback(),
+                        ),
                       )
                     : const _ImageFallback(),
               ),

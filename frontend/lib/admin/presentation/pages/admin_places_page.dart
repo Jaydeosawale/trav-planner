@@ -1,3 +1,4 @@
+import 'package:trav_planner/core/widgets/full_photo_frame.dart';
 import 'package:trav_planner/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 
@@ -631,21 +632,23 @@ class _AdminPlacesPageState extends State<AdminPlacesPage> {
       );
     }
 
-    return Image.network(
-      imageUrl,
-      fit: BoxFit.contain,
-      errorBuilder: (context, error, stackTrace) {
-        return Container(
-          color: AppColors.surfaceVariant,
-          child: Center(
-            child: Icon(
-              Icons.broken_image_outlined,
-              size: 42,
-              color: AppColors.textSecondary,
+    return FullPhotoFrame(
+      image: Image.network(
+        imageUrl,
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            color: AppColors.surfaceVariant,
+            child: Center(
+              child: Icon(
+                Icons.broken_image_outlined,
+                size: 42,
+                color: AppColors.textSecondary,
+              ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 

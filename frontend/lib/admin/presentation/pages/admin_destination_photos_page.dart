@@ -1,3 +1,4 @@
+import 'package:trav_planner/core/widgets/full_photo_frame.dart';
 import 'package:trav_planner/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 
@@ -283,12 +284,14 @@ class _AdminDestinationPhotosPageState
               SizedBox(
                 width: double.infinity,
                 height: 220,
-                child: Image.network(
-                  photo.imageUrl,
-                  fit: BoxFit.contain,
-                  errorBuilder: (_, _, _) {
-                    return _imagePlaceholder();
-                  },
+                child: FullPhotoFrame(
+                  image: Image.network(
+                    photo.imageUrl,
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, _, _) {
+                      return _imagePlaceholder();
+                    },
+                  ),
                 ),
               ),
 

@@ -1,3 +1,4 @@
+import 'package:trav_planner/core/widgets/full_photo_frame.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -91,11 +92,13 @@ class MyTripsPage extends ConsumerWidget {
                             children: [
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(20),
-                                child: Image.asset(
-                                  'assets/images/destinations/switzerland_1.jpg',
-                                  height: 180,
-                                  width: double.infinity,
-                                  fit: BoxFit.contain,
+                                child: FullPhotoFrame(
+                                  image: Image.asset(
+                                    'assets/images/destinations/switzerland_1.jpg',
+                                    height: 180,
+                                    width: double.infinity,
+                                    fit: BoxFit.contain,
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 16),

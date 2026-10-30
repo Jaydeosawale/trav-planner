@@ -1,3 +1,4 @@
+import 'package:trav_planner/core/widgets/full_photo_frame.dart';
 import 'nearby_places_page.dart';
 import '../../../booking/presentation/pages/booking_links_page.dart';
 import 'world_locations_panel.dart';
@@ -1029,15 +1030,17 @@ class _CountryCard extends StatelessWidget {
                 child: country.flagUrl != null && country.flagUrl!.isNotEmpty
                     ? ClipRRect(
                         borderRadius: BorderRadius.circular(15),
-                        child: Image.network(
-                          country.flagUrl!,
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) {
-                            return const Icon(
-                              Icons.public_rounded,
-                              color: AppColors.primary,
-                            );
-                          },
+                        child: FullPhotoFrame(
+                          image: Image.network(
+                            country.flagUrl!,
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) {
+                              return const Icon(
+                                Icons.public_rounded,
+                                color: AppColors.primary,
+                              );
+                            },
+                          ),
                         ),
                       )
                     : const Icon(

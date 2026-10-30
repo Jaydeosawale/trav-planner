@@ -1,3 +1,4 @@
+import 'package:trav_planner/core/widgets/full_photo_frame.dart';
 import '../../../../app/router/navigation_actions.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -140,25 +141,28 @@ class PlacePhoto extends StatelessWidget {
     );
     final url = place.imageUrl;
     return url?.startsWith('http') == true
-        ? Image.network(
-            url!,
-            fit: BoxFit.contain,
-            semanticLabel: 'Photo of ${place.name}',
-            cacheWidth: 1000,
-            frameBuilder: (context, child, frame, sync) => sync || frame != null
-                ? child
-                : const ColoredBox(
-                    color: AppColors.surfaceVariant,
-                    child: Center(
-                      child: SizedBox(
-                        width: 22,
-                        height: 22,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+        ? FullPhotoFrame(
+            image: Image.network(
+              url!,
+              fit: BoxFit.contain,
+              semanticLabel: 'Photo of ${place.name}',
+              cacheWidth: 1000,
+              frameBuilder: (context, child, frame, sync) =>
+                  sync || frame != null
+                  ? child
+                  : const ColoredBox(
+                      color: AppColors.surfaceVariant,
+                      child: Center(
+                        child: SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
                       ),
                     ),
-                  ),
-            webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
-            errorBuilder: (_, _, _) => fallback(),
+              webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
+              errorBuilder: (_, _, _) => fallback(),
+            ),
           )
         : fallback();
   }

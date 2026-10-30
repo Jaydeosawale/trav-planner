@@ -1,3 +1,4 @@
+import 'package:trav_planner/core/widgets/full_photo_frame.dart';
 import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 
@@ -31,9 +32,11 @@ class TravelInspirationGrid extends StatelessWidget {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    Image.asset(
-                      'assets/images/destinations/${place.$3}_1.jpg',
-                      fit: BoxFit.contain,
+                    FullPhotoFrame(
+                      image: Image.asset(
+                        'assets/images/destinations/${place.$3}_1.jpg',
+                        fit: BoxFit.contain,
+                      ),
                     ),
                     const DecoratedBox(
                       decoration: BoxDecoration(

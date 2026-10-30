@@ -1,3 +1,4 @@
+import 'package:trav_planner/core/widgets/full_photo_frame.dart';
 import 'package:trav_planner/core/theme/app_colors.dart';
 import 'dart:ui';
 
@@ -166,21 +167,25 @@ class GlassDestinationCard extends StatelessWidget {
 
     if (image != null && image.isNotEmpty) {
       if (image.startsWith("http://") || image.startsWith("https://")) {
-        return Image.network(
+        return FullPhotoFrame(
+          image: Image.network(
+            image,
+            fit: BoxFit.contain,
+            errorBuilder: (_, __, ___) {
+              return _fallbackImage();
+            },
+          ),
+        );
+      }
+
+      return FullPhotoFrame(
+        image: Image.asset(
           image,
           fit: BoxFit.contain,
           errorBuilder: (_, __, ___) {
             return _fallbackImage();
           },
-        );
-      }
-
-      return Image.asset(
-        image,
-        fit: BoxFit.contain,
-        errorBuilder: (_, __, ___) {
-          return _fallbackImage();
-        },
+        ),
       );
     }
 
@@ -190,12 +195,14 @@ class GlassDestinationCard extends StatelessWidget {
 
     final localImage = _localImageForDestination();
 
-    return Image.asset(
-      localImage,
-      fit: BoxFit.contain,
-      errorBuilder: (_, __, ___) {
-        return _fallbackImage();
-      },
+    return FullPhotoFrame(
+      image: Image.asset(
+        localImage,
+        fit: BoxFit.contain,
+        errorBuilder: (_, __, ___) {
+          return _fallbackImage();
+        },
+      ),
     );
   }
 

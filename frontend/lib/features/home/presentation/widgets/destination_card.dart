@@ -1,3 +1,4 @@
+import 'package:trav_planner/core/widgets/full_photo_frame.dart';
 import 'package:trav_planner/core/theme/app_colors.dart';
 import 'dart:ui';
 
@@ -30,7 +31,9 @@ class DestinationCard extends StatelessWidget {
                 Positioned.fill(
                   child: Hero(
                     tag: place,
-                    child: Image.asset(image, fit: BoxFit.contain),
+                    child: FullPhotoFrame(
+                      image: Image.asset(image, fit: BoxFit.contain),
+                    ),
                   ),
                 ),
 

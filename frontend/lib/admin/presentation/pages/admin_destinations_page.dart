@@ -1,3 +1,4 @@
+import 'package:trav_planner/core/widgets/full_photo_frame.dart';
 import 'package:trav_planner/core/theme/app_colors.dart';
 import 'dart:async';
 
@@ -765,29 +766,31 @@ class _AdminDestinationsPageState extends State<AdminDestinationsPage> {
       return _imagePlaceholder();
     }
 
-    return Image.network(
-      normalizedUrl,
-      fit: BoxFit.contain,
-      loadingBuilder: (context, child, loadingProgress) {
-        if (loadingProgress == null) {
-          return child;
-        }
+    return FullPhotoFrame(
+      image: Image.network(
+        normalizedUrl,
+        fit: BoxFit.contain,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) {
+            return child;
+          }
 
-        return Stack(
-          alignment: Alignment.center,
-          children: [
-            _imagePlaceholder(),
-            const SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
-          ],
-        );
-      },
-      errorBuilder: (context, error, stackTrace) {
-        return _imagePlaceholder();
-      },
+          return Stack(
+            alignment: Alignment.center,
+            children: [
+              _imagePlaceholder(),
+              const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ],
+          );
+        },
+        errorBuilder: (context, error, stackTrace) {
+          return _imagePlaceholder();
+        },
+      ),
     );
   }
 

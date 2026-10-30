@@ -136,3 +136,14 @@ no arrow, centered indicators and 8px gaps. The legacy banner and admin banner
 preview also retain their original image treatment. All other travel photos keep
 contain fitting. Other Home, authentication and AI Planner requirements remain
 unchanged. Install this corrected build on the phone before store submission.
+
+## Build 30: fill photo cards without cropping the subject
+
+Keep the restored original banner unchanged. Non-banner travel photo frames use
+the same photo provider for a subtle blurred background and a sharp contain-fit
+foreground. Existing card dimensions remain unchanged; no stretching, hard empty
+bands, new image API or duplicated image-service call is needed. Portrait and
+landscape rendering tests verify that the sharp original corner markers remain
+visible. Both layers share Flutter's image provider/cache and the background is
+excluded from accessibility semantics. Profile stays out of mobile bottom tabs;
+the prior authentication, Home and AI planning features are retained.

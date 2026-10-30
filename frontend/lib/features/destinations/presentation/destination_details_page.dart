@@ -1,3 +1,4 @@
+import 'package:trav_planner/core/widgets/full_photo_frame.dart';
 import '../../../core/widgets/place_source_credit.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -836,13 +837,15 @@ class _PlaceImage extends StatelessWidget {
       ),
     );
     return url?.isNotEmpty == true
-        ? Image.network(
-            url!,
-            height: height,
-            width: double.infinity,
-            fit: BoxFit.contain,
-            webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
-            errorBuilder: (_, _, _) => fallback,
+        ? FullPhotoFrame(
+            image: Image.network(
+              url!,
+              height: height,
+              width: double.infinity,
+              fit: BoxFit.contain,
+              webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
+              errorBuilder: (_, _, _) => fallback,
+            ),
           )
         : fallback;
   }
