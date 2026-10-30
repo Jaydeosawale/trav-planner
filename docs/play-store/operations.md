@@ -60,3 +60,23 @@ Google's final validation results. App creation is not publication.
 Trav 1.0.22 / versionCode23 was uploaded as the signed all-architecture bundle and accepted by production validation. Production release2 is submitted for review; the publishing page shows Changes in review while Google quick checks run. Managed publishing remains off and rollout is100% within existing country targeting (India). Public version1.0.21 remains live until Google publishes the update.
 
 Verification in this submission: source commitc3f675e, valid bundle signature, all3 native architectures, no lost device support according to Play, health/privacy/deletion URLsHTTP200 and protected reporting endpointHTTP401 without credentials. Automated app/backend regressions and live public discovery were checked in the build task. Fresh private-account AI generation and administrator-report review were not repeated in the submission turn. No review credentials or API keys were changed or exposed.
+
+## In-app updates (1.0.23 / build 24)
+
+Google Play Android installs check for eligible flexible updates at startup and
+resume, at most once every five minutes. Trav offers Update once per available
+version per app session. Play handles consent and background download; Trav then
+offers Restart without forcing it. Downloaded updates are recovered on next
+startup/resume. Offline checks and sideloaded APKs never block browsing.
+No new backend, paid service, credentials or Android permissions are required.
+
+Implementation: `frontend/lib/core/updates/app_update_prompt.dart`, connected by
+`frontend/lib/main.dart`, using `in_app_update` 5.0.0. Versions remain in
+`frontend/pubspec.yaml`; Android Gradle reads them automatically.
+
+Local channel-mocked tests cover consent before download/restart, downloaded
+update recovery, no update, unsupported platforms and Play errors. Real end-to-end
+verification requires an older Play-installed version containing this feature
+and a higher version available to the same account, with matching package/signing.
+The prompt helps with releases after 1.0.23; older versions lack the feature.
+See https://developer.android.com/guide/playcore/in-app-updates/test.

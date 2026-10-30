@@ -2,7 +2,7 @@ name: trav_planner
 description: "AI Multi-Agent Travel Planner"
 publish_to: "none"
 
-version: 1.0.22+23
+version: 1.0.23+24
 
 environment:
   sdk: ">=3.8.0 <4.0.0"
@@ -73,6 +73,7 @@ dependencies:
   # ---------- PDF ----------
   syncfusion_flutter_pdfviewer: ^31.2.18
   flutter_markdown_plus: ^1.0.12
+  in_app_update: ^5.0.0
   
 
 dev_dependencies:
