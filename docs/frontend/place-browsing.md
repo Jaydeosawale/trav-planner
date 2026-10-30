@@ -98,3 +98,11 @@ reset is 00:00 UTC. Existing free-provider and $0 billing rules remain unchanged
 
 This remains a local Trav Test release. Do not submit a Google Play update until
 the user explicitly requests publication after testing.
+
+## Test build 27: exact banner spacing
+
+Remove the remaining Choose area control from the wide-screen header. Home's
+search retains 14px text and no trailing arrow. The centered indicator row sits
+8px below search and 8px above the banner bottom. Targeted layout tests assert
+both gaps and absence of Choose area at phone, tablet and desktop widths.
+Google Play publication remains disabled by user request; install Trav Test only.

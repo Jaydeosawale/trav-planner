@@ -185,7 +185,12 @@ class _DestinationSpotlightState extends State<DestinationSpotlight>
                       ? (wide ? 260 : 200)
                       : (wide ? 360 : 320),
                 ),
-                padding: EdgeInsets.all(wide ? 32 : 16),
+                padding: EdgeInsets.fromLTRB(
+                  wide ? 32 : 16,
+                  wide ? 32 : 16,
+                  wide ? 32 : 16,
+                  8,
+                ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.end,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -242,8 +247,9 @@ class _DestinationSpotlightState extends State<DestinationSpotlight>
                         child: widget.search!,
                       ),
                     ],
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 8),
                     Semantics(
+                      key: const ValueKey('destination-dots'),
                       label:
                           'Featured destination ${_index + 1} of $_count: $label',
                       child: ExcludeSemantics(

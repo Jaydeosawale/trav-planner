@@ -66,6 +66,12 @@ void main() {
         expect(banner.height, greaterThanOrEqualTo(260));
         expect(search.top, greaterThan(banner.top));
         expect(search.bottom, lessThan(banner.bottom));
+        final dots = tester.getRect(
+          find.byKey(const ValueKey('destination-dots')),
+        );
+        expect(dots.center.dx, closeTo(banner.center.dx, 1));
+        expect(dots.top - search.bottom, closeTo(8, 1));
+        expect(banner.bottom - dots.bottom, closeTo(8, 1));
         expect(
           tester
               .widget<TextField>(find.byType(TextField))

@@ -112,6 +112,7 @@ void main() {
         const HomePage(),
       );
       expect(find.text('Somewhere worth going.'), findsOneWidget);
+      expect(find.text('Choose area'), findsNothing);
       expect(tester.takeException(), isNull);
       if (width == 360) expect(find.byType(MobileBottomNav), findsOneWidget);
       if (width == 768) expect(find.byType(NavigationRail), findsOneWidget);
