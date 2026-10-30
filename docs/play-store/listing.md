@@ -34,11 +34,13 @@ Better navigation and connection recovery.
 
 Initial country: India only (user selected; free-tier Gemini).
 
-Status (verified in Play Console, 29 October 2026):
-Current public release 1.0.21 / version code 22 was published on 22 October 2026 at 100% rollout.
-Update 1.0.22 / version code 23, production release ID 2, is submitted as “Trav 1.0.22 - discovery and planning”. Publishing overview shows “Changes in review”; automatic quick checks are running and the release proceeds to review after they pass. The new update is not yet confirmed published.
-
-Managed publishing is off, so approval can publish the update automatically. Rollout is 100% of the existing targeted users; country availability remains India only. Google accepted the signed bundle, displayed “Ready to release”, reported 73 MB for new installs and 2.09 MB for updates, and showed zero devices losing support. Target SDK36, min SDK24 and all three existing native architectures are retained.
+Status (verified in Play Console, 30 October 2026):
+Current public release 1.0.23 / version code 24, production release ID 3, is
+“Trav 1.0.23 - in-app updates”. The user completed the submission in Safari;
+release details show “Available on Google Play”, released Oct 30 at 12:11 PM,
+100% rollout, 19,443 supported devices, and one existing country (India).
+Google reports 73 MB new installs and 2.26 MB updates. SDK 36, min SDK 24 and
+all three native architectures are retained.
 
 Existing store listing, privacy/deletion links, AI processing disclosure, reporting controls, reviewer access and screenshots remain in place. No monetisation or country expansion was requested. The signed bundle hash and validation details are in build-verification.json.
 

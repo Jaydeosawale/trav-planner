@@ -1,28 +1,28 @@
 {
   "package": "com.jaydeo.travplanner",
   "name": "Trav",
-  "versionName": "1.0.22",
-  "versionCode": 23,
+  "versionName": "1.0.23",
+  "versionCode": 24,
   "targetSdk": 36,
   "minSdk": 24,
   "country": "India",
-  "sourceCommit": "c3f675e489fb52754a70f1f064f09adea975b081",
+  "sourceCommit": "354ad155e22772d1c897a39bec3d41637f581e16",
   "artifacts": {
-    "Trav-1.0.22-play-release.aab": {
-      "bytes": 124612881,
-      "sha256": "606da2f32d7a62aed7e3b40348238ac62d2626d7aa64838c7bf2ca6774959b65"
+    "Trav-1.0.23-play-release.aab": {
+      "bytes": 124753399,
+      "sha256": "ef3e26d78789c50c3302a67834e32884eac3ced87caf298a1b542f25c8b1bbb8"
     }
   },
   "googleValidation": {
-    "status": "Ready to release",
+    "status": "Available on Google Play",
     "newInstallSize": "73 MB",
-    "estimatedUpdateSize": "2.09 MB",
-    "devicesNoLongerSupported": 0,
+    "estimatedUpdateSize": "2.26 MB",
     "rolloutPercent": 100,
-    "releaseId": 2,
-    "releaseName": "Trav 1.0.22 - discovery and planning"
+    "releaseId": 3,
+    "releaseName": "Trav 1.0.23 - in-app updates",
+    "supportedDevices": 19443
   },
-  "submissionStatus": "Changes in review; Google quick checks running",
-  "submissionDate": "2026-10-29",
+  "submissionStatus": "Available on Google Play",
+  "submissionDate": "2026-10-30",
   "managedPublishing": false
 }
