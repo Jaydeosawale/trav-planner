@@ -49,4 +49,40 @@ void main() {
     expect(find.text('Bali, Indonesia'), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
   });
+  testWidgets('Top label opens visible destination; search stays separate', (
+    tester,
+  ) async {
+    final opened = <String>[];
+    var searches = 0;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SizedBox(
+            width: 390,
+            child: DestinationSpotlight(
+              banners: const [],
+              onSearch: (_) {},
+              onOpen: (label, slug, redirect) => opened.add('$label/$slug'),
+              search: TextField(readOnly: true, onTap: () => searches++),
+            ),
+          ),
+        ),
+      ),
+    );
+    final top = tester.getTopLeft(find.byType(DestinationSpotlight)).dy;
+    expect(
+      tester.getTopLeft(find.text('Bali, Indonesia')).dy - top,
+      lessThan(40),
+    );
+    await tester.tapAt(tester.getCenter(find.text('Bali, Indonesia')));
+    expect(opened, ['Bali, Indonesia/bali']);
+    await tester.tap(find.byType(TextField));
+    expect(searches, 1);
+    expect(opened.length, 1);
+    await tester.drag(find.byType(PageView), const Offset(-390, 0));
+    await tester.pumpAndSettle();
+    await tester.tapAt(tester.getCenter(find.text('Goa, India')));
+    expect(opened.last, 'Goa, India/goa');
+    await tester.pumpWidget(const SizedBox());
+  });
 }

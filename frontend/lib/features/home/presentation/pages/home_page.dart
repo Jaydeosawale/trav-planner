@@ -1,3 +1,4 @@
+import 'featured_destination_page.dart';
 import '../../../../app/router/navigation_actions.dart';
 import '../../../places/data/place_area.dart';
 import '../../../places/data/place_catalogue.dart';
@@ -103,6 +104,16 @@ class HomePage extends ConsumerWidget {
                       DestinationSpotlight(
                         banners: ref.watch(bannersProvider).asData?.value ?? [],
                         onSearch: (_) {},
+                        onOpen: (label, slug, redirectUrl) =>
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => FeaturedDestinationPage(
+                                  label: label,
+                                  slug: slug,
+                                  redirectUrl: redirectUrl,
+                                ),
+                              ),
+                            ),
                         search: _HomeSearch(),
                       ),
                       const SizedBox(height: 10),

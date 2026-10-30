@@ -155,3 +155,11 @@ card fill. Reduce the backdrop blur from 16 to 4 and opacity from a pale .32 to
 .95. The complete foreground photo stays sharp and contain-fitted. The banner
 and all navigation/authentication/AI features remain unchanged. Install this
 photo treatment on the phone first; supersede the build 30 store bundle.
+
+### Build 32: featured banner destination links
+
+- The current slide’s location badge sits at the top of the existing photo banner; town search and centered dots remain at the bottom.
+- Tapping a slide or its badge opens destination details for that slide, while tapping town search continues to open search independently.
+- Published destinations resolve by exact destination slug/name or the banner’s configured destination ID/slug. Unknown targets show a retry state rather than opening an unrelated location.
+- Regional fallback slides use country-qualified hubs: Bali starts around Ubud in Indonesia; Goa starts around Panjim in India. The details description explicitly identifies the starting town. Paris uses its published destination.
+- Verified the Ubud and Panjim identities against the live public catalogue. Seven focused slideshow, navigation and small-screen browsing checks pass; changed Dart files have no analyzer issues.
