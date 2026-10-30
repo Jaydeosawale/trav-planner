@@ -69,6 +69,7 @@ GoRouter createAppRouter({String? initialLocation}) {
                 builder: (_, state) => BrowsePlacesPage(
                   key: state.pageKey,
                   initialQuery: placeQueryFromUri(state.uri),
+                  focusSearch: state.uri.queryParameters['focus'] == 'true',
                 ),
               ),
             ],

@@ -1,3 +1,5 @@
+import '../../auth/presentation/providers/auth_provider.dart';
+import '../../profile/presentation/pages/profile_page.dart';
 import '../../../app/router/navigation_actions.dart';
 import 'package:dio/dio.dart';
 import 'package:go_router/go_router.dart';
@@ -17,8 +19,13 @@ import 'widgets/place_card.dart';
 import 'widgets/place_filters.dart';
 
 class BrowsePlacesPage extends ConsumerStatefulWidget {
-  const BrowsePlacesPage({super.key, this.initialQuery = const PlaceQuery()});
+  const BrowsePlacesPage({
+    super.key,
+    this.initialQuery = const PlaceQuery(),
+    this.focusSearch = false,
+  });
   final PlaceQuery initialQuery;
+  final bool focusSearch;
   @override
   ConsumerState<BrowsePlacesPage> createState() => _BrowsePlacesPageState();
 }
@@ -33,6 +40,8 @@ class _BrowsePlacesPageState extends ConsumerState<BrowsePlacesPage> {
   bool _discovering = false;
   String? _discoveryNotice;
   List<TravelPlace> _additional = [];
+  final Set<String> _discovered = {};
+  final Map<String, List<TravelPlace>> _areaResults = {};
   List<TravelPlace> get _visibleAdditional {
     final known = <String>{};
     for (var page = 1; page <= _page; page++) {
@@ -67,6 +76,9 @@ class _BrowsePlacesPageState extends ConsumerState<BrowsePlacesPage> {
     if (_query.cityId != null) {
       Future.microtask(_restoreAreaLabel);
     }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _discoverSelectedArea();
+    });
     final area = ref.read(chosenPlaceAreaProvider);
     if (_query.search.isEmpty &&
         _query.cityId == null &&
@@ -120,7 +132,7 @@ class _BrowsePlacesPageState extends ConsumerState<BrowsePlacesPage> {
     setState(() {
       _query = query.copyWith(page: 1, size: 20, search: _search.text);
       _page = 1;
-      _additional = [];
+      _additional = _areaResults['${_query.cityId}:${_query.type}'] ?? [];
       _discoveryNotice = null;
     });
     final router = GoRouter.maybeOf(context);
@@ -128,6 +140,42 @@ class _BrowsePlacesPageState extends ConsumerState<BrowsePlacesPage> {
         router.routeInformationProvider.value.uri.path == '/explore') {
       router.replace(placeSearchUri(_query).toString());
     }
+    _discoverSelectedArea();
+  }
+
+  void _discoverSelectedArea() {
+    if (_query.cityId == null ||
+        _query.search.isNotEmpty ||
+        ref.read(authProvider).user == null) {
+      return;
+    }
+    final key = '${_query.cityId}:${_query.type}';
+    if (_discovered.contains(key)) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted ||
+          _discovering ||
+          _query.cityId == null ||
+          _query.search.isNotEmpty) {
+        return;
+      }
+      _discovered.add(key);
+      unawaited(_discover());
+    });
+  }
+
+  void _searchChanged(String value) {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 350), () {
+      if (!mounted) return;
+      if (_query.cityId != null && value.trim().isNotEmpty) {
+        ref.read(chosenPlaceAreaProvider.notifier).state = null;
+        _change(
+          _query.copyWith(search: value, clearCity: true, clearCountry: true),
+        );
+      } else {
+        _change(_query.copyWith(search: value));
+      }
+    });
   }
 
   void _selectArea(PlaceArea area) {
@@ -162,17 +210,25 @@ class _BrowsePlacesPageState extends ConsumerState<BrowsePlacesPage> {
               'kind': _query.type == 'all' ? 'local' : _query.type,
             },
           );
-      if (!mounted || request != _query) return;
+      final found = (response.data['items'] as List)
+          .map((p) => TravelPlace.fromJson(Map<String, dynamic>.from(p)))
+          .toList();
+      _areaResults['${request.cityId}:${request.type}'] = found;
+      if (!mounted ||
+          request.cityId != _query.cityId ||
+          request.type != _query.type)
+        return;
       setState(() {
-        _additional = (response.data['items'] as List)
-            .map((p) => TravelPlace.fromJson(Map<String, dynamic>.from(p)))
-            .toList();
+        _additional = found;
         _discoveryNotice = response.data['message']?.toString();
       });
     } catch (error) {
       if (mounted) setState(() => _discoveryNotice = areaFailure(error));
     } finally {
-      if (mounted) setState(() => _discovering = false);
+      if (mounted) {
+        setState(() => _discovering = false);
+        _discoverSelectedArea();
+      }
     }
   }
 
@@ -223,7 +279,46 @@ class _BrowsePlacesPageState extends ConsumerState<BrowsePlacesPage> {
       placeCatalogueProvider(_query.copyWith(page: _page)),
     );
     return Scaffold(
-      appBar: AppBar(title: const Text('Discover places')),
+      appBar: AppBar(
+        title: const Text('Explore'),
+        actions: [
+          IconButton(
+            tooltip: 'Open profile',
+            icon: const Icon(Icons.person_outline),
+            onPressed: () => Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => const ProfilePage())),
+          ),
+        ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(76),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+            child: TextField(
+              controller: _search,
+              autofocus: widget.focusSearch,
+              textInputAction: TextInputAction.search,
+              onSubmitted: (v) {
+                FocusScope.of(context).unfocus();
+                _change(_query.copyWith(search: v));
+              },
+              decoration: InputDecoration(
+                hintText: 'Town, city, landmark or café',
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: IconButton(
+                  tooltip: 'Clear search',
+                  icon: const Icon(Icons.close),
+                  onPressed: () {
+                    _search.clear();
+                    _change(_query.copyWith(search: ''));
+                  },
+                ),
+              ),
+              onChanged: _searchChanged,
+            ),
+          ),
+        ),
+      ),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 1200),
@@ -237,54 +332,38 @@ class _BrowsePlacesPageState extends ConsumerState<BrowsePlacesPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text(
-                        'Find your next stop.',
-                        style: Theme.of(context).textTheme.headlineMedium,
-                      ),
-                      const SizedBox(height: 12),
-                      const AreaSelector(),
-                      if (_query.cityId != null && area != null) ...[
-                        Text(
-                          'Around ${area.name}${area.subtitle.isEmpty ? '' : ' · ${area.subtitle}'}',
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            ref.read(chosenPlaceAreaProvider.notifier).state =
-                                null;
-                            _search.clear();
-                            _change(
-                              _query.copyWith(clearCity: true, search: ''),
-                            );
-                          },
-                          child: const Text('Search worldwide'),
-                        ),
-                      ],
-                      const SizedBox(height: 16),
-                      TextField(
-                        controller: _search,
-                        decoration: InputDecoration(
-                          hintText: 'Place, city or interest',
-                          prefixIcon: const Icon(Icons.search),
-                          suffixIcon: IconButton(
-                            tooltip: 'Clear search',
-                            icon: const Icon(Icons.close),
-                            onPressed: () {
-                              _search.clear();
-                              _change(_query.copyWith(search: ''));
-                            },
+                      if (_query.cityId != null && area != null)
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'Explore ${area.name}',
+                                style: Theme.of(context).textTheme.titleLarge,
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                ref
+                                        .read(chosenPlaceAreaProvider.notifier)
+                                        .state =
+                                    null;
+                                _search.clear();
+                                _change(
+                                  _query.copyWith(clearCity: true, search: ''),
+                                );
+                              },
+                              child: const Text('Worldwide'),
+                            ),
+                          ],
+                        )
+                      else if (_query.search.isEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Text(
+                            'Find your next stop.',
+                            style: Theme.of(context).textTheme.headlineMedium,
                           ),
                         ),
-                        onChanged: (v) {
-                          _debounce?.cancel();
-                          _debounce = Timer(
-                            const Duration(milliseconds: 450),
-                            () {
-                              if (mounted) _change(_query.copyWith(search: v));
-                            },
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 12),
                       if (_query.search.trim().length >= 2) ...[
                         AreaCandidates(
                           query: _query.search,
@@ -350,23 +429,6 @@ class _BrowsePlacesPageState extends ConsumerState<BrowsePlacesPage> {
                             ),
                         ],
                       ),
-                      if (_query.cityId != null) ...[
-                        const SizedBox(height: 12),
-                        OutlinedButton.icon(
-                          onPressed: _discovering ? null : _discover,
-                          icon: const Icon(Icons.travel_explore),
-                          label: Text(
-                            _discovering
-                                ? 'Finding local places…'
-                                : 'Find more in this area',
-                          ),
-                        ),
-                        const Text(
-                          'Checks free sources only when you ask. Coverage and current hours may be incomplete.',
-                          style: TextStyle(fontSize: 12),
-                        ),
-                        if (_discoveryNotice != null) Text(_discoveryNotice!),
-                      ],
                       const SizedBox(height: 12),
                       SegmentedButton<bool>(
                         segments: const [
@@ -441,6 +503,19 @@ class _BrowsePlacesPageState extends ConsumerState<BrowsePlacesPage> {
                             icon: const Icon(Icons.expand_more),
                             label: const Text('Show more places'),
                           ),
+                      ],
+                      if (_query.cityId != null) ...[
+                        if (_discovering) const LinearProgressIndicator(),
+                        TextButton.icon(
+                          onPressed: _discovering ? null : _discover,
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('Refresh local places'),
+                        ),
+                        const Text(
+                          'Coverage and opening hours may be incomplete.',
+                          style: TextStyle(fontSize: 12),
+                        ),
+                        if (_discoveryNotice != null) Text(_discoveryNotice!),
                       ],
                       const SizedBox(height: 20),
                       const Text(

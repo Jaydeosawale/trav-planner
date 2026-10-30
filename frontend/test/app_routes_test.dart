@@ -87,6 +87,14 @@ void main() {
       router.pop();
       await tester.pumpAndSettle();
       expect(find.widgetWithText(TextField, 'Pune'), findsOneWidget);
+      await tester.tap(find.text('Home').last);
+      await tester.pumpAndSettle();
+      expect(find.text('Choose area'), findsNothing);
+      expect(find.text('Profile'), findsNothing);
+      await tester.tap(find.byType(TextField));
+      await tester.pumpAndSettle();
+      expect(router.routeInformationProvider.value.uri.path, '/explore');
+      expect(tester.widget<TextField>(find.byType(TextField)).autofocus, true);
       expect(tester.takeException(), isNull);
     },
   );

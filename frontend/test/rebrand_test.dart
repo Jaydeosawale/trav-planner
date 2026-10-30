@@ -118,11 +118,11 @@ void main() {
       if (width == 1280) expect(find.byType(DesktopTopNav), findsOneWidget);
       await tester.runAsync(() => capture('trav-home-${width.toInt()}'));
       if (width == 360) {
-        await tester.tap(find.text('Profile').last);
+        expect(find.text('Profile'), findsNothing);
+        await tester.tap(find.bySemanticsLabel('Sign in'));
         await tester.pumpAndSettle();
-        expect(find.text('Profile'), findsWidgets);
+        expect(find.byType(LoginPage), findsOneWidget);
         expect(tester.takeException(), isNull);
-        await tester.runAsync(() => capture('trav-profile'));
       }
     });
   }

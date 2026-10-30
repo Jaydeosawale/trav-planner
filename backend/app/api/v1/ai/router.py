@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database.session import get_db
-from app.services.ai.conversations import PlannerConversation, owned, payload, replace, context_prompt
+from app.services.ai.conversations import PlannerConversation, owned, payload, replace, context_prompt, response_stage
 from .schema import ConversationDraft
 
 from app.agents.base import AgentContext
@@ -65,6 +65,10 @@ async def chat_with_ai(
         request.message,
         context=context,
     )
+
+    if result.success:
+        result.content, stage = response_stage(result.content)
+        result.metadata['planning_stage'] = stage
 
     if row is None and result.success:
         row = PlannerConversation(user_id=str(current_user.id), title=request.message[:100] or 'Travel ideas', brief_json='{}', turns_json='[]', version=0)

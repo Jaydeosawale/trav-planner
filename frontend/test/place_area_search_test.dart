@@ -1,3 +1,5 @@
+import 'package:trav_planner/features/auth/presentation/providers/auth_provider.dart';
+import 'saved_places_test.dart' show TestAuth;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:trav_planner/features/places/presentation/browse_places_page.dart';
@@ -201,10 +203,65 @@ void main() {
         ),
         isTrue,
       );
-      expect(find.text('Find more in this area'), findsOneWidget);
+      await tester.enterText(find.byType(TextField), 'Paris');
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.pumpAndSettle();
+      expect(requests.last.search, 'Paris');
+      expect(requests.last.cityId, isNull);
+      expect(requests.last.countryId, isNull);
+
       expect(tester.takeException(), isNull);
     },
   );
+  testWidgets('signed-in town opens local sources without another button', (
+    tester,
+  ) async {
+    final calls = <RequestOptions>[];
+    final dio = Dio();
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (request, handler) {
+          calls.add(request);
+          handler.resolve(
+            Response(requestOptions: request, data: {'items': []}),
+          );
+        },
+      ),
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authProvider.overrideWith(TestAuth.new),
+          chosenPlaceAreaProvider.overrideWith(
+            (ref) => const PlaceArea(cityId: 'wai', name: 'Wai'),
+          ),
+          placeAreaApiProvider.overrideWithValue(PlaceAreaApi(client: dio)),
+          placeCatalogueProvider.overrideWith(
+            (ref, q) async => const PlaceResults(items: [], total: 0, pages: 0),
+          ),
+        ],
+        child: const MaterialApp(
+          home: BrowsePlacesPage(initialQuery: PlaceQuery(cityId: 'wai')),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(calls, hasLength(1));
+    expect(calls.single.path, '/discovery/cities/wai');
+    expect(calls.single.queryParameters['kind'], 'local');
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Food'));
+    await tester.pumpAndSettle();
+    expect(calls, hasLength(2));
+    expect(calls.last.queryParameters['kind'], 'restaurant');
+    await tester.tap(find.text('Photos only'));
+    await tester.pumpAndSettle();
+    expect(
+      calls,
+      hasLength(2),
+      reason: 'Photo filtering reuses the same source results.',
+    );
+    expect(tester.takeException(), isNull);
+  });
   test('city scoped queries cannot share results with other areas', () {
     const query = PlaceQuery(cityId: 'pune', countryId: 'india', type: 'cafe');
     expect(query, isNot(query.copyWith(cityId: 'mumbai')));

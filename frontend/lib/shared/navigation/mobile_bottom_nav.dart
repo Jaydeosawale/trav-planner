@@ -10,7 +10,6 @@ class MobileBottomNav extends StatelessWidget {
     (Icons.explore_outlined, 'Explore'),
     (Icons.auto_awesome_outlined, 'AI Planner'),
     (Icons.luggage_outlined, 'My Trips'),
-    (Icons.person_outline, 'Profile'),
   ];
   @override
   Widget build(BuildContext context) => DecoratedBox(

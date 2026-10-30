@@ -35,3 +35,33 @@ Validation: 67 Flutter tests and 64 backend tests passed after integrating the l
 Remaining scope: free sources still do not cover every locality/business or live availability. Nearby external discovery remains centred on known public towns and can cover less than a user's selected radius. Existing generic catalogue classifications need editorial review; new Wikidata retrieval retains source-specific park/museum categories. Broad local-script alias expansion, offline trip packs and advanced personalised recommendations remain future work. Publishing a new Play Store release is separate from preparing an Android artifact.
 
 Latest Home adjustment: the destination banner is larger (minimum 260px on phones, 340px on wide screens). Area selection lives in the mobile/tablet header and desktop navigation. Town/place search is embedded in the banner, with focus stopping the timer. The slider keeps dots only. Layout tests confirm search lies inside the banner, the area control sits above it, narrow/200%-text layouts fit, and the first place name remains visible at 360×800. The Sights catalogue filter also accepts existing landmark/monument records so stored iconic sights are not hidden by legacy type labels.
+
+## 1.0.24 mobile discovery and conversation flow
+
+Home has a clean logo/account header, a large image banner, search immediately
+above centered carousel dots, three direct shortcuts and a vertical place feed.
+Scroll near the end to fetch another page; See all remains an optional shortcut.
+Mobile navigation contains Home, Explore, AI Planner and My Trips. The account
+avatar opens sign-in/profile; the existing profile route remains available.
+
+The Home search opens Explore with keyboard focus. Explore keeps one search
+field in its app bar, updates town and place results as the user types, and opens
+a selected town immediately. Starting a new search leaves the previous town and
+country scope. Signed-in users automatically load local sources once per selected
+area/category per screen session, using existing free limits and server caching;
+photo filtering reuses results. Refresh remains optional below results.
+
+AI Planner starts with two aligned actions. History and advanced tools are in the
+app bar; the detailed AI processing/privacy explanation is in About AI. The chat
+instructs the existing provider to ask up to two missing details at a time, keep
+confirmed context, and confirm before generating a daily plan. A small response
+phase marker is removed by the backend and prevents clarification questions from
+showing the itinerary save action. Real model behavior still depends on provider
+availability and must be reviewed by the traveler.
+
+Authentication audit (30 October): Firebase is not integrated. Email/password
+login uses the existing Trav backend; recovery uses its single-use tokens and
+private Vercel/Gmail delivery. Live recovery-status reports available; invalid
+credentials and reset tokens return 401. Local tests verify reset expiry, single
+use and session invalidation. No physical phone or fresh real-account email
+round-trip was tested; the user requested code checks only for now.

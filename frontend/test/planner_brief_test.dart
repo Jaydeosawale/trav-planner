@@ -58,8 +58,9 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
       final api = MemoryPlanner();
       await tester.pumpWidget(MaterialApp(home: AISearchPage(api: api)));
-      await tester.ensureVisible(find.text('New plan'));
-      await tester.tap(find.text('New plan'));
+      await tester.tap(find.byTooltip('Planner options'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Trip details'));
       await tester.pumpAndSettle();
       await tester.enterText(
         find.byKey(const ValueKey('brief-destination')),
@@ -88,20 +89,23 @@ void main() {
       await tester.tap(find.byTooltip('Send message'));
       await tester.pumpAndSettle();
       expect(api.usedId, 'session-1');
-      await tester.ensureVisible(find.text('Recent plans'));
-      await tester.tap(find.text('Recent plans'));
+      await tester.ensureVisible(find.byTooltip('Recent plans'));
+      await tester.tap(find.byTooltip('Recent plans'));
       await tester.pumpAndSettle();
       await tester.tap(
         find.widgetWithText(SimpleDialogOption, 'My travel ideas'),
       );
       await tester.pumpAndSettle();
       expect(find.text('Your AI travel companion'), findsOneWidget);
-      await tester.ensureVisible(find.text('Forget conversation'));
+      await tester.tap(find.byTooltip('Planner options'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Forget conversation'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Keep'));
       await tester.pumpAndSettle();
       expect(api.saved, isNotNull);
+      await tester.tap(find.byTooltip('Planner options'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Forget conversation'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Forget'));

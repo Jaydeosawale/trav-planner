@@ -25,6 +25,29 @@ class ConversationAI extends AIApi {
   );
 }
 
+class GuidedAI extends AIApi {
+  final messages = <String>[];
+  @override
+  Future<AIResponseModel> chat({
+    required String message,
+    String? sessionId,
+  }) async {
+    messages.add(message);
+    final complete = messages.length >= 3;
+    return AIResponseModel(
+      success: true,
+      content: complete
+          ? 'Day 1: Explore Pune at an easy pace.'
+          : messages.length == 1
+          ? 'Which destination and how many days?'
+          : 'What budget and how many travelers?',
+      agent: 'test',
+      data: {},
+      metadata: {'planning_stage': complete ? 'plan' : 'questions'},
+    );
+  }
+}
+
 void main() {
   testWidgets('conversation keeps earlier turns during follow-up', (
     tester,
@@ -41,6 +64,28 @@ void main() {
     expect(find.text('Pune museums'), findsOneWidget);
     expect(find.textContaining('Reply 1:'), findsOneWidget);
     expect(find.textContaining('Reply 2:'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+  testWidgets('minimal planner asks questions before offering to save a plan', (
+    tester,
+  ) async {
+    final api = GuidedAI();
+    await tester.pumpWidget(MaterialApp(home: AISearchPage(api: api)));
+    expect(find.text('Where shall we go?'), findsOneWidget);
+    expect(find.text('Build daily plan'), findsNothing);
+    await tester.tap(find.text('Plan a trip'));
+    await tester.pumpAndSettle();
+    expect(find.text('Review & save to My Trips'), findsNothing);
+    for (final answer in [
+      'Pune for 2 days',
+      'INR 5000 for two people. Make the plan.',
+    ]) {
+      await tester.enterText(find.byType(TextField), answer);
+      await tester.tap(find.byTooltip('Send message'));
+      await tester.pumpAndSettle();
+    }
+    expect(api.messages, hasLength(3));
+    expect(find.text('Review & save to My Trips'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
   testWidgets('illustrated plan postcard fits a small phone', (tester) async {

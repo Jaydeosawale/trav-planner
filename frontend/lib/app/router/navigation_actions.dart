@@ -17,13 +17,30 @@ Uri placeSearchUri(PlaceQuery query) => Uri(
   },
 );
 
-void openPlaceSearch(BuildContext context, PlaceQuery query) {
+void openPlaceSearch(
+  BuildContext context,
+  PlaceQuery query, {
+  bool focusSearch = false,
+}) {
   final router = GoRouter.maybeOf(context);
   if (router != null) {
-    router.go(placeSearchUri(query).toString());
+    final uri = placeSearchUri(query);
+    router.go(
+      uri
+          .replace(
+            queryParameters: {
+              ...uri.queryParameters,
+              if (focusSearch) 'focus': 'true',
+            },
+          )
+          .toString(),
+    );
   } else {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => BrowsePlacesPage(initialQuery: query)),
+      MaterialPageRoute(
+        builder: (_) =>
+            BrowsePlacesPage(initialQuery: query, focusSearch: focusSearch),
+      ),
     );
   }
 }

@@ -104,3 +104,20 @@ async def test_successful_first_message_creates_owned_conversation(monkeypatch):
         assert 'Pune museums' in seen[-1] and 'Less walking' in seen[-1]
         assert len((await c.get('/ai/sessions/'+ident)).json()['turns'])==4
     await engine.dispose()
+
+
+def test_planning_phase_strips_only_leading_protocol_marker():
+    from app.services.ai.conversations import response_stage
+    assert response_stage('[TRAV_QUESTION]\nWhen are you going?') == ('When are you going?', 'questions')
+    assert response_stage('[TRAV_PLAN]\nDay 1: Explore Pune') == ('Day 1: Explore Pune', 'plan')
+    assert response_stage('A place named [TRAV_PLAN]') == ('A place named [TRAV_PLAN]', 'answer')
+    assert response_stage('[TRAV_PLAN]suffix') == ('[TRAV_PLAN]suffix', 'answer')
+
+
+def test_planner_instructions_collect_details_before_generating():
+    from app.agents.travel_planner import TravelPlanningAgent
+    prompt = TravelPlanningAgent.system_prompt.fget(None)
+    assert 'Ask at most two short questions' in prompt
+    assert 'Do not write a full itinerary while essential details are missing' in prompt
+    assert '[TRAV_QUESTION]' in prompt and '[TRAV_PLAN]' in prompt
+    assert 'repeat facts' in prompt

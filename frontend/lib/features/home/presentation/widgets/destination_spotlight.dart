@@ -246,18 +246,22 @@ class _DestinationSpotlightState extends State<DestinationSpotlight>
                       label:
                           'Featured destination ${_index + 1} of $_count: $label',
                       child: ExcludeSemantics(
-                        child: Wrap(
-                          spacing: 7,
-                          children: List.generate(
-                            _count,
-                            (index) => Container(
-                              width: index == _index ? 22 : 7,
-                              height: 7,
-                              decoration: BoxDecoration(
-                                color: index == _index
-                                    ? AppColors.sunset
-                                    : Colors.white54,
-                                borderRadius: BorderRadius.circular(8),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: Wrap(
+                            alignment: WrapAlignment.center,
+                            spacing: 7,
+                            children: List.generate(
+                              _count,
+                              (index) => Container(
+                                width: index == _index ? 22 : 7,
+                                height: 7,
+                                decoration: BoxDecoration(
+                                  color: index == _index
+                                      ? AppColors.sunset
+                                      : Colors.white54,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
                               ),
                             ),
                           ),
