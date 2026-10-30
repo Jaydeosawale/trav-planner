@@ -39,6 +39,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   // ==========================================================
 
   Future<void> _login() async {
+    if (_isLoggingIn) return;
     final email = _emailController.text.trim();
     final password = _passwordController.text;
 
@@ -97,6 +98,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     }
     final router = GoRouter.maybeOf(context);
     if (router != null) {
+      // Login can be a native overlay above a routed tab. Going to the
+      // already active Home URL alone does not remove that overlay.
+      Navigator.of(
+        context,
+      ).popUntil((route) => route.settings is Page || route.isFirst);
       router.go(user.isAdmin ? '/admin' : '/home');
       return;
     }

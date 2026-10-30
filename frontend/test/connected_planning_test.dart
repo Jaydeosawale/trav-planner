@@ -116,7 +116,11 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
       addTearDown(tester.view.resetViewInsets);
       final api = RetryPlanner();
-      await tester.pumpWidget(MaterialApp(home: AISearchPage(api: api)));
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(home: AISearchPage(api: api)),
+        ),
+      );
       await tester.enterText(find.byType(TextField), 'Paris parks');
       await tester.tap(find.byTooltip('Send message'));
       await tester.pumpAndSettle();

@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:trav_planner/features/ai/data/datasources/ai_api.dart';
@@ -57,7 +58,11 @@ void main() {
       addTearDown(tester.view.resetPhysicalSize);
       addTearDown(tester.view.resetDevicePixelRatio);
       final api = MemoryPlanner();
-      await tester.pumpWidget(MaterialApp(home: AISearchPage(api: api)));
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(home: AISearchPage(api: api)),
+        ),
+      );
       await tester.tap(find.byTooltip('Planner options'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Trip details'));

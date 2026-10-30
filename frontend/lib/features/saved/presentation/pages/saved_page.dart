@@ -64,9 +64,12 @@ class _SavedPageState extends ConsumerState<SavedPage> {
                         text:
                             'Sign in to keep your saved places together across devices.',
                         action: 'Sign in',
-                        onAction: () => Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const LoginPage()),
-                        ),
+                        onAction: () =>
+                            Navigator.of(context, rootNavigator: true).push(
+                              MaterialPageRoute(
+                                builder: (_) => const LoginPage(),
+                              ),
+                            ),
                       )
                     else
                       saved.when(
@@ -86,11 +89,16 @@ class _SavedPageState extends ConsumerState<SavedPage> {
                                 text:
                                     'A place catches your eye? Save it from its details and find it here.',
                                 action: 'Discover places',
-                                onAction: () => Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => const BrowsePlacesPage(),
-                                  ),
-                                ),
+                                onAction: () =>
+                                    Navigator.of(
+                                      context,
+                                      rootNavigator: true,
+                                    ).push(
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            const BrowsePlacesPage(),
+                                      ),
+                                    ),
                               )
                             : Column(
                                 children: places

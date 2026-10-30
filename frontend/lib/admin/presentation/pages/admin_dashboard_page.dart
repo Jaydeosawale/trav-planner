@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../features/auth/presentation/providers/auth_provider.dart';
 import 'admin_banners_page.dart';
-import 'package:trav_planner/features/auth/presentation/pages/login_page.dart';
+import '../../../features/auth/presentation/widgets/require_sign_in.dart';
 import 'admin_cities_page.dart';
 import 'admin_destinations_page.dart';
 import 'admin_places_page.dart';
@@ -726,10 +726,7 @@ class _DesktopAdminDashboardState
       return;
     }
 
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const LoginPage()),
-      (route) => false,
-    );
+    returnToSignIn(context);
   }
 }
 
@@ -1101,10 +1098,7 @@ class _MobileDrawer extends ConsumerWidget {
 
               if (!context.mounted) return;
 
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (_) => const LoginPage()),
-                (route) => false,
-              );
+              returnToSignIn(context);
             },
           ),
 

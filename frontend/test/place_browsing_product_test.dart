@@ -134,7 +134,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(queries.single.photosOnly, true);
+      expect(queries.single.photosOnly, false);
       await tester.tap(find.widgetWithText(ChoiceChip, 'Food'));
       await tester.pumpAndSettle();
       expect(queries.last.type, 'restaurant');
@@ -144,7 +144,9 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('France').last);
       await tester.pumpAndSettle();
-      await tester.tap(find.byType(SwitchListTile));
+      if (tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value) {
+        await tester.tap(find.byType(SwitchListTile));
+      }
       await tester.pumpAndSettle();
       await tester.tap(find.text('Show places'));
       await tester.pumpAndSettle();
@@ -174,10 +176,7 @@ void main() {
       await tester.tap(find.text('Plan a visit'));
       await tester.pumpAndSettle();
       expect(find.byType(AISearchPage), findsOneWidget);
-      expect(
-        find.textContaining('Help me plan a visit to An afternoon in Paris'),
-        findsOneWidget,
-      );
+      expect(find.text('Sign in to plan'), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );
@@ -189,6 +188,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            exploreCountriesProvider.overrideWith((ref) async => []),
             placeCatalogueProvider.overrideWith((ref, q) async {
               queries.add(q);
               return PlaceResults(
@@ -210,6 +210,11 @@ void main() {
           ),
         ),
       );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Filters'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(SwitchListTile));
+      await tester.tap(find.text('Show places'));
       await tester.pumpAndSettle();
       expect(find.text('No photos for this selection yet.'), findsOneWidget);
       await tester.tap(find.text('Include places without photos'));

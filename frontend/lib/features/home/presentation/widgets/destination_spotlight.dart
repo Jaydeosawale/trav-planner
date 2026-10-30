@@ -183,10 +183,11 @@ class _DestinationSpotlightState extends State<DestinationSpotlight>
                 constraints: BoxConstraints(
                   minHeight: widget.search == null
                       ? (wide ? 260 : 200)
-                      : (wide ? 340 : 260),
+                      : (wide ? 360 : 320),
                 ),
                 padding: EdgeInsets.all(wide ? 32 : 16),
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     IgnorePointer(

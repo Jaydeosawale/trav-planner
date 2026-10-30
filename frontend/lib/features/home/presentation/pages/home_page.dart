@@ -2,6 +2,7 @@ import '../../../../app/router/navigation_actions.dart';
 import '../../../places/data/place_area.dart';
 import '../../../places/data/place_catalogue.dart';
 import '../widgets/home_places_section.dart';
+import '../widgets/home_travel_hub.dart';
 import '../../../booking/presentation/pages/booking_links_page.dart';
 import '../../../explore/presentation/pages/nearby_places_page.dart';
 import '../widgets/destination_spotlight.dart';
@@ -64,13 +65,17 @@ class HomePage extends ConsumerWidget {
                               button: true,
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(28),
-                                onTap: () => Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => user == null
-                                        ? const LoginPage()
-                                        : const ProfilePage(),
-                                  ),
-                                ),
+                                onTap: () =>
+                                    Navigator.of(
+                                      context,
+                                      rootNavigator: user == null,
+                                    ).push(
+                                      MaterialPageRoute(
+                                        builder: (_) => user == null
+                                            ? const LoginPage()
+                                            : const ProfilePage(),
+                                      ),
+                                    ),
                                 child: Container(
                                   width: 48,
                                   height: 48,
@@ -103,7 +108,9 @@ class HomePage extends ConsumerWidget {
                       const SizedBox(height: 10),
                       _HomeShortcuts(),
                       const SizedBox(height: 8),
-                      const HomePlacesSection(),
+                      const HomeTravelHub(personalOnly: true),
+                      const HomePlacesSection(curated: true),
+                      const HomeTravelHub(),
                       const SizedBox(height: 24),
                     ],
                   ),
@@ -133,14 +140,15 @@ class _HomeSearch extends StatelessWidget {
   @override
   Widget build(BuildContext context) => TextField(
     readOnly: true,
+    style: const TextStyle(fontSize: 14),
     onTap: () =>
         openPlaceSearch(context, const PlaceQuery(), focusSearch: true),
     decoration: const InputDecoration(
       hintText: 'Search towns & places',
+      hintStyle: TextStyle(fontSize: 14),
       filled: true,
       fillColor: AppColors.surface,
       prefixIcon: Icon(Icons.search_rounded),
-      suffixIcon: Icon(Icons.arrow_forward_rounded),
       contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 16),
     ),
   );

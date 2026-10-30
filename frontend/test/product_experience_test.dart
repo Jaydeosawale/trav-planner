@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'dart:io';
 import 'dart:ui' as ui;
@@ -53,7 +54,11 @@ void main() {
     tester,
   ) async {
     final api = ConversationAI();
-    await tester.pumpWidget(MaterialApp(home: AISearchPage(api: api)));
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(home: AISearchPage(api: api)),
+      ),
+    );
     for (final message in ['Pune museums', 'Less walking']) {
       await tester.ensureVisible(find.byType(TextField));
       await tester.enterText(find.byType(TextField), message);
@@ -70,7 +75,11 @@ void main() {
     tester,
   ) async {
     final api = GuidedAI();
-    await tester.pumpWidget(MaterialApp(home: AISearchPage(api: api)));
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(home: AISearchPage(api: api)),
+      ),
+    );
     expect(find.text('Where shall we go?'), findsOneWidget);
     expect(find.text('Build daily plan'), findsNothing);
     await tester.tap(find.text('Plan a trip'));

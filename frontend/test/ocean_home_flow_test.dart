@@ -57,7 +57,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(queries.last.cityId, 'paris');
-      expect(find.text('Explore Paris'), findsOneWidget);
+      expect(find.text('Around Paris'), findsOneWidget);
       expect(find.text('Choose area'), findsNothing);
       expect(find.byType(TextField), findsOneWidget);
       if (scale == 1) {
@@ -67,7 +67,18 @@ void main() {
         expect(search.top, greaterThan(banner.top));
         expect(search.bottom, lessThan(banner.bottom));
         expect(
-          tester.getRect(find.text('Explore Paris')).top,
+          tester
+              .widget<TextField>(find.byType(TextField))
+              .decoration
+              ?.suffixIcon,
+          isNull,
+        );
+        expect(
+          tester.widget<TextField>(find.byType(TextField)).style?.fontSize,
+          14,
+        );
+        expect(
+          tester.getRect(find.text('Around Paris')).top,
           greaterThan(banner.bottom),
         );
         final name = tester.getRect(find.byType(PlaceCard).first);
@@ -84,41 +95,43 @@ void main() {
       await tester.pumpWidget(const SizedBox());
     });
   }
-  testWidgets('Home scroll loads another page without opening See all', (
-    tester,
-  ) async {
-    tester.view.physicalSize = const Size(360, 800);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    await preview.fontsAndPhoto(tester);
-    final pages = <int>[];
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          bannersProvider.overrideWith((ref) async => []),
-          placeCatalogueProvider.overrideWith((ref, query) async {
-            pages.add(query.page);
-            return PlaceResults(
-              items: List.generate(4, (_) => preview.example()),
-              total: 8,
-              pages: 2,
-            );
-          }),
-        ],
-        child: MaterialApp(theme: AppTheme.light, home: const HomePage()),
-      ),
-    );
-    await tester.pumpAndSettle();
-    await tester.drag(
-      find.byType(SingleChildScrollView).first,
-      const Offset(0, -1800),
-    );
-    await tester.pumpAndSettle();
-    expect(pages, contains(2));
-    expect(tester.takeException(), isNull);
-    await tester.pumpWidget(const SizedBox());
-  });
+  testWidgets(
+    'Home keeps a short curated rail instead of duplicating Explore',
+    (tester) async {
+      tester.view.physicalSize = const Size(360, 800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      await preview.fontsAndPhoto(tester);
+      final pages = <int>[];
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            bannersProvider.overrideWith((ref) async => []),
+            placeCatalogueProvider.overrideWith((ref, query) async {
+              pages.add(query.page);
+              return PlaceResults(
+                items: List.generate(4, (_) => preview.example()),
+                total: 8,
+                pages: 2,
+              );
+            }),
+          ],
+          child: MaterialApp(theme: AppTheme.light, home: const HomePage()),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.drag(
+        find.byType(SingleChildScrollView).first,
+        const Offset(0, -1800),
+      );
+      await tester.pumpAndSettle();
+      expect(pages, isNot(contains(2)));
+      expect(find.byType(ChoiceChip), findsNothing);
+      expect(tester.takeException(), isNull);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
   testWidgets(
     'Supplier handoff retains trip reference without promising transfer',
     (tester) async {

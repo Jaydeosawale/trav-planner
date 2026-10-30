@@ -10,6 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database.session import get_db
+from app.services.ai import daily_plans
 from app.services.ai.conversations import PlannerConversation, owned, payload, replace, context_prompt, response_stage
 from .schema import ConversationDraft
 
@@ -53,6 +54,7 @@ async def chat_with_ai(
         count = await db.scalar(select(func.count()).select_from(PlannerConversation).where(PlannerConversation.user_id == str(current_user.id)))
         if count >= 20:
             raise HTTPException(409, 'You have 20 saved conversations. Reopen a recent plan or forget an old conversation to start another.')
+    await daily_plans.check(db, str(current_user.id))
     agent = TravelPlanningAgent()
 
     context = AgentContext(
@@ -69,6 +71,8 @@ async def chat_with_ai(
     if result.success:
         result.content, stage = response_stage(result.content)
         result.metadata['planning_stage'] = stage
+        if stage == 'plan':
+            await daily_plans.consume(db, str(current_user.id))
 
     if row is None and result.success:
         row = PlannerConversation(user_id=str(current_user.id), title=request.message[:100] or 'Travel ideas', brief_json='{}', turns_json='[]', version=0)
@@ -82,6 +86,7 @@ async def chat_with_ai(
         await replace(db, row, turns=turns)
     if row is not None:
         result.metadata['session_id'] = row.id
+    result.metadata['plan_usage'] = await daily_plans.status(db, str(current_user.id))
     return AIChatResponse(
         success=result.success,
         data=AIChatData(
@@ -98,6 +103,11 @@ async def chat_with_ai(
             or "Unable to process the AI request."
         ),
     )
+
+
+@router.get('/plan-usage')
+async def plan_usage(current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    return await daily_plans.status(db, str(current_user.id))
 
 
 @router.get('/sessions')

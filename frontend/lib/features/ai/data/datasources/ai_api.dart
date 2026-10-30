@@ -2,6 +2,10 @@ import '../../../../core/network/api_client.dart';
 import '../models/ai_response_model.dart';
 
 class AIApi {
+  Future<Map<String, dynamic>> planUsage() async => Map<String, dynamic>.from(
+    (await ApiClient.dio.get('/ai/plan-usage')).data,
+  );
+
   Future<void> forgetSession(String id) async {
     await ApiClient.dio.delete('/ai/sessions/$id');
   }

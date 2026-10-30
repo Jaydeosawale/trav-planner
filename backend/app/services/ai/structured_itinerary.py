@@ -7,7 +7,7 @@ from fastapi import HTTPException
 from pydantic import BaseModel, Field, model_validator, ValidationError
 from sqlalchemy import delete, func, select, text
 from app.services.ai.itinerary_models import ItineraryDraft
-from app.services.ai import free_runtime
+from app.services.ai import free_runtime, daily_plans
 from app.services.ai.conversations import owned
 from app.services.discovery.world import (
     now,
@@ -132,6 +132,7 @@ async def source_places(db, city_id):
 
 
 async def generate(db, user_id, request):
+    await daily_plans.check(db, user_id)
     city = await active_city(db, request.city_id)
     brief = {}
     history = []
@@ -341,6 +342,7 @@ async def generate(db, user_id, request):
     )
     if user_count >= 20 or total_count >= 1000:
         raise HTTPException(429, "Draft limit reached. Review your existing drafts.")
+    await daily_plans.consume(db, user_id)
     row = ItineraryDraft(
         user_id=user_id,
         city_id=city.id,

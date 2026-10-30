@@ -69,3 +69,32 @@ round-trip was tested; the user requested code checks only for now.
 Release status: 1.0.24 / build 25 is for testing only. The user explicitly
 requested no Google Play update on 30 October. Production remains 1.0.23.
 A production draft was opened but no 1.0.24 bundle was uploaded or submitted.
+
+## Test build 26: login, Home hub and daily allowance
+
+Login now dismisses native overlays before returning to a routed Home screen.
+Sign-in/register/recovery use the root navigator, outside tab navigation. Profile
+and admin logout use the canonical sign-in route. Regression tests reproduce the
+old regular-user failure and cover regular/admin login and full-screen account
+flows.
+
+Home is a short inspiration hub, while Explore owns full search, filters and maps.
+The banner search uses 14px text, no arrow and bottom-aligned dots. Home uses a
+short photo rail, actual trip continuation/re-discovery, saved-category suggestions
+and browsing ideas. Suggestions are hidden while account data reloads. No supplier
+discount is invented; the travel card links to comparison/booking destinations.
+
+The old photo-only default hid many businesses. Home now includes places without
+photos and merges free-source records for an explicitly selected town. Category
+ideas open Explore in the selected town or focus town search if none is chosen.
+Coverage is still limited by source data, caches and existing free daily budgets.
+
+AI planning requires sign-in. Migration b91a408c7d20 adds a UTC daily counter shared
+by chat plans and structured drafts. Atomic completion claims enforce five saved/
+delivered plans per account/day, including concurrent requests. Questions and
+failed generations do not consume a plan; deleting a conversation/draft does not
+refund it. The UI reads authenticated /ai/plan-usage and response metadata. The
+reset is 00:00 UTC. Existing free-provider and $0 billing rules remain unchanged.
+
+This remains a local Trav Test release. Do not submit a Google Play update until
+the user explicitly requests publication after testing.

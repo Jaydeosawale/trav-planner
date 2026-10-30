@@ -3,7 +3,7 @@ import 'package:trav_planner/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../auth/presentation/pages/login_page.dart';
+import '../../../auth/presentation/widgets/require_sign_in.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../saved/presentation/pages/saved_page.dart';
 import 'travel_preferences_page.dart';
@@ -286,14 +286,9 @@ class ProfilePage extends ConsumerWidget {
     // Remove the authenticated navigation stack
     // and return to Login.
     //
-    // We currently don't use named routes, so navigate
-    // directly to LoginPage.
     // ----------------------------------------------------------
 
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const LoginPage()),
-      (route) => false,
-    );
+    returnToSignIn(context);
   }
 }
 

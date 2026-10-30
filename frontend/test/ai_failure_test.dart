@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:trav_planner/features/ai/data/datasources/ai_api.dart';
@@ -22,7 +23,11 @@ void main() {
   testWidgets('A blocked provider response is shown as an error with retry', (
     tester,
   ) async {
-    await tester.pumpWidget(MaterialApp(home: AISearchPage(api: FailedAI())));
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(home: AISearchPage(api: FailedAI())),
+      ),
+    );
     await tester.enterText(find.byType(TextField), 'Plan Paris');
     await tester.ensureVisible(find.byTooltip('Send message'));
     await tester.pumpAndSettle();

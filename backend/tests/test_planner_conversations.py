@@ -7,12 +7,15 @@ from app.api.v1.ai.router import router
 from app.database.session import get_db
 from app.dependencies.current_user import get_current_user
 from app.services.ai.conversations import PlannerConversation, context_prompt
+from app.services.ai.daily_plans import DailyPlanUsage
 from app.agents.base import AgentResponse
 
 @pytest.mark.asyncio
 async def test_owned_briefs_history_and_conflicting_edit(monkeypatch):
     engine = create_async_engine('sqlite+aiosqlite:///:memory:')
-    async with engine.begin() as conn: await conn.run_sync(PlannerConversation.__table__.create)
+    async with engine.begin() as conn:
+        await conn.run_sync(PlannerConversation.__table__.create)
+        await conn.run_sync(DailyPlanUsage.__table__.create)
     sessions = async_sessionmaker(engine, expire_on_commit=False)
     app = FastAPI(); app.include_router(router, prefix='/ai')
     user = {'id': 'owner'}
@@ -83,6 +86,7 @@ async def test_successful_first_message_creates_owned_conversation(monkeypatch):
     engine = create_async_engine('sqlite+aiosqlite:///:memory:')
     async with engine.begin() as conn:
         await conn.run_sync(PlannerConversation.__table__.create)
+        await conn.run_sync(DailyPlanUsage.__table__.create)
     sessions = async_sessionmaker(engine, expire_on_commit=False)
     app = FastAPI(); app.include_router(router, prefix='/ai')
     async def db():
@@ -121,3 +125,37 @@ def test_planner_instructions_collect_details_before_generating():
     assert 'Do not write a full itinerary while essential details are missing' in prompt
     assert '[TRAV_QUESTION]' in prompt and '[TRAV_PLAN]' in prompt
     assert 'repeat facts' in prompt
+
+
+@pytest.mark.asyncio
+async def test_chat_questions_are_free_and_only_five_plans_can_be_delivered(monkeypatch):
+    engine = create_async_engine('sqlite+aiosqlite:///:memory:')
+    async with engine.begin() as conn:
+        await conn.run_sync(PlannerConversation.__table__.create)
+        await conn.run_sync(DailyPlanUsage.__table__.create)
+    sessions = async_sessionmaker(engine, expire_on_commit=False)
+    app = FastAPI(); app.include_router(router, prefix='/ai')
+    async def db():
+        async with sessions() as session: yield session
+    app.dependency_overrides[get_db] = db
+    app.dependency_overrides[get_current_user] = lambda: SimpleNamespace(id='owner')
+    async def run(self, request, *, context=None):
+        content = '[TRAV_QUESTION]\nWhat dates?' if request == 'question' else '[TRAV_PLAN]\nDay 1: Pune museums'
+        return AgentResponse(content=content, agent='test')
+    monkeypatch.setattr('app.agents.travel_planner.TravelPlanningAgent.run', run)
+    async with AsyncClient(transport=ASGITransport(app=app), base_url='http://test') as client:
+        for _ in range(2):
+            response = await client.post('/ai/chat', json={'message':'question'})
+            assert response.json()['data']['metadata']['planning_stage'] == 'questions'
+        assert (await client.get('/ai/plan-usage')).json()['used'] == 0
+        ident = None
+        for _ in range(5):
+            response = await client.post('/ai/chat', json={'message':'make plan', **({'session_id':ident} if ident else {})})
+            assert response.status_code == 200
+            ident = response.json()['data']['metadata']['session_id']
+            assert response.json()['data']['content'] == 'Day 1: Pune museums'
+        assert (await client.get('/ai/plan-usage')).json()['remaining'] == 0
+        assert (await client.post('/ai/chat', json={'message':'make plan','session_id':ident})).status_code == 429
+        await client.delete('/ai/sessions/'+ident)
+        assert (await client.get('/ai/plan-usage')).json()['remaining'] == 0
+    await engine.dispose()

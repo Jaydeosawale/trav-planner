@@ -1,3 +1,4 @@
+import '../../../auth/presentation/providers/auth_provider.dart';
 import 'package:trav_planner/core/widgets/ai_content_report_button.dart';
 import '../../../auth/presentation/widgets/require_sign_in.dart';
 import '../../../destinations/data/place.dart';
@@ -18,7 +19,7 @@ import '../../../trips/presentation/pages/my_trips_page.dart';
 import '../../data/datasources/ai_api.dart';
 import '../../data/models/ai_response_model.dart';
 
-class AISearchPage extends StatefulWidget {
+class AISearchPage extends ConsumerStatefulWidget {
   const AISearchPage({
     super.key,
     this.api,
@@ -30,10 +31,10 @@ class AISearchPage extends StatefulWidget {
   final AIApi? api;
 
   @override
-  State<AISearchPage> createState() => _AISearchPageState();
+  ConsumerState<AISearchPage> createState() => _AISearchPageState();
 }
 
-class _AISearchPageState extends State<AISearchPage> {
+class _AISearchPageState extends ConsumerState<AISearchPage> {
   final TextEditingController _controller = TextEditingController();
   final _scroll = ScrollController();
   void _scrollToLatest() => WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -46,6 +47,20 @@ class _AISearchPageState extends State<AISearchPage> {
     }
   });
   late final AIApi _api = widget.api ?? AIApi();
+
+  Map<String, dynamic>? _usage;
+  Future<void> _loadUsage() async {
+    if (widget.api != null || !ref.read(authProvider).isAuthenticated) return;
+    final account = ref.read(authProvider).user?.id;
+    try {
+      final usage = await _api.planUsage();
+      if (mounted && account == ref.read(authProvider).user?.id) {
+        setState(() => _usage = usage);
+      }
+    } catch (_) {
+      /* The generation endpoint remains authoritative. */
+    }
+  }
 
   bool _loading = false;
   bool _authorizing = false;
@@ -61,6 +76,7 @@ class _AISearchPageState extends State<AISearchPage> {
   void initState() {
     super.initState();
     _controller.text = widget.initialMessage ?? '';
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadUsage());
   }
 
   @override
@@ -128,6 +144,9 @@ class _AISearchPageState extends State<AISearchPage> {
       setState(() {
         if (response.success) {
           _response = response;
+          if (response.metadata['plan_usage'] is Map) {
+            _usage = Map<String, dynamic>.from(response.metadata['plan_usage']);
+          }
           if (_controller.text.trim() == message) _controller.clear();
           if (refreshed != null) {
             _session = refreshed;
@@ -364,7 +383,7 @@ class _AISearchPageState extends State<AISearchPage> {
     builder: (_) => AlertDialog(
       title: const Text('About AI planning'),
       content: const Text(
-        'Your messages and trip preferences are sent to the AI provider enabled by Trav’s administrator, including Gemini or Groq. Gemini’s free service may use submissions to improve its models. Avoid personal, sensitive or confidential details. AI can make mistakes; check travel details before you go.',
+        'Your messages and trip preferences are sent to the AI provider enabled by Trav’s administrator, including Gemini or Groq. Gemini’s free service may use submissions to improve its models. Avoid personal, sensitive or confidential details. AI can make mistakes; check travel details before you go. Each signed-in account can generate 5 completed plans per day, resetting at 00:00 UTC. Clarifying questions and failed generations do not count.',
       ),
       actions: [
         TextButton(
@@ -377,6 +396,8 @@ class _AISearchPageState extends State<AISearchPage> {
 
   @override
   Widget build(BuildContext context) {
+    final signedIn =
+        widget.api != null || ref.watch(authProvider).isAuthenticated;
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -394,285 +415,345 @@ class _AISearchPageState extends State<AISearchPage> {
             ),
           ],
         ),
-        actions: [
-          IconButton(
-            tooltip: 'Recent plans',
-            onPressed: _loading ? null : _recentPlans,
-            icon: const Icon(Icons.history),
-          ),
-          PopupMenuButton<String>(
-            tooltip: 'Planner options',
-            enabled: !_loading,
-            onSelected: (value) {
-              switch (value) {
-                case 'new':
-                  _newChat();
-                case 'details':
-                  _editBrief(newPlan: _session == null);
-                case 'daily':
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => StructuredPlanPage(
-                        session: _session,
-                        initialPlace: widget.initialPlace,
-                      ),
-                    ),
-                  );
-                case 'nearby':
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const NearbyPlacesPage()),
-                  );
-                case 'book':
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const BookingLinksPage()),
-                  );
-                case 'forget':
-                  _forgetPlan();
-                case 'about':
-                  _aiDetails();
-              }
-            },
-            itemBuilder: (_) => [
-              const PopupMenuItem(value: 'new', child: Text('New chat')),
-              const PopupMenuItem(
-                value: 'details',
-                child: Text('Trip details'),
-              ),
-              const PopupMenuItem(
-                value: 'daily',
-                child: Text('Build daily plan'),
-              ),
-              const PopupMenuItem(
-                value: 'nearby',
-                child: Text('Places nearby'),
-              ),
-              const PopupMenuItem(
-                value: 'book',
-                child: Text('Book travel directly'),
-              ),
-              if (_session != null)
-                const PopupMenuItem(
-                  value: 'forget',
-                  child: Text('Forget conversation'),
+        actions: signedIn
+            ? [
+                IconButton(
+                  tooltip: 'Recent plans',
+                  onPressed: _loading ? null : _recentPlans,
+                  icon: const Icon(Icons.history),
                 ),
-              const PopupMenuItem(
-                value: 'about',
-                child: Text('About AI planning'),
-              ),
-            ],
-          ),
-        ],
+                PopupMenuButton<String>(
+                  tooltip: 'Planner options',
+                  enabled: !_loading,
+                  onSelected: (value) {
+                    switch (value) {
+                      case 'new':
+                        _newChat();
+                      case 'details':
+                        _editBrief(newPlan: _session == null);
+                      case 'daily':
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => StructuredPlanPage(
+                              session: _session,
+                              initialPlace: widget.initialPlace,
+                            ),
+                          ),
+                        );
+                      case 'nearby':
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const NearbyPlacesPage(),
+                          ),
+                        );
+                      case 'book':
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const BookingLinksPage(),
+                          ),
+                        );
+                      case 'forget':
+                        _forgetPlan();
+                      case 'about':
+                        _aiDetails();
+                    }
+                  },
+                  itemBuilder: (_) => [
+                    const PopupMenuItem(value: 'new', child: Text('New chat')),
+                    const PopupMenuItem(
+                      value: 'details',
+                      child: Text('Trip details'),
+                    ),
+                    const PopupMenuItem(
+                      value: 'daily',
+                      child: Text('Build daily plan'),
+                    ),
+                    const PopupMenuItem(
+                      value: 'nearby',
+                      child: Text('Places nearby'),
+                    ),
+                    const PopupMenuItem(
+                      value: 'book',
+                      child: Text('Book travel directly'),
+                    ),
+                    if (_session != null)
+                      const PopupMenuItem(
+                        value: 'forget',
+                        child: Text('Forget conversation'),
+                      ),
+                    const PopupMenuItem(
+                      value: 'about',
+                      child: Text('About AI planning'),
+                    ),
+                  ],
+                ),
+              ]
+            : [],
         elevation: 0,
         backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
       ),
-      bottomNavigationBar: SafeArea(
-        top: false,
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(
-            16,
-            8,
-            16,
-            12 + MediaQuery.viewInsetsOf(context).bottom,
-          ),
-          child: Center(
-            heightFactor: 1,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 700),
-              child: TextField(
-                controller: _controller,
-                enabled: !_loading,
-                minLines: 1,
-                maxLines: 4,
-                textInputAction: TextInputAction.newline,
-                decoration: InputDecoration(
-                  hintText: _lastMessage == null
-                      ? 'Ask Trav to plan a trip…'
-                      : 'Ask a follow-up or change your plans…',
-                  filled: true,
-                  fillColor: AppColors.surface,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(18),
-                    borderSide: BorderSide.none,
-                  ),
-                  contentPadding: const EdgeInsets.all(18),
-                  suffixIcon: _loading
-                      ? const Padding(
-                          padding: EdgeInsets.all(14),
-                          child: SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        )
-                      : IconButton(
-                          tooltip: 'Send message',
-                          style: IconButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: Colors.white,
-                          ),
-                          onPressed: _askAI,
-                          icon: const Icon(Icons.arrow_upward_rounded),
-                        ),
+      bottomNavigationBar: signedIn
+          ? SafeArea(
+              top: false,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  16,
+                  8,
+                  16,
+                  12 + MediaQuery.viewInsetsOf(context).bottom,
                 ),
-                onSubmitted: (_) => _askAI(),
+                child: Center(
+                  heightFactor: 1,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 700),
+                    child: TextField(
+                      controller: _controller,
+                      enabled: !_loading,
+                      minLines: 1,
+                      maxLines: 4,
+                      textInputAction: TextInputAction.newline,
+                      decoration: InputDecoration(
+                        hintText: _lastMessage == null
+                            ? 'Ask Trav to plan a trip…'
+                            : 'Ask a follow-up or change your plans…',
+                        filled: true,
+                        fillColor: AppColors.surface,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(18),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: const EdgeInsets.all(18),
+                        suffixIcon: _loading
+                            ? const Padding(
+                                padding: EdgeInsets.all(14),
+                                child: SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                              )
+                            : IconButton(
+                                tooltip: 'Send message',
+                                style: IconButton.styleFrom(
+                                  backgroundColor: AppColors.primary,
+                                  foregroundColor: Colors.white,
+                                ),
+                                onPressed: _askAI,
+                                icon: const Icon(Icons.arrow_upward_rounded),
+                              ),
+                      ),
+                      onSubmitted: (_) => _askAI(),
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ),
-        ),
-      ),
-      body: Center(
-        child: SingleChildScrollView(
-          controller: _scroll,
-          padding: const EdgeInsets.all(24),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 700),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (_lastMessage == null && _session == null) ...[
-                  const SizedBox(height: 32),
-                  const Icon(
-                    Icons.auto_awesome_rounded,
-                    size: 38,
-                    color: AppColors.primary,
-                  ),
-                  const SizedBox(height: 18),
-                  const Text(
-                    'Where shall we go?',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Start with an idea. We’ll plan it together.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: AppColors.textSecondary),
-                  ),
-                  const SizedBox(height: 24),
-                  Row(
+            )
+          : null,
+      body: signedIn
+          ? Center(
+              child: SingleChildScrollView(
+                controller: _scroll,
+                padding: const EdgeInsets.all(24),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 700),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () => _useSuggestion(
-                            'Help me plan a trip. Ask me what you need to know first.',
-                          ),
-                          icon: const Icon(Icons.route_outlined),
-                          label: const Text('Plan a trip'),
+                      if (_lastMessage == null && _session == null) ...[
+                        const SizedBox(height: 32),
+                        const Icon(
+                          Icons.auto_awesome_rounded,
+                          size: 38,
+                          color: AppColors.primary,
                         ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () => _useSuggestion(
-                            'Help me find places to visit. Ask which area and what I enjoy.',
+                        const SizedBox(height: 18),
+                        const Text(
+                          'Where shall we go?',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.w800,
                           ),
-                          icon: const Icon(Icons.explore_outlined),
-                          label: const Text('Find places'),
                         ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Start with an idea. We’ll plan it together.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: AppColors.textSecondary),
+                        ),
+                        const SizedBox(height: 24),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: () => _useSuggestion(
+                                  'Help me plan a trip. Ask me what you need to know first.',
+                                ),
+                                icon: const Icon(Icons.route_outlined),
+                                label: const Text('Plan a trip'),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: () => _useSuggestion(
+                                  'Help me find places to visit. Ask which area and what I enjoy.',
+                                ),
+                                icon: const Icon(Icons.explore_outlined),
+                                label: const Text('Find places'),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          '${_usage?['remaining'] ?? 5} of 5 AI plans left today',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                      ],
+                      if (widget.initialPlace != null)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Text(
+                            'Planning around ${widget.initialPlace!.name}',
+                          ),
+                        ),
+                      if (_session != null && _lastMessage == null)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: Text(
+                            _session!['title'].toString(),
+                            style: const TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                        ),
+                      for (final turn in _history) ...[
+                        Align(
+                          alignment: turn['role'] == 'user'
+                              ? Alignment.centerRight
+                              : Alignment.centerLeft,
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: turn['role'] == 'user'
+                                  ? AppColors.surfaceVariant
+                                  : AppColors.surface,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: turn['role'] == 'user'
+                                ? Text(turn['content']!)
+                                : TravelMarkdown(content: turn['content']!),
+                          ),
+                        ),
+                      ],
+                      if (_lastMessage != null) ...[
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: Container(
+                            constraints: const BoxConstraints(maxWidth: 520),
+                            padding: const EdgeInsets.all(18),
+                            decoration: BoxDecoration(
+                              color: AppColors.surfaceVariant,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              _lastMessage!,
+                              style: const TextStyle(height: 1.5),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                      if (_loading) const _LoadingCard(),
+
+                      if (_error != null)
+                        _ErrorCard(
+                          message: _error!,
+                          onRetry: () => _askAI(_lastMessage),
+                        ),
+
+                      if (_response != null) ...[
+                        _ResponseCard(response: _response!),
+                        if (_session?['id'] != null)
+                          AIContentReportButton(
+                            sourceKind: 'chat',
+                            referenceId: _session!['id'].toString(),
+                          ),
+                        const SizedBox(height: 16),
+                        if (_response!.metadata['planning_stage'] !=
+                            'questions')
+                          FilledButton.icon(
+                            onPressed: _reviewing ? null : _reviewPlan,
+                            icon: Icon(
+                              _savedTripId == null
+                                  ? Icons.bookmark_add_outlined
+                                  : Icons.luggage_outlined,
+                            ),
+                            label: Text(
+                              _savedTripId == null
+                                  ? 'Review & save to My Trips'
+                                  : 'Open saved trip',
+                            ),
+                          ),
+                        const SizedBox(height: 12),
+                        const Text(
+                          'AI suggestions are a starting point. Check opening hours, prices and travel details before you go.',
+                          style: TextStyle(color: AppColors.textSecondary),
+                        ),
+                      ],
+                      TextButton.icon(
+                        onPressed: _aiDetails,
+                        icon: const Icon(Icons.info_outline, size: 15),
+                        label: const Text('AI can make mistakes · About AI'),
                       ),
+                      const SizedBox(height: 16),
                     ],
                   ),
-                  const SizedBox(height: 24),
-                ],
-                if (widget.initialPlace != null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Text('Planning around ${widget.initialPlace!.name}'),
-                  ),
-                if (_session != null && _lastMessage == null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: Text(
-                      _session!['title'].toString(),
-                      style: const TextStyle(fontWeight: FontWeight.w700),
-                    ),
-                  ),
-                for (final turn in _history) ...[
-                  Align(
-                    alignment: turn['role'] == 'user'
-                        ? Alignment.centerRight
-                        : Alignment.centerLeft,
-                    child: Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: turn['role'] == 'user'
-                            ? AppColors.surfaceVariant
-                            : AppColors.surface,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: turn['role'] == 'user'
-                          ? Text(turn['content']!)
-                          : TravelMarkdown(content: turn['content']!),
-                    ),
-                  ),
-                ],
-                if (_lastMessage != null) ...[
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: Container(
-                      constraints: const BoxConstraints(maxWidth: 520),
-                      padding: const EdgeInsets.all(18),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceVariant,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        _lastMessage!,
-                        style: const TextStyle(height: 1.5),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                ],
-                if (_loading) const _LoadingCard(),
-
-                if (_error != null)
-                  _ErrorCard(
-                    message: _error!,
-                    onRetry: () => _askAI(_lastMessage),
-                  ),
-
-                if (_response != null) ...[
-                  _ResponseCard(response: _response!),
-                  if (_session?['id'] != null)
-                    AIContentReportButton(
-                      sourceKind: 'chat',
-                      referenceId: _session!['id'].toString(),
-                    ),
-                  const SizedBox(height: 16),
-                  if (_response!.metadata['planning_stage'] != 'questions')
-                    FilledButton.icon(
-                      onPressed: _reviewing ? null : _reviewPlan,
-                      icon: Icon(
-                        _savedTripId == null
-                            ? Icons.bookmark_add_outlined
-                            : Icons.luggage_outlined,
-                      ),
-                      label: Text(
-                        _savedTripId == null
-                            ? 'Review & save to My Trips'
-                            : 'Open saved trip',
-                      ),
-                    ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'AI suggestions are a starting point. Check opening hours, prices and travel details before you go.',
-                    style: TextStyle(color: AppColors.textSecondary),
-                  ),
-                ],
-                TextButton.icon(
-                  onPressed: _aiDetails,
-                  icon: const Icon(Icons.info_outline, size: 15),
-                  label: const Text('AI can make mistakes · About AI'),
                 ),
-                const SizedBox(height: 16),
-              ],
+              ),
+            )
+          : Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.auto_awesome_rounded,
+                      size: 40,
+                      color: AppColors.primary,
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Let’s plan your next trip.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Sign in for 5 AI plans per day. You can explore places without signing in.',
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 20),
+                    FilledButton(
+                      onPressed: () => ensureSignedIn(context),
+                      child: const Text('Sign in to plan'),
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
-        ),
-      ),
     );
   }
 }
