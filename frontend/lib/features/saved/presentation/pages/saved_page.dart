@@ -169,7 +169,7 @@ class _SavedPlaceCard extends StatelessWidget {
                 child: place.imageUrl?.isNotEmpty == true
                     ? Image.network(
                         place.imageUrl!,
-                        fit: BoxFit.cover,
+                        fit: BoxFit.contain,
                         errorBuilder: (_, _, _) => const _ImageFallback(),
                       )
                     : const _ImageFallback(),

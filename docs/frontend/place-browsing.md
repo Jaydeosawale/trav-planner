@@ -106,3 +106,23 @@ search retains 14px text and no trailing arrow. The centered indicator row sits
 8px below search and 8px above the banner bottom. Targeted layout tests assert
 both gaps and absence of Choose area at phone, tablet and desktop widths.
 Google Play publication remains disabled by user request; install Trav Test only.
+
+## Build 28: full photos and complete release review
+
+Travel photos in Home, place cards, details, Explore, saved places, flags and admin
+previews preserve the entire supplied image with contain fitting. The old banner
+zoom is removed. Home gives photography its own frame above the caption/search,
+so text no longer covers landmarks. Search still has no arrow; indicators remain
+centered, 8px below it and 8px above the banner bottom.
+
+Retained requirements: four mobile tabs (no Profile), avatar access to account,
+root-level sign-in/register/recovery, successful-login overlay dismissal, personal
+Home versus full Explore, selected-town free-source discovery, conversation-first
+AI with two starting actions, history/advanced tools, final-plan review/save,
+in-app AI reporting, and five completed plans per signed-in account per UTC day.
+Payment remains on supplier sites and existing $0 provider limits are unchanged.
+
+The user authorized Play publication again after installation on the phone. Build
+28 must be installed/opened as Trav Test first, then the production package can be
+submitted. The separately installed older Trav Play app remains unchanged until
+Google approves/distributes the production release.

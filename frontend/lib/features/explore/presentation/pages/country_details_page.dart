@@ -162,7 +162,7 @@ class CountryDetailsPage extends StatelessWidget {
           country.flagUrl!,
           width: 92,
           height: 64,
-          fit: BoxFit.cover,
+          fit: BoxFit.contain,
           errorBuilder: (context, error, stackTrace) {
             return _flagPlaceholder();
           },

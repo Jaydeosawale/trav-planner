@@ -168,7 +168,7 @@ class GlassDestinationCard extends StatelessWidget {
       if (image.startsWith("http://") || image.startsWith("https://")) {
         return Image.network(
           image,
-          fit: BoxFit.cover,
+          fit: BoxFit.contain,
           errorBuilder: (_, __, ___) {
             return _fallbackImage();
           },
@@ -177,7 +177,7 @@ class GlassDestinationCard extends StatelessWidget {
 
       return Image.asset(
         image,
-        fit: BoxFit.cover,
+        fit: BoxFit.contain,
         errorBuilder: (_, __, ___) {
           return _fallbackImage();
         },
@@ -192,7 +192,7 @@ class GlassDestinationCard extends StatelessWidget {
 
     return Image.asset(
       localImage,
-      fit: BoxFit.cover,
+      fit: BoxFit.contain,
       errorBuilder: (_, __, ___) {
         return _fallbackImage();
       },

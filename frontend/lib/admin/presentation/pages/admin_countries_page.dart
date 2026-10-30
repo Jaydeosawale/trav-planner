@@ -636,7 +636,7 @@ class _CountryFlag extends StatelessWidget {
           country.flagUrl!,
           width: size,
           height: size * .7,
-          fit: BoxFit.cover,
+          fit: BoxFit.contain,
           errorBuilder: (context, error, stackTrace) {
             return _fallback();
           },

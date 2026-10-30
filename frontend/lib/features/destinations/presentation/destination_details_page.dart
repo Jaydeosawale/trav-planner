@@ -840,7 +840,7 @@ class _PlaceImage extends StatelessWidget {
             url!,
             height: height,
             width: double.infinity,
-            fit: BoxFit.cover,
+            fit: BoxFit.contain,
             webHtmlElementStrategy: WebHtmlElementStrategy.fallback,
             errorBuilder: (_, _, _) => fallback,
           )

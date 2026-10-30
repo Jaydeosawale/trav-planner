@@ -285,7 +285,7 @@ class _AdminDestinationPhotosPageState
                 height: 220,
                 child: Image.network(
                   photo.imageUrl,
-                  fit: BoxFit.cover,
+                  fit: BoxFit.contain,
                   errorBuilder: (_, _, _) {
                     return _imagePlaceholder();
                   },

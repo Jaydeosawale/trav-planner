@@ -95,7 +95,7 @@ class MyTripsPage extends ConsumerWidget {
                                   'assets/images/destinations/switzerland_1.jpg',
                                   height: 180,
                                   width: double.infinity,
-                                  fit: BoxFit.cover,
+                                  fit: BoxFit.contain,
                                 ),
                               ),
                               const SizedBox(height: 16),

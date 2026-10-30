@@ -767,7 +767,7 @@ class _AdminDestinationsPageState extends State<AdminDestinationsPage> {
 
     return Image.network(
       normalizedUrl,
-      fit: BoxFit.cover,
+      fit: BoxFit.contain,
       loadingBuilder: (context, child, loadingProgress) {
         if (loadingProgress == null) {
           return child;

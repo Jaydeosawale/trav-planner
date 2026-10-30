@@ -633,7 +633,7 @@ class _AdminPlacesPageState extends State<AdminPlacesPage> {
 
     return Image.network(
       imageUrl,
-      fit: BoxFit.cover,
+      fit: BoxFit.contain,
       errorBuilder: (context, error, stackTrace) {
         return Container(
           color: AppColors.surfaceVariant,

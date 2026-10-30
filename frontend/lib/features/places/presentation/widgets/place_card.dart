@@ -142,7 +142,7 @@ class PlacePhoto extends StatelessWidget {
     return url?.startsWith('http') == true
         ? Image.network(
             url!,
-            fit: BoxFit.cover,
+            fit: BoxFit.contain,
             semanticLabel: 'Photo of ${place.name}',
             cacheWidth: 1000,
             frameBuilder: (context, child, frame, sync) => sync || frame != null

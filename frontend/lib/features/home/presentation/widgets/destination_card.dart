@@ -30,7 +30,7 @@ class DestinationCard extends StatelessWidget {
                 Positioned.fill(
                   child: Hero(
                     tag: place,
-                    child: Image.asset(image, fit: BoxFit.cover),
+                    child: Image.asset(image, fit: BoxFit.contain),
                   ),
                 ),
 

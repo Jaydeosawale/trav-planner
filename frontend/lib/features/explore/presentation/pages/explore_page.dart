@@ -1031,7 +1031,7 @@ class _CountryCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(15),
                         child: Image.network(
                           country.flagUrl!,
-                          fit: BoxFit.cover,
+                          fit: BoxFit.contain,
                           errorBuilder: (context, error, stackTrace) {
                             return const Icon(
                               Icons.public_rounded,

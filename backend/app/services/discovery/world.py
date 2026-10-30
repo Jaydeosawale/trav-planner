@@ -771,7 +771,7 @@ async def photo(db, ident):
                         or "https://creativecommons.org/publicdomain/mark/1.0/",
                         "source_url": info["descriptionurl"],
                         "attribution": plain("Attribution"),
-                        "changes": "Wikimedia thumbnail; resized and cropped for display",
+                        "changes": "Wikimedia thumbnail; resized for display",
                     }
                 )
         except Exception:

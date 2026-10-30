@@ -33,7 +33,7 @@ class TravelInspirationGrid extends StatelessWidget {
                   children: [
                     Image.asset(
                       'assets/images/destinations/${place.$3}_1.jpg',
-                      fit: BoxFit.cover,
+                      fit: BoxFit.contain,
                     ),
                     const DecoratedBox(
                       decoration: BoxDecoration(
