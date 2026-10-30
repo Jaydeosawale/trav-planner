@@ -1,3 +1,4 @@
+import 'features/places/data/location_memory.dart';
 import 'widgets/web_play_store_frame.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,6 +24,7 @@ class TravPlannerApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(locationMemoryProvider);
     if (Uri.base.fragment.startsWith('reset_token=')) {
       return MaterialApp(
         title: 'Trav Planner',

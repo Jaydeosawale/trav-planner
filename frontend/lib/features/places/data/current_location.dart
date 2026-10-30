@@ -56,7 +56,8 @@ class CurrentLocationService {
         deviceLocationSettings: true,
       );
     }
-    // Approximate position only; no background tracking or persistent storage.
+    // Approximate position only; callers may remember the area on this device.
+    // No background tracking is started.
     return LatLng(
       double.parse(fix.latitude.toStringAsFixed(3)),
       double.parse(fix.longitude.toStringAsFixed(3)),

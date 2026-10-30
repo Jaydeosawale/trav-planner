@@ -97,7 +97,7 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
       builder: (dialogContext) => AlertDialog(
         title: const Text('Plan around you?'),
         content: const Text(
-          'Share your approximate current location with Trav and its AI provider for nearby ideas. It stays in this app session. You can remove it anytime or enter a town instead.',
+          'Share your approximate location with Trav’s AI provider for nearby ideas. Remember this area and AI sharing on this device until you change or remove it. You can enter a town instead.',
         ),
         actions: [
           TextButton(
@@ -117,13 +117,10 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
     try {
       final position = await ref.read(currentLocationServiceProvider).request();
       if (!mounted || account != ref.read(authProvider).user?.id) return;
+      ref.read(chosenPlaceAreaProvider.notifier).state = null;
       ref.read(nearbyOriginProvider.notifier).state = position;
       ref.read(aiLocationEnabledProvider.notifier).state = true;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Location shared. Try “Plan a day near me”.'),
-        ),
-      );
+      ScaffoldMessenger.of(context).clearSnackBars();
     } catch (error) {
       if (!mounted) return;
       ref.read(aiLocationEnabledProvider.notifier).state = false;

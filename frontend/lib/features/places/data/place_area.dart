@@ -1,3 +1,4 @@
+import '../../auth/presentation/providers/auth_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/api_client.dart';
@@ -33,7 +34,10 @@ class PlaceArea {
   );
 }
 
-final chosenPlaceAreaProvider = StateProvider<PlaceArea?>((ref) => null);
+final chosenPlaceAreaProvider = StateProvider<PlaceArea?>((ref) {
+  ref.watch(authProvider.select((s) => s.user?.id));
+  return null;
+});
 final placeAreaApiProvider = Provider<PlaceAreaApi>((ref) => PlaceAreaApi());
 
 class PlaceAreaSearch {

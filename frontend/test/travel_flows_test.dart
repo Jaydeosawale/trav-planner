@@ -226,7 +226,7 @@ void main() {
       ),
     );
     await tester.enterText(find.byType(TextField), 'Pune');
-    await tester.tap(find.text('Find location'));
+    await tester.tap(find.byTooltip('Find location'));
     await tester.pumpAndSettle();
     expect(find.text('Pune district town'), findsOneWidget);
     expect(find.text('Maharashtra · India'), findsNWidgets(2));
