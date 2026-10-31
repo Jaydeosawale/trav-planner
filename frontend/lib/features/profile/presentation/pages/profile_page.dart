@@ -1,3 +1,7 @@
+import '../../../places/data/location_memory.dart';
+import '../../../places/data/place_area.dart';
+import '../../../places/data/nearby_origin.dart';
+import '../../../explore/presentation/pages/nearby_places_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:trav_planner/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
@@ -16,6 +20,8 @@ class ProfilePage extends ConsumerWidget {
     final authState = ref.watch(authProvider);
 
     final user = authState.user;
+    final area = ref.watch(chosenPlaceAreaProvider);
+    final gps = ref.watch(nearbyOriginProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -30,161 +36,225 @@ class ProfilePage extends ConsumerWidget {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 10, 20, 40),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ========================================================
-            // Profile Header
-            // ========================================================
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 800),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ========================================================
+                // Profile Header
+                // ========================================================
 
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [AppColors.surfaceVariant, AppColors.surfaceVariant],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(28),
-              ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 34,
-                    backgroundColor: AppColors.surface,
-                    child: Text(
-                      _initials(user?.fullName ?? 'Trav Planner'),
-                      style: const TextStyle(
-                        color: AppColors.primary,
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
-                      ),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [
+                        AppColors.surfaceVariant,
+                        AppColors.surfaceVariant,
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
+                    borderRadius: BorderRadius.circular(28),
                   ),
-
-                  const SizedBox(width: 18),
-
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          user?.fullName ?? 'Trav Planner',
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 34,
+                        backgroundColor: AppColors.surface,
+                        child: Text(
+                          _initials(user?.fullName ?? 'Guest traveler'),
                           style: const TextStyle(
-                            color: AppColors.textPrimary,
-                            fontSize: 21,
+                            color: AppColors.primary,
+                            fontSize: 22,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
+                      ),
 
-                        const SizedBox(height: 5),
+                      const SizedBox(width: 18),
 
-                        Text(
-                          user?.email ?? '',
-                          style: const TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 14,
-                          ),
-                          overflow: TextOverflow.ellipsis,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              user?.fullName ?? 'Guest traveler',
+                              style: const TextStyle(
+                                color: AppColors.textPrimary,
+                                fontSize: 21,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+
+                            const SizedBox(height: 5),
+
+                            Text(
+                              user?.email ?? 'Sign in to save your plans',
+                              style: const TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 14,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 30),
+
+                // ========================================================
+                // Account
+                // ========================================================
+                const Text(
+                  'Account',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                _ProfileMenuItem(
+                  icon: Icons.bookmark_border_rounded,
+                  title: 'Saved places',
+                  subtitle: 'Keep inspiration for your next trip',
+                  onTap: () => Navigator.of(
+                    context,
+                  ).push(MaterialPageRoute(builder: (_) => const SavedPage())),
+                ),
+
+                const SizedBox(height: 26),
+
+                // ========================================================
+                // Travel
+                // ========================================================
+                const Text(
+                  'Travel',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                _ProfileMenuItem(
+                  icon: Icons.travel_explore_rounded,
+                  title: 'Travel Preferences',
+                  subtitle: 'Customize your travel experience',
+                  onTap: () async {
+                    if (!await ensureSignedIn(context, ref) ||
+                        !context.mounted) {
+                      return;
+                    }
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const TravelPreferencesPage(),
+                      ),
+                    );
+                  },
+                ),
+
+                if (user != null && (area != null || gps != null))
+                  _ProfileMenuItem(
+                    icon: Icons.location_on_outlined,
+                    title: 'Saved area',
+                    subtitle: area?.name ?? 'Saved GPS area',
+                    onTap: () => showModalBottomSheet<void>(
+                      context: context,
+                      useSafeArea: true,
+                      showDragHandle: true,
+                      builder: (sheetContext) => Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text(
+                              area?.name ?? 'Saved GPS area',
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
+                            const SizedBox(height: 12),
+                            FilledButton(
+                              onPressed: () {
+                                Navigator.pop(sheetContext);
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => const NearbyPlacesPage(),
+                                  ),
+                                );
+                              },
+                              child: const Text('Explore or change area'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                ref
+                                    .read(forgetSavedAreaProvider.notifier)
+                                    .state++;
+                                Navigator.pop(sheetContext);
+                              },
+                              child: const Text('Forget saved area'),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 30),
-
-            // ========================================================
-            // Account
-            // ========================================================
-            const Text(
-              'Account',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-                color: AppColors.textPrimary,
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            _ProfileMenuItem(
-              icon: Icons.bookmark_border_rounded,
-              title: 'Saved places',
-              subtitle: 'Keep inspiration for your next trip',
-              onTap: () => Navigator.of(
-                context,
-              ).push(MaterialPageRoute(builder: (_) => const SavedPage())),
-            ),
-
-            const SizedBox(height: 26),
-
-            // ========================================================
-            // Travel
-            // ========================================================
-            const Text(
-              'Travel',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-                color: AppColors.textPrimary,
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            _ProfileMenuItem(
-              icon: Icons.travel_explore_rounded,
-              title: 'Travel Preferences',
-              subtitle: 'Customize your travel experience',
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const TravelPreferencesPage(),
+                _ProfileMenuItem(
+                  icon: Icons.privacy_tip_outlined,
+                  title: 'Privacy policy',
+                  subtitle: 'How Trav handles your data',
+                  onTap: () => _openPolicy(context, 'privacy'),
                 ),
-              ),
-            ),
-
-            _ProfileMenuItem(
-              icon: Icons.privacy_tip_outlined,
-              title: 'Privacy policy',
-              subtitle: 'How Trav handles your data',
-              onTap: () => _openPolicy(context, 'privacy'),
-            ),
-            _ProfileMenuItem(
-              icon: Icons.person_remove_outlined,
-              title: 'Delete account and data',
-              subtitle: 'Request permanent removal of your account',
-              onTap: () => _openPolicy(context, 'delete-account'),
-            ),
-
-            const SizedBox(height: 30),
-
-            // ========================================================
-            // Logout
-            // ========================================================
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: () => _logout(context, ref),
-                icon: const Icon(Icons.logout_rounded),
-                label: const Text(
-                  'Logout',
-                  style: TextStyle(fontWeight: FontWeight.w700),
+                _ProfileMenuItem(
+                  icon: Icons.person_remove_outlined,
+                  title: 'Delete account and data',
+                  subtitle: 'Request permanent removal of your account',
+                  onTap: () => _openPolicy(context, 'delete-account'),
                 ),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.error,
-                  side: BorderSide(color: AppColors.errorContainer),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(18),
-                  ),
+
+                const SizedBox(height: 30),
+
+                // ========================================================
+                // Logout
+                // ========================================================
+                SizedBox(
+                  width: double.infinity,
+                  child: user == null
+                      ? FilledButton(
+                          onPressed: () => ensureSignedIn(context, ref),
+                          child: const Text('Sign in'),
+                        )
+                      : OutlinedButton.icon(
+                          onPressed: () => _logout(context, ref),
+                          icon: const Icon(Icons.logout_rounded),
+                          label: const Text(
+                            'Logout',
+                            style: TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.error,
+                            side: BorderSide(color: AppColors.errorContainer),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                          ),
+                        ),
                 ),
-              ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

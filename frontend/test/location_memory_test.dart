@@ -155,4 +155,25 @@ void main() {
     await flushMemory();
     expect(store.rows['one'], isNull);
   });
+  test(
+    'Forgetting an area clears its queued storage and sharing without touching another account',
+    () async {
+      final store = MemoryLocations();
+      store.rows['two'] = {'mode': 'gps', 'latitude': 40.0, 'longitude': 50.0};
+      final container = memoryContainer(store);
+      addTearDown(container.dispose);
+      container.read(nearbyOriginProvider.notifier).state = const LatLng(
+        18.52,
+        73.85,
+      );
+      container.read(aiLocationEnabledProvider.notifier).state = true;
+      container.read(forgetSavedAreaProvider.notifier).state++;
+      await flushMemory();
+      expect(container.read(chosenPlaceAreaProvider), isNull);
+      expect(container.read(nearbyOriginProvider), isNull);
+      expect(container.read(aiLocationEnabledProvider), isFalse);
+      expect(store.rows['one'], isNull);
+      expect(store.rows['two'], isNotNull);
+    },
+  );
 }

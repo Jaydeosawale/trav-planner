@@ -1,3 +1,4 @@
+import 'package:trav_planner/features/explore/presentation/providers/explore_provider.dart';
 import 'package:trav_planner/features/auth/presentation/providers/auth_provider.dart';
 import 'saved_places_test.dart' show TestAuth;
 import 'package:flutter/material.dart';
@@ -236,6 +237,7 @@ void main() {
             (ref) => const PlaceArea(cityId: 'wai', name: 'Wai'),
           ),
           placeAreaApiProvider.overrideWithValue(PlaceAreaApi(client: dio)),
+          exploreCountriesProvider.overrideWith((ref) async => []),
           placeCatalogueProvider.overrideWith(
             (ref, q) async => const PlaceResults(items: [], total: 0, pages: 0),
           ),
@@ -253,7 +255,10 @@ void main() {
     await tester.pumpAndSettle();
     expect(calls, hasLength(2));
     expect(calls.last.queryParameters['kind'], 'restaurant');
-    await tester.tap(find.text('Photos only'));
+    await tester.tap(find.text('Filters'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(SwitchListTile));
+    await tester.tap(find.text('Show places'));
     await tester.pumpAndSettle();
     expect(
       calls,

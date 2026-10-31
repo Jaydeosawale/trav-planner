@@ -76,7 +76,7 @@ class PlaceDetailsPage extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   place.name,
-                  style: Theme.of(context).textTheme.headlineMedium,
+                  style: Theme.of(context).textTheme.headlineSmall,
                 ),
                 const SizedBox(height: 16),
                 Wrap(

@@ -16,14 +16,20 @@ final itineraryProvider =
     });
 
 class ItineraryPage extends ConsumerStatefulWidget {
-  const ItineraryPage({super.key, required this.tripId});
+  const ItineraryPage({
+    super.key,
+    required this.tripId,
+    this.initialMap = false,
+  });
   final String tripId;
+  final bool initialMap;
   @override
   ConsumerState<ItineraryPage> createState() => _ItineraryPageState();
 }
 
 class _ItineraryPageState extends ConsumerState<ItineraryPage> {
-  bool _busy = false, _map = false;
+  bool _busy = false;
+  late bool _map = widget.initialMap;
   Future<void> _change(Future<void> Function(ItineraryApi) action) async {
     if (_busy) return;
     setState(() => _busy = true);
@@ -203,7 +209,11 @@ class _ItineraryPageState extends ConsumerState<ItineraryPage> {
           data: (trip) => RefreshIndicator(
             onRefresh: () async {
               ref.invalidate(itineraryProvider(widget.tripId));
-              await ref.read(itineraryProvider(widget.tripId).future);
+              try {
+                await ref.read(itineraryProvider(widget.tripId).future);
+              } catch (_) {
+                /* Retry is shown in the plan. */
+              }
             },
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),

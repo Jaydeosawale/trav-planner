@@ -1,3 +1,4 @@
+import '../../../places/data/place_catalogue.dart';
 import 'package:trav_planner/core/widgets/full_photo_frame.dart';
 import '../../../../app/router/navigation_actions.dart';
 import 'package:flutter/material.dart';
@@ -50,16 +51,11 @@ class _SavedPageState extends ConsumerState<SavedPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(
-                      'Keep a little inspiration.',
-                      style: Theme.of(context).textTheme.headlineMedium,
-                    ),
-                    const SizedBox(height: 8),
                     const Text(
-                      'Your favorite places, ready for your next adventure.',
+                      'Your places, ready for the next adventure.',
                       style: TextStyle(color: AppColors.textSecondary),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
                     if (!authenticated)
                       _Message(
                         text:
@@ -192,7 +188,7 @@ class _SavedPlaceCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 5),
                   Text(
-                    place.type.replaceAll('_', ' '),
+                    placeTypeLabel(place.type),
                     style: const TextStyle(color: AppColors.secondary),
                   ),
                   if (place.address?.isNotEmpty == true)

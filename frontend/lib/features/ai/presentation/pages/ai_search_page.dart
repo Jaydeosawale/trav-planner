@@ -65,6 +65,7 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
     }
   }
 
+  int _requestEpoch = 0;
   bool _locating = false;
   bool _loading = false;
   bool _authorizing = false;
@@ -168,6 +169,8 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
     }
 
     FocusScope.of(context).unfocus();
+    final epoch = ++_requestEpoch;
+    final account = ref.read(authProvider).user?.id;
 
     setState(() {
       if (_response != null && _lastMessage != null) {
@@ -198,6 +201,10 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
               }
             : null,
       );
+      if (!mounted ||
+          epoch != _requestEpoch ||
+          account != ref.read(authProvider).user?.id)
+        return;
       Map<String, dynamic>? refreshed;
       final sessionId =
           _session?['id']?.toString() ??
@@ -208,7 +215,9 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
         } catch (_) {}
       }
 
-      if (!mounted) {
+      if (!mounted ||
+          epoch != _requestEpoch ||
+          account != ref.read(authProvider).user?.id) {
         return;
       }
 
@@ -237,7 +246,9 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
         }
       });
     } catch (error) {
-      if (!mounted) {
+      if (!mounted ||
+          epoch != _requestEpoch ||
+          account != ref.read(authProvider).user?.id) {
         return;
       }
 
@@ -248,7 +259,7 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
             : 'Couldn’t send the message. Please retry.';
       });
     } finally {
-      if (mounted) {
+      if (mounted && epoch == _requestEpoch) {
         setState(() {
           _loading = false;
         });
@@ -261,13 +272,18 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
     if (_loading) return;
     if (widget.api == null && !await ensureSignedIn(context)) return;
     if (!mounted) return;
+    final account = ref.read(authProvider).user?.id;
+    final epoch = _requestEpoch;
     final result = await Navigator.of(context).push<Map<String, dynamic>>(
       MaterialPageRoute(
         builder: (_) =>
             TripBriefPage(api: _api, session: newPlan ? null : _session),
       ),
     );
-    if (mounted && result != null) {
+    if (mounted &&
+        result != null &&
+        epoch == _requestEpoch &&
+        account == ref.read(authProvider).user?.id) {
       setState(() {
         _session = result;
         if (newPlan) {
@@ -286,9 +302,10 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
     if (_loading) return;
     if (widget.api == null && !await ensureSignedIn(context)) return;
     if (!mounted) return;
+    final account = ref.read(authProvider).user?.id;
     try {
       final plans = await _api.sessions();
-      if (!mounted) return;
+      if (!mounted || account != ref.read(authProvider).user?.id) return;
       final id = await showDialog<String>(
         context: context,
         builder: (context) => SimpleDialog(
@@ -311,9 +328,10 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
                     .toList(),
         ),
       );
-      if (id == null) return;
+      if (id == null || !mounted || account != ref.read(authProvider).user?.id)
+        return;
       final saved = await _api.session(id);
-      if (!mounted) return;
+      if (!mounted || account != ref.read(authProvider).user?.id) return;
       final turns = saved['turns'] as List? ?? [];
       setState(() {
         _session = saved;
@@ -347,7 +365,7 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
             : null;
       });
     } catch (_) {
-      if (mounted) {
+      if (mounted && account == ref.read(authProvider).user?.id) {
         setState(
           () => _error = 'Couldn’t reopen your plans. Please try again.',
         );
@@ -357,6 +375,9 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
 
   Future<void> _forgetPlan() async {
     if (_session == null || _loading) return;
+    final account = ref.read(authProvider).user?.id;
+    final sessionId = _session!['id'].toString();
+    final epoch = _requestEpoch;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -376,10 +397,16 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
         ],
       ),
     );
-    if (confirmed != true) return;
+    if (confirmed != true ||
+        !mounted ||
+        epoch != _requestEpoch ||
+        account != ref.read(authProvider).user?.id)
+      return;
     try {
-      await _api.forgetSession(_session!['id'].toString());
-      if (mounted) {
+      await _api.forgetSession(sessionId);
+      if (mounted &&
+          epoch == _requestEpoch &&
+          account == ref.read(authProvider).user?.id) {
         setState(() {
           _session = null;
           _history.clear();
@@ -391,7 +418,9 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
         });
       }
     } catch (_) {
-      if (mounted) {
+      if (mounted &&
+          epoch == _requestEpoch &&
+          account == ref.read(authProvider).user?.id) {
         setState(
           () => _error = 'Couldn’t forget this conversation. Please try again.',
         );
@@ -407,17 +436,27 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
       );
       return;
     }
+    final account = ref.read(authProvider).user?.id;
+    final epoch = _requestEpoch;
     setState(() => _reviewing = true);
     try {
       final trip = await Navigator.of(context).push<Map<String, dynamic>>(
         MaterialPageRoute(
           builder: (_) => TripEditorPage(
+            initialBrief: _session?['brief'] is Map
+                ? Map<String, dynamic>.from(_session!['brief'])
+                : null,
+            draftTitle: _session?['title']?.toString(),
             draftNotes:
                 'AI travel draft — check details before travel.\n\n${_response!.content}',
           ),
         ),
       );
-      if (!mounted || trip == null) return;
+      if (!mounted ||
+          trip == null ||
+          epoch != _requestEpoch ||
+          account != ref.read(authProvider).user?.id)
+        return;
       final container = ProviderScope.containerOf(context, listen: false);
       container.read(tripPageProvider.notifier).state = 1;
       container.invalidate(myTripsProvider);
@@ -426,7 +465,7 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
         context,
       ).showSnackBar(const SnackBar(content: Text('Draft saved to My Trips.')));
     } finally {
-      if (mounted) setState(() => _reviewing = false);
+      if (mounted && epoch == _requestEpoch) setState(() => _reviewing = false);
     }
   }
 
@@ -440,6 +479,9 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
   }
 
   void _newChat() => setState(() {
+    _requestEpoch++;
+    _loading = false;
+    _reviewing = false;
     _session = null;
     _history.clear();
     _response = null;
@@ -467,6 +509,17 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(authProvider.select((state) => state.user?.id), (
+      previous,
+      next,
+    ) {
+      if (previous == next) return;
+      if (previous != null) _newChat();
+      setState(() => _usage = null);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _loadUsage();
+      });
+    });
     final signedIn =
         widget.api != null || ref.watch(authProvider).isAuthenticated;
     return Scaffold(
@@ -723,7 +776,9 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
                         ),
                         const SizedBox(height: 12),
                         Text(
-                          '${_usage?['remaining'] ?? 5} of 5 AI plans left today',
+                          _usage == null
+                              ? 'Up to 5 AI plans per day'
+                              : '${_usage!['remaining']} of 5 AI plans left today',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 12,
@@ -802,7 +857,8 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
                           ),
                         const SizedBox(height: 16),
                         if (_response!.metadata['planning_stage'] !=
-                            'questions')
+                                'questions' &&
+                            _response!.metadata['planning_stage'] != 'answer')
                           FilledButton.icon(
                             onPressed: _reviewing ? null : _reviewPlan,
                             icon: Icon(
@@ -816,11 +872,37 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
                                   : 'Open saved trip',
                             ),
                           ),
-                        const SizedBox(height: 12),
-                        const Text(
-                          'AI suggestions are a starting point. Check opening hours, prices and travel details before you go.',
-                          style: TextStyle(color: AppColors.textSecondary),
-                        ),
+                        if (_response!.metadata['planning_stage'] ==
+                            'plan') ...[
+                          const SizedBox(height: 12),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              for (final suggestion in [
+                                'Less walking',
+                                'Lower budget',
+                                'More local food',
+                              ])
+                                ActionChip(
+                                  label: Text(suggestion),
+                                  onPressed: _loading
+                                      ? null
+                                      : () => _askAI(
+                                          '$suggestion. Update the current plan using what I already shared.',
+                                        ),
+                                ),
+                            ],
+                          ),
+                        ],
+                        if (_response!.metadata['planning_stage'] !=
+                            'questions') ...[
+                          const SizedBox(height: 12),
+                          const Text(
+                            'AI suggestions are a starting point. Check opening hours, prices and travel details before you go.',
+                            style: TextStyle(color: AppColors.textSecondary),
+                          ),
+                        ],
                       ],
                       TextButton.icon(
                         onPressed: _aiDetails,
@@ -833,37 +915,50 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
                 ),
               ),
             )
-          : Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.auto_awesome_rounded,
-                      size: 40,
-                      color: AppColors.primary,
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Let’s plan your next trip.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w700,
+          : Align(
+              alignment: Alignment.topCenter,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(24, 40, 24, 24),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 540),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.auto_awesome_rounded,
+                        size: 40,
+                        color: AppColors.primary,
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    const Text(
-                      'Sign in for 5 AI plans per day. You can explore places without signing in.',
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 20),
-                    FilledButton(
-                      onPressed: () => ensureSignedIn(context),
-                      child: const Text('Sign in to plan'),
-                    ),
-                  ],
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Let’s plan your next trip.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Sign in for 5 AI plans per day. You can explore places without signing in.',
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 20),
+                      FilledButton(
+                        onPressed: () => ensureSignedIn(context),
+                        child: const Text('Sign in to plan'),
+                      ),
+                      const SizedBox(height: 24),
+                      const Text(
+                        'Start with a destination. Refine dates, budget and pace whenever you’re ready.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

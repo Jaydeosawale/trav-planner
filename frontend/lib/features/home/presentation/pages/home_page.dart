@@ -178,17 +178,40 @@ class _HomeShortcuts extends ConsumerWidget {
       ('Saved', Icons.bookmark_border, const SavedPage()),
     ];
     final large = MediaQuery.textScalerOf(context).scale(14) > 21;
+    final compact = MediaQuery.sizeOf(context).width < 360 && !large;
     final children = actions
         .map(
-          (action) => OutlinedButton.icon(
+          (action) => OutlinedButton(
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
             ),
             onPressed: () => Navigator.of(
               context,
             ).push(MaterialPageRoute(builder: (_) => action.$3)),
-            icon: Icon(action.$2, size: 17),
-            label: Text(action.$1),
+            child: Flex(
+              direction: compact ? Axis.vertical : Axis.horizontal,
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(action.$2, size: 17),
+                SizedBox(width: compact ? 0 : 6, height: compact ? 5 : 0),
+                if (compact)
+                  Text(
+                    action.$1,
+                    maxLines: 1,
+                    style: const TextStyle(fontSize: 14),
+                  )
+                else
+                  Flexible(
+                    child: Text(
+                      action.$1,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                  ),
+              ],
+            ),
           ),
         )
         .toList();

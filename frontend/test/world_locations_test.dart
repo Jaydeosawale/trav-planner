@@ -83,7 +83,7 @@ void main() {
       '/discovery/locations/123/open',
       '/discovery/cities/resolved',
     ]);
-    expect(find.text('Find your kind of Panchgani.'), findsOneWidget);
+    expect(find.text('Panchgani'), findsWidgets);
     expect(tester.takeException(), isNull);
   });
 }

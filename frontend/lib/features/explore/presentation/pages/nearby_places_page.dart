@@ -199,13 +199,14 @@ class _NearbyPlacesPageState extends ConsumerState<NearbyPlacesPage> {
   Future<void> _gps() async {
     if (_busy) return;
     if (!await ensureSignedIn(context, ref) || !mounted) return;
+    final account = ref.read(authProvider).user?.id;
     setState(() {
       _busy = true;
       _notice = null;
     });
     try {
       final p = await ref.read(currentLocationServiceProvider).request();
-      if (!mounted) return;
+      if (!mounted || account != ref.read(authProvider).user?.id) return;
       ScaffoldMessenger.of(context).clearSnackBars();
       ref.read(chosenPlaceAreaProvider.notifier).state = null;
       ref.read(nearbyOriginProvider.notifier).state = LatLng(
@@ -254,7 +255,9 @@ class _NearbyPlacesPageState extends ConsumerState<NearbyPlacesPage> {
   Future<void> _search() async {
     if (_origin == null) return;
     if (!await ensureSignedIn(context, ref)) return;
-    if (!mounted) return;
+    if (!mounted || _origin == null) return;
+    final account = ref.read(authProvider).user?.id;
+    final origin = _origin!;
     setState(() {
       _busy = true;
       _notice = null;
@@ -263,14 +266,16 @@ class _NearbyPlacesPageState extends ConsumerState<NearbyPlacesPage> {
       final r = await _client.post(
         '/discovery/nearby',
         data: {
-          'latitude': _origin!.latitude,
-          'longitude': _origin!.longitude,
+          'latitude': origin.latitude,
+          'longitude': origin.longitude,
           'radius_km': _radius,
           'kind': _kind,
         },
         options: Options(receiveTimeout: const Duration(seconds: 75)),
       );
-      if (mounted) {
+      if (mounted &&
+          account == ref.read(authProvider).user?.id &&
+          origin == _origin) {
         setState(() {
           _items = (r.data['items'] as List)
               .map((e) => Map<String, dynamic>.from(e))
@@ -281,7 +286,9 @@ class _NearbyPlacesPageState extends ConsumerState<NearbyPlacesPage> {
         });
       }
     } catch (error) {
-      if (mounted) {
+      if (mounted &&
+          account == ref.read(authProvider).user?.id &&
+          origin == _origin) {
         setState(
           () => _notice =
               error is DioException && error.response?.statusCode == 401

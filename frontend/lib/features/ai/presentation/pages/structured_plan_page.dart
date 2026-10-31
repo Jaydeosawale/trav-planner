@@ -1,3 +1,4 @@
+import '../../../../core/theme/app_colors.dart';
 import 'package:trav_planner/core/widgets/ai_content_report_button.dart';
 import '../../../auth/presentation/widgets/require_sign_in.dart';
 import 'planning_brief_values.dart';
@@ -40,6 +41,8 @@ class _StructuredPlanPageState extends ConsumerState<StructuredPlanPage> {
   DateTime _start = DateUtils.dateOnly(DateTime.now()),
       _end = DateUtils.dateOnly(DateTime.now()).add(const Duration(days: 2));
   String _currency = 'INR';
+  bool _currencyExplicit = false;
+  bool _startAssumed = true, _endAssumed = true;
   Map<String, dynamic>? _city, _draft;
   List<Map<String, dynamic>> _cities = [];
   final Set<String> _selected = {};
@@ -55,18 +58,18 @@ class _StructuredPlanPageState extends ConsumerState<StructuredPlanPage> {
     _query.text =
         b?['destination']?.toString() ?? widget.initialPlace?.cityName ?? '';
     _travelers.text = values.travelers;
-    if (values.start != null) _start = values.start!;
-    if (values.end != null) _end = values.end!;
-    if ([
-      'INR',
-      'USD',
-      'EUR',
-      'GBP',
-      'JPY',
-      'AUD',
-      'CAD',
-    ].contains(values.currency)) {
+    if (values.start != null) {
+      _start = values.start!;
+      _startAssumed = false;
+    }
+    if (values.end != null) {
+      _end = values.end!;
+      _endAssumed = false;
+    }
+    if (values.currency != null &&
+        RegExp(r'^[A-Z]{3}$').hasMatch(values.currency!)) {
       _currency = values.currency!;
+      _currencyExplicit = true;
     }
     _budget.text = values.amount ?? '';
     _preferences.text = [
@@ -100,9 +103,14 @@ class _StructuredPlanPageState extends ConsumerState<StructuredPlanPage> {
       setState(() {
         if (start) {
           _start = d;
-          if (_end.isBefore(d)) _end = d;
+          _startAssumed = false;
+          if (_end.isBefore(d)) {
+            _end = d;
+            _endAssumed = true;
+          }
         } else {
           _end = d;
+          _endAssumed = false;
         }
       });
     }
@@ -158,6 +166,12 @@ class _StructuredPlanPageState extends ConsumerState<StructuredPlanPage> {
       if (mounted) {
         setState(() {
           _city = c;
+          final currency = c['currency']?.toString().toUpperCase();
+          if (!_currencyExplicit &&
+              currency != null &&
+              RegExp(r'^[A-Z]{3}$').hasMatch(currency)) {
+            _currency = currency;
+          }
           _query.text = c['name'].toString();
           _cities = [];
         });
@@ -569,6 +583,17 @@ class _StructuredPlanPageState extends ConsumerState<StructuredPlanPage> {
                           onTap: _busy ? null : () => _choose(c),
                         ),
                       if (_city != null) Text('Selected: ${_city!['name']}'),
+                      if (_startAssumed || _endAssumed)
+                        const Padding(
+                          padding: EdgeInsets.only(top: 8, bottom: 4),
+                          child: Text(
+                            'Draft dates · change to match your trip.',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ),
                       Wrap(
                         spacing: 8,
                         children: [
@@ -597,18 +622,35 @@ class _StructuredPlanPageState extends ConsumerState<StructuredPlanPage> {
                         },
                       ),
                       DropdownButtonFormField<String>(
+                        key: ValueKey('planner-currency-$_currency'),
                         initialValue: _currency,
                         decoration: const InputDecoration(
                           labelText: 'Budget currency',
                         ),
-                        items: ['INR', 'USD', 'EUR', 'GBP', 'AUD', 'CAD', 'JPY']
-                            .map(
-                              (c) => DropdownMenuItem(value: c, child: Text(c)),
-                            )
-                            .toList(),
+                        items:
+                            {
+                                  'INR',
+                                  'USD',
+                                  'EUR',
+                                  'GBP',
+                                  'AUD',
+                                  'CAD',
+                                  'JPY',
+                                  _currency,
+                                }
+                                .map(
+                                  (c) => DropdownMenuItem(
+                                    value: c,
+                                    child: Text(c),
+                                  ),
+                                )
+                                .toList(),
                         onChanged: _busy
                             ? null
-                            : (c) => setState(() => _currency = c!),
+                            : (c) => setState(() {
+                                _currency = c!;
+                                _currencyExplicit = true;
+                              }),
                       ),
                       TextFormField(
                         controller: _budget,

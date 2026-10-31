@@ -1,3 +1,5 @@
+import 'trip_budget_page.dart';
+import '../../../booking/presentation/pages/booking_links_page.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/widgets/travel_markdown.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -49,7 +51,7 @@ class TripDetailsPage extends ConsumerWidget {
                     children: [
                       Text(
                         trip['title']?.toString() ?? 'Your trip',
-                        style: Theme.of(context).textTheme.headlineLarge,
+                        style: Theme.of(context).textTheme.headlineSmall,
                       ),
                       const SizedBox(height: 12),
                       Text(
@@ -75,8 +77,14 @@ class TripDetailsPage extends ConsumerWidget {
                               if (trip['notes']?.toString().isNotEmpty ==
                                   true) ...[
                                 const SizedBox(height: 12),
-                                TravelMarkdown(
-                                  content: trip['notes'].toString(),
+                                ExpansionTile(
+                                  tilePadding: EdgeInsets.zero,
+                                  title: const Text('Notes & AI draft'),
+                                  children: [
+                                    TravelMarkdown(
+                                      content: trip['notes'].toString(),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ],
@@ -97,7 +105,56 @@ class TripDetailsPage extends ConsumerWidget {
                             icon: const Icon(Icons.view_timeline_outlined),
                             label: const Text('Day-by-day plan'),
                           ),
-                          FilledButton.icon(
+                          OutlinedButton.icon(
+                            onPressed: () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    ItineraryPage(tripId: id, initialMap: true),
+                              ),
+                            ),
+                            icon: const Icon(Icons.map_outlined),
+                            label: const Text('Trip map'),
+                          ),
+                          OutlinedButton.icon(
+                            onPressed: () async {
+                              final updated = await Navigator.of(context)
+                                  .push<Map<String, dynamic>>(
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          TripBudgetPage(trip: trip),
+                                    ),
+                                  );
+                              if (updated != null) {
+                                ref.invalidate(tripDetailsProvider(id));
+                              }
+                            },
+                            icon: const Icon(
+                              Icons.account_balance_wallet_outlined,
+                            ),
+                            label: const Text('Budget'),
+                          ),
+                          OutlinedButton.icon(
+                            onPressed: () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => BookingLinksPage(
+                                  destination:
+                                      trip['city_name']?.toString() ??
+                                      trip['destination_name']?.toString(),
+                                  startDate: DateTime.tryParse(
+                                    '${trip['start_date']}',
+                                  ),
+                                  endDate: DateTime.tryParse(
+                                    '${trip['end_date']}',
+                                  ),
+                                  travelers: (trip['travelers'] as num?)
+                                      ?.toInt(),
+                                ),
+                              ),
+                            ),
+                            icon: const Icon(Icons.flight_takeoff),
+                            label: const Text('Travel options'),
+                          ),
+                          OutlinedButton.icon(
                             onPressed: () async {
                               final updated = await Navigator.of(context)
                                   .push<Map<String, dynamic>>(
@@ -119,7 +176,10 @@ class TripDetailsPage extends ConsumerWidget {
                                 MaterialPageRoute(
                                   builder: (_) => DestinationDetailsPage(
                                     cityId: trip['city_id'].toString(),
-                                    name: 'Destination',
+                                    name:
+                                        trip['destination_name']?.toString() ??
+                                        trip['city_name']?.toString() ??
+                                        'Destination',
                                   ),
                                 ),
                               ),

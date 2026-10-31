@@ -77,6 +77,8 @@ class CountryListResponse(BaseModel):
 
     iso2: str
 
+    currency_code: str | None = None
+
     flag_url: str | None
 
     is_active: bool

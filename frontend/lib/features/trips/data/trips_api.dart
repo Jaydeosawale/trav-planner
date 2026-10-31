@@ -4,7 +4,7 @@ import '../../../core/network/api_client.dart';
 class TripsApi {
   TripsApi({Dio? client}) : _client = client ?? ApiClient.dio;
   final Dio _client;
-  Map<String, String>? _countryNames;
+  Map<String, Map<String, dynamic>>? _countries;
   Future<Map<String, dynamic>> list(int page) async =>
       Map<String, dynamic>.from(
         (await _client.get(
@@ -33,13 +33,13 @@ class TripsApi {
       '/cities/search',
       queryParameters: {'search': query, 'size': 20},
     );
-    if (_countryNames == null) {
+    if (_countries == null) {
       try {
         final countries =
             (await _client.get('/countries/active')).data['data'] as List;
-        _countryNames = {
+        _countries = {
           for (final country in countries)
-            country['id'].toString(): country['name'].toString(),
+            country['id'].toString(): Map<String, dynamic>.from(country),
         };
       } catch (_) {
         /* City selection remains available when country labels cannot load. */
@@ -47,7 +47,13 @@ class TripsApi {
     }
     return (response.data['data']['items'] as List)
         .map((city) => Map<String, dynamic>.from(city))
-        .map((city) => {...city, 'country': _countryNames?[city['country_id']]})
+        .map(
+          (city) => {
+            ...city,
+            'country': _countries?[city['country_id']]?['name'],
+            'currency': _countries?[city['country_id']]?['currency_code'],
+          },
+        )
         .toList();
   }
 }

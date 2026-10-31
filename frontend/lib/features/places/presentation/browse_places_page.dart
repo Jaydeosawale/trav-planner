@@ -216,8 +216,9 @@ class _BrowsePlacesPageState extends ConsumerState<BrowsePlacesPage> {
       _areaResults['${request.cityId}:${request.type}'] = found;
       if (!mounted ||
           request.cityId != _query.cityId ||
-          request.type != _query.type)
+          request.type != _query.type) {
         return;
+      }
       setState(() {
         _additional = found;
         _discoveryNotice = response.data['message']?.toString();
@@ -291,7 +292,9 @@ class _BrowsePlacesPageState extends ConsumerState<BrowsePlacesPage> {
           ),
         ],
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(76),
+          preferredSize: Size.fromHeight(
+            64 + (MediaQuery.textScalerOf(context).scale(14) - 14) * 2,
+          ),
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
             child: TextField(
@@ -303,7 +306,7 @@ class _BrowsePlacesPageState extends ConsumerState<BrowsePlacesPage> {
                 _change(_query.copyWith(search: v));
               },
               decoration: InputDecoration(
-                hintText: 'Town, city, landmark or café',
+                hintText: 'Search towns & places',
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: IconButton(
                   tooltip: 'Clear search',
@@ -355,14 +358,6 @@ class _BrowsePlacesPageState extends ConsumerState<BrowsePlacesPage> {
                               child: const Text('Worldwide'),
                             ),
                           ],
-                        )
-                      else if (_query.search.isEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: Text(
-                            'Find your next stop.',
-                            style: Theme.of(context).textTheme.headlineMedium,
-                          ),
                         ),
                       if (_query.search.trim().length >= 2) ...[
                         AreaCandidates(
@@ -378,75 +373,75 @@ class _BrowsePlacesPageState extends ConsumerState<BrowsePlacesPage> {
                       ],
                       PlaceCategoryBar(query: _query, onChanged: _change),
                       const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        crossAxisAlignment: WrapCrossAlignment.center,
+                      Row(
                         children: [
                           OutlinedButton.icon(
                             onPressed: () async {
                               final q = await showPlaceFilters(context, _query);
-                              if (q != null && mounted) {
-                                if (q.countryId != _query.countryId) {
+                              if (q == null || !mounted) return;
+                              if (q.countryId != _query.countryId) {
+                                ref
+                                        .read(chosenPlaceAreaProvider.notifier)
+                                        .state =
+                                    null;
+                                _change(q.copyWith(clearCity: true));
+                              } else {
+                                _change(q.copyWith(cityId: _query.cityId));
+                              }
+                            },
+                            icon: const Icon(Icons.tune, size: 18),
+                            label: const Text('Filters'),
+                          ),
+                          const Spacer(),
+                          TextButton.icon(
+                            onPressed: () => setState(() => _map = !_map),
+                            icon: Icon(
+                              _map
+                                  ? Icons.grid_view_outlined
+                                  : Icons.map_outlined,
+                              size: 20,
+                            ),
+                            label: Text(_map ? 'Cards' : 'Map'),
+                          ),
+                        ],
+                      ),
+                      if (_query.countryId != null || _query.photosOnly)
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 4,
+                          children: [
+                            if (_query.countryId != null)
+                              InputChip(
+                                label: Text(
+                                  placeCountryName(ref, _query) ??
+                                      'Selected country',
+                                ),
+                                deleteButtonTooltipMessage: 'Clear country',
+                                onDeleted: () {
                                   ref
                                           .read(
                                             chosenPlaceAreaProvider.notifier,
                                           )
                                           .state =
                                       null;
-                                  _change(q.copyWith(clearCity: true));
-                                } else {
-                                  _change(q.copyWith(cityId: _query.cityId));
-                                }
-                              }
-                            },
-                            icon: const Icon(Icons.tune),
-                            label: Text(
-                              placeCountryName(ref, _query) ?? 'Filters',
-                            ),
-                          ),
-                          FilterChip(
-                            label: const Text('Photos only'),
-                            selected: _query.photosOnly,
-                            onSelected: (v) =>
-                                _change(_query.copyWith(photosOnly: v)),
-                          ),
-                          if (_query.countryId != null)
-                            ActionChip(
-                              label: const Text('Clear country'),
-                              onPressed: () {
-                                ref
-                                        .read(chosenPlaceAreaProvider.notifier)
-                                        .state =
-                                    null;
-                                _change(
-                                  _query.copyWith(
-                                    clearCountry: true,
-                                    clearCity: true,
-                                  ),
-                                );
-                              },
-                            ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      SegmentedButton<bool>(
-                        segments: const [
-                          ButtonSegment(
-                            value: false,
-                            icon: Icon(Icons.grid_view_outlined),
-                            label: Text('Cards'),
-                          ),
-                          ButtonSegment(
-                            value: true,
-                            icon: Icon(Icons.map_outlined),
-                            label: Text('Map'),
-                          ),
-                        ],
-                        selected: {_map},
-                        onSelectionChanged: (v) =>
-                            setState(() => _map = v.first),
-                      ),
+                                  _change(
+                                    _query.copyWith(
+                                      clearCountry: true,
+                                      clearCity: true,
+                                    ),
+                                  );
+                                },
+                              ),
+                            if (_query.photosOnly)
+                              InputChip(
+                                label: const Text('Photos only'),
+                                deleteButtonTooltipMessage:
+                                    'Include places without photos',
+                                onDeleted: () =>
+                                    _change(_query.copyWith(photosOnly: false)),
+                              ),
+                          ],
+                        ),
                     ],
                   ),
                 ),

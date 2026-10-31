@@ -145,6 +145,16 @@ class _HomePlacesSectionState extends ConsumerState<HomePlacesSection> {
       clearCity: area?.cityId == null,
     );
 
+    final first = ref.watch(
+      placeCatalogueProvider(effectiveQuery.copyWith(page: 1)),
+    );
+    if (widget.curated &&
+        first.asData?.value.items.isEmpty == true &&
+        !_local.isLoading &&
+        (_local.asData?.value.isEmpty ?? true) &&
+        !_local.hasError) {
+      return const SizedBox.shrink();
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

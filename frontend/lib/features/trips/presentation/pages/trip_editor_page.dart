@@ -1,3 +1,4 @@
+import '../../../ai/presentation/pages/planning_brief_values.dart';
 import 'package:flutter/material.dart';
 import '../../../auth/presentation/widgets/require_sign_in.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,8 +13,12 @@ class TripEditorPage extends ConsumerStatefulWidget {
     this.trip,
     this.draftNotes,
     this.initialCity,
+    this.initialBrief,
+    this.draftTitle,
   });
   final Map<String, dynamic>? initialCity;
+  final Map<String, dynamic>? initialBrief;
+  final String? draftTitle;
   final Map<String, dynamic>? trip;
   final String? draftNotes;
   @override
@@ -32,23 +37,32 @@ class _TripEditorPageState extends ConsumerState<TripEditorPage> {
   Map<String, dynamic>? _city;
   List<Map<String, dynamic>> _cities = [];
   bool _loading = false, _saving = false;
+  bool _pendingCity = false, _currencyEdited = false;
   String? _error;
   String _status = 'planned';
   @override
   void initState() {
     super.initState();
     final trip = widget.trip ?? {};
+    final brief = PlanningBriefValues(widget.initialBrief ?? {});
     _city = widget.initialCity;
-    _query.text = _city?['name']?.toString() ?? '';
+    _query.text =
+        _city?['name']?.toString() ??
+        widget.initialBrief?['destination']?.toString() ??
+        '';
     _title.text =
         trip['title']?.toString() ??
+        widget.draftTitle ??
         (_city == null ? '' : '${_city!['name']} trip');
-    _travelers.text = (trip['travelers'] ?? 1).toString();
-    _budget.text = trip['budget_amount']?.toString() ?? '';
-    _currency.text = trip['budget_currency']?.toString() ?? 'INR';
+    _travelers.text = (trip['travelers'] ?? brief.travelers).toString();
+    _budget.text = trip['budget_amount']?.toString() ?? brief.amount ?? '';
+    _currency.text =
+        trip['budget_currency']?.toString() ?? brief.currency ?? 'INR';
     _notes.text = trip['notes']?.toString() ?? widget.draftNotes ?? '';
-    _start = DateTime.tryParse(trip['start_date']?.toString() ?? '');
-    _end = DateTime.tryParse(trip['end_date']?.toString() ?? '');
+    _start =
+        DateTime.tryParse(trip['start_date']?.toString() ?? '') ?? brief.start;
+    _end = DateTime.tryParse(trip['end_date']?.toString() ?? '') ?? brief.end;
+    _currencyEdited = brief.currency != null || widget.trip != null;
     _status = trip['status']?.toString() ?? 'planned';
   }
 
@@ -95,11 +109,10 @@ class _TripEditorPageState extends ConsumerState<TripEditorPage> {
       _loading = true;
       _error = null;
     });
+    final query = _query.text.trim();
     try {
-      final cities = await ref
-          .read(tripsApiProvider)
-          .cities(_query.text.trim());
-      if (mounted) {
+      final cities = await ref.read(tripsApiProvider).cities(query);
+      if (mounted && _query.text.trim() == query) {
         setState(() {
           _cities = cities;
           if (cities.isEmpty) _error = 'No cities found. Try another name.';
@@ -116,7 +129,7 @@ class _TripEditorPageState extends ConsumerState<TripEditorPage> {
 
   Future<void> _save() async {
     if (_saving || !_form.currentState!.validate()) return;
-    if (_city == null && widget.trip == null) {
+    if ((_city == null && widget.trip == null) || _pendingCity) {
       setState(() => _error = 'Search and select a city for this trip.');
       return;
     }
@@ -219,6 +232,11 @@ class _TripEditorPageState extends ConsumerState<TripEditorPage> {
                   controller: _query,
                   enabled: !_saving,
                   onSubmitted: (_) => _search(),
+                  onChanged: (_) => setState(() {
+                    _city = null;
+                    _cities = [];
+                    _pendingCity = _query.text.trim().isNotEmpty;
+                  }),
                   decoration: InputDecoration(
                     labelText: widget.trip == null
                         ? 'Destination city'
@@ -256,6 +274,17 @@ class _TripEditorPageState extends ConsumerState<TripEditorPage> {
                           ? null
                           : () => setState(() {
                               _city = city;
+                              _query.text = city['name'].toString();
+                              _pendingCity = false;
+                              final currency = city['currency']
+                                  ?.toString()
+                                  .toUpperCase();
+                              if (widget.trip == null &&
+                                  !_currencyEdited &&
+                                  currency != null &&
+                                  RegExp(r'^[A-Z]{3}$').hasMatch(currency)) {
+                                _currency.text = currency;
+                              }
                               _cities = [];
                             }),
                     ),
@@ -307,6 +336,7 @@ class _TripEditorPageState extends ConsumerState<TripEditorPage> {
                 const SizedBox(height: 18),
                 TextFormField(
                   controller: _currency,
+                  onChanged: (_) => _currencyEdited = true,
                   enabled: !_saving,
                   maxLength: 3,
                   decoration: const InputDecoration(

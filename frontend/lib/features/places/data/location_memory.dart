@@ -8,6 +8,11 @@ import 'place_area.dart';
 import 'nearby_origin.dart';
 import 'current_location.dart';
 
+final forgetSavedAreaProvider = StateProvider<int>((ref) {
+  ref.watch(authProvider.select((s) => s.user?.id));
+  return 0;
+});
+
 final locationMemoryStoreProvider = Provider<LocationMemoryStore>(
   (ref) => LocationMemoryStore(),
 );
@@ -45,6 +50,16 @@ final locationMemoryProvider = Provider<void>((ref) {
         .catchError((Object _) {});
   }
 
+  ref.listen(forgetSavedAreaProvider, (_, next) {
+    if (!active || ref.read(authProvider).user?.id != account) return;
+    restoring = true;
+    ref.read(chosenPlaceAreaProvider.notifier).state = null;
+    ref.read(aiLocationEnabledProvider.notifier).state = false;
+    ref.read(nearbyOriginProvider.notifier).state = null;
+    mode = null;
+    save(null);
+    restoring = false;
+  });
   ref.listen(chosenPlaceAreaProvider, (_, area) {
     if (!active ||
         ref.read(authProvider).user?.id != account ||

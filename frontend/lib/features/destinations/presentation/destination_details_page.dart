@@ -165,11 +165,17 @@ class _DestinationDetailsPageState
   Widget build(BuildContext context) {
     final places = ref.watch(cityPlacesProvider(widget.cityId));
     return Scaffold(
-      appBar: AppBar(title: Text(widget.name)),
+      appBar: AppBar(
+        title: Text(widget.name, maxLines: 1, overflow: TextOverflow.ellipsis),
+      ),
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(cityPlacesProvider(widget.cityId));
-          await ref.read(cityPlacesProvider(widget.cityId).future);
+          try {
+            await ref.read(cityPlacesProvider(widget.cityId).future);
+          } catch (_) {
+            /* The list exposes retry. */
+          }
         },
         child: ListView(
           controller: _scroll,
@@ -189,8 +195,8 @@ class _DestinationDetailsPageState
                       const SizedBox(height: 20),
                     ],
                     Text(
-                      'Find your kind of ${widget.name}.',
-                      style: Theme.of(context).textTheme.headlineMedium,
+                      widget.name,
+                      style: Theme.of(context).textTheme.headlineSmall,
                     ),
                     const SizedBox(height: 10),
                     Text(

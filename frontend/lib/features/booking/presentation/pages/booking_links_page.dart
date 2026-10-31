@@ -57,11 +57,11 @@ class _BookingLinksPageState extends State<BookingLinksPage> {
             children: [
               Text(
                 'Find your way there.',
-                style: Theme.of(context).textTheme.headlineMedium,
+                style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 12),
               const Text(
-                'Compare travel options, then book and pay securely on the supplier’s website.',
+                'Choose a travel option. Booking and payment happen on the supplier’s site.',
               ),
               if (widget.destination?.trim().isNotEmpty == true ||
                   widget.startDate != null ||

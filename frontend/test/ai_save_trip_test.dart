@@ -112,6 +112,8 @@ void main() {
       await tester.tap(find.text('Open saved trip'));
       await tester.pumpAndSettle();
       expect(find.text('My reviewed trip'), findsOneWidget);
+      await tester.tap(find.text('Notes & AI draft'));
+      await tester.pumpAndSettle();
       expect(find.byType(TravelMarkdown), findsOneWidget);
       expect(api.items.length, 1);
       expect(tester.takeException(), isNull);
