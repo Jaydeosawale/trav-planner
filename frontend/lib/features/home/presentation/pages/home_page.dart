@@ -1,3 +1,4 @@
+import '../../../ai/presentation/pages/ai_search_page.dart';
 import 'featured_destination_page.dart';
 import '../../../../app/router/navigation_actions.dart';
 import '../../../places/data/place_area.dart';
@@ -118,6 +119,8 @@ class HomePage extends ConsumerWidget {
                       ),
                       const SizedBox(height: 10),
                       _HomeShortcuts(),
+                      const SizedBox(height: 16),
+                      const _PlanningInvitation(),
                       const SizedBox(height: 8),
                       const HomeTravelHub(personalOnly: true),
                       const HomePlacesSection(curated: true),
@@ -226,4 +229,82 @@ class _HomeShortcuts extends ConsumerWidget {
             ],
           );
   }
+}
+
+class _PlanningInvitation extends StatelessWidget {
+  const _PlanningInvitation();
+  @override
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    label: 'Plan a trip with AI',
+    child: Material(
+      borderRadius: BorderRadius.circular(22),
+      clipBehavior: Clip.antiAlias,
+      child: Ink(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [AppColors.ocean, Color(0xFF185C68)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: InkWell(
+          onTap: () => Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (_) => const AISearchPage())),
+          child: Padding(
+            padding: const EdgeInsets.all(18),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: .12),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const Icon(
+                    Icons.auto_awesome_rounded,
+                    color: Color(0xFFFFBF85),
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'A little idea. A great trip.',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                          height: 1.3,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Tell AI where you’d love to go.',
+                        style: TextStyle(
+                          color: Color(0xFFD1E8EA),
+                          fontSize: 13,
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                const Icon(
+                  Icons.north_east_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
 }

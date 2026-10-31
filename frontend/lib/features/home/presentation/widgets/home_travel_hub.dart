@@ -279,7 +279,12 @@ class HomeTravelHub extends ConsumerWidget {
         const SizedBox(height: 16),
         LayoutBuilder(
           builder: (context, constraints) {
-            final columns = constraints.maxWidth < 300 ? 1 : 2;
+            final largeText = MediaQuery.textScalerOf(context).scale(14) > 20;
+            final columns = largeText || constraints.maxWidth < 260
+                ? 1
+                : constraints.maxWidth >= 800
+                ? 3
+                : 2;
             Widget card((String, String, String, IconData, Color) idea) {
               final ink = switch (idea.$3) {
                 'cafe' => const Color(0xFF79502E),
@@ -302,14 +307,14 @@ class HomeTravelHub extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(10),
+                          padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
                             color: ink.withValues(alpha: .12),
                             borderRadius: BorderRadius.circular(14),
                           ),
-                          child: Icon(idea.$4, color: ink, size: 25),
+                          child: Icon(idea.$4, color: ink, size: 22),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 10),
                         Text(
                           idea.$1,
                           style: TextStyle(

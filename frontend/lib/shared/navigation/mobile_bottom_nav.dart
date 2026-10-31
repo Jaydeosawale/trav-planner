@@ -16,7 +16,7 @@ class MobileBottomNav extends StatelessWidget {
     final largeLabels = MediaQuery.textScalerOf(context).scale(12) > 16;
     return DecoratedBox(
       decoration: const BoxDecoration(
-        color: AppColors.surfaceVariant,
+        color: AppColors.surface,
         border: Border(top: BorderSide(color: AppColors.border)),
       ),
       child: SafeArea(
@@ -47,7 +47,7 @@ class MobileBottomNav extends StatelessWidget {
                             ),
                             decoration: BoxDecoration(
                               color: selected
-                                  ? AppColors.surfaceVariant
+                                  ? AppColors.selected
                                   : Colors.transparent,
                               borderRadius: BorderRadius.circular(16),
                             ),

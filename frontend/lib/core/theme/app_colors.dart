@@ -8,12 +8,13 @@ class AppColors {
   static const secondary = Color(0xFF0F766E);
   static const accent = Color(0xFF14B8A6);
   static const sunset = Color(0xFFF27D42);
-  static const background = Color(0xFFF6F9FC);
+  static const background = Color(0xFFF4F7FA);
+  static const selected = Color(0xFFDDEAFF);
   static const ocean = Color(0xFF123E46);
   static const surface = Color(0xFFFFFFFF);
-  static const surfaceVariant = Color(0xFFE8F0FA);
-  static const border = Color(0xFFD6E2ED);
-  static const textPrimary = Color(0xFF163943);
+  static const surfaceVariant = Color(0xFFEDF3FA);
+  static const border = Color(0xFFE0E7EE);
+  static const textPrimary = Color(0xFF142F3A);
   static const textSecondary = Color(0xFF536B78);
   static const success = Color(0xFF047857);
   static const successContainer = Color(0xFFD1FAE5);

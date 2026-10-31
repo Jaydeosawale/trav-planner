@@ -12,6 +12,8 @@ class PlaceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Material(
     color: AppColors.surface,
+    elevation: 1,
+    shadowColor: AppColors.ocean.withValues(alpha: .10),
     borderRadius: BorderRadius.circular(24),
     clipBehavior: Clip.antiAlias,
     child: InkWell(
@@ -72,7 +74,7 @@ class PlaceCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           fontSize: 16,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                           height: 1.2,
                         ),
                       ),

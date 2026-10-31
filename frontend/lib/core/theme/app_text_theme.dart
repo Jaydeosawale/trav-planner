@@ -47,10 +47,10 @@ class AppTextTheme {
         ),
         titleLarge: TextStyle(
           fontFamily: 'Inter',
-          fontSize: 22,
+          fontSize: 20,
           fontWeight: FontWeight.w700,
         ),
-        titleMedium: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+        titleMedium: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         titleSmall: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         bodyLarge: TextStyle(fontSize: 16, height: 1.5),
         bodyMedium: TextStyle(fontSize: 14, height: 1.5),

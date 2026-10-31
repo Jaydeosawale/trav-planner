@@ -56,6 +56,12 @@ class AppTheme {
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         centerTitle: false,
+        titleTextStyle: TextStyle(
+          fontFamily: 'Inter',
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+          color: AppColors.textPrimary,
+        ),
       ),
       cardTheme: CardThemeData(
         color: AppColors.surface,
@@ -127,7 +133,7 @@ class AppTheme {
       iconTheme: const IconThemeData(color: AppColors.textSecondary),
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.surface,
-        selectedColor: const Color(0xFFDCEAFF),
+        selectedColor: AppColors.selected,
         labelStyle: const TextStyle(
           fontFamily: 'Inter',
           color: AppColors.textPrimary,

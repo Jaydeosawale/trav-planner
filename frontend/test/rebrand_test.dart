@@ -120,6 +120,14 @@ void main() {
       await tester.runAsync(() => capture('trav-home-${width.toInt()}'));
       if (width == 360) {
         expect(find.text('Profile'), findsNothing);
+        await tester.ensureVisible(find.text('A little idea. A great trip.'));
+        await tester.tap(find.text('A little idea. A great trip.'));
+        await tester.pumpAndSettle();
+        expect(find.byType(AISearchPage), findsOneWidget);
+        expect(find.text('Sign in to plan'), findsOneWidget);
+        Navigator.of(tester.element(find.byType(AISearchPage))).pop();
+        await tester.pumpAndSettle();
+        await tester.ensureVisible(find.bySemanticsLabel('Sign in'));
         await tester.tap(find.bySemanticsLabel('Sign in'));
         await tester.pumpAndSettle();
         expect(find.byType(LoginPage), findsOneWidget);

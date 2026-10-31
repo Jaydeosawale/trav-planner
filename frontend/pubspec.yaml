@@ -2,7 +2,7 @@ name: trav_planner
 description: "AI Multi-Agent Travel Planner"
 publish_to: "none"
 
-version: 1.0.24+37
+version: 1.0.24+38
 
 environment:
   sdk: ">=3.8.0 <4.0.0"
