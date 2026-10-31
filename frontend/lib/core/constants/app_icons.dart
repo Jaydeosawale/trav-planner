@@ -1,16 +1,16 @@
- import 'package:material_symbols_icons/material_symbols_icons.dart';
+import 'package:flutter/material.dart';
 
 class AppIcons {
-  static const home = Symbols.home;
-  static const map = Symbols.map;
-  static const flight = Symbols.flight;
-  static const hotel = Symbols.hotel;
-  static const restaurant = Symbols.restaurant;
-  static const travel = Symbols.travel_explore;
-  static const weather = Symbols.sunny;
-  static const ai = Symbols.auto_awesome;
-  static const profile = Symbols.person;
-  static const favorite = Symbols.favorite;
-  static const search = Symbols.search;
-  static const notifications = Symbols.notifications;
+  static const home = Icons.home;
+  static const map = Icons.map;
+  static const flight = Icons.flight;
+  static const hotel = Icons.hotel;
+  static const restaurant = Icons.restaurant;
+  static const travel = Icons.travel_explore;
+  static const weather = Icons.sunny;
+  static const ai = Icons.auto_awesome;
+  static const profile = Icons.person;
+  static const favorite = Icons.favorite;
+  static const search = Icons.search;
+  static const notifications = Icons.notifications;
 }
