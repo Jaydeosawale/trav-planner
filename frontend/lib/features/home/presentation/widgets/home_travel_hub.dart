@@ -306,14 +306,7 @@ class HomeTravelHub extends ConsumerWidget {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: ink.withValues(alpha: .12),
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: Icon(idea.$4, color: ink, size: 22),
-                        ),
+                        _DayIdeaIcon(kind: idea.$3, icon: idea.$4),
                         const SizedBox(height: 10),
                         Text(
                           idea.$1,
@@ -379,6 +372,89 @@ class HomeTravelHub extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _DayIdeaIcon extends StatelessWidget {
+  const _DayIdeaIcon({required this.kind, required this.icon});
+  final String kind;
+  final IconData icon;
+  @override
+  Widget build(BuildContext context) {
+    final (color, glow, detail) = switch (kind) {
+      'cafe' => (
+        const Color(0xFFCA652D),
+        const Color(0xFFFFD38C),
+        Icons.eco_rounded,
+      ),
+      'viewpoint' => (
+        const Color(0xFF3173C9),
+        const Color(0xFF9DDBFF),
+        Icons.wb_sunny_rounded,
+      ),
+      'restaurant' => (
+        const Color(0xFFE06335),
+        const Color(0xFFFFB491),
+        Icons.local_fire_department_rounded,
+      ),
+      'park' => (
+        const Color(0xFF26835C),
+        const Color(0xFFACD978),
+        Icons.wb_sunny_rounded,
+      ),
+      'museum' => (
+        const Color(0xFF8451C4),
+        const Color(0xFFDDB7FA),
+        Icons.auto_awesome_rounded,
+      ),
+      _ => (
+        const Color(0xFF16889F),
+        const Color(0xFF91E2D8),
+        Icons.wb_sunny_rounded,
+      ),
+    };
+    return ExcludeSemantics(
+      child: SizedBox(
+        width: 58,
+        height: 54,
+        child: Stack(
+          children: [
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.white.withValues(alpha: .92), glow],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(17),
+              ),
+              child: Icon(icon, size: 30, color: color),
+            ),
+            Positioned(
+              right: 0,
+              bottom: 0,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: glow, width: 1.5),
+                ),
+                child: Icon(
+                  detail,
+                  size: 14,
+                  color: kind == 'cafe'
+                      ? const Color(0xFF25815A)
+                      : const Color(0xFFE18A20),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

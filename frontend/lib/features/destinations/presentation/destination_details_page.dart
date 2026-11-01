@@ -802,7 +802,13 @@ class _DestinationDetailsPageState
                     ),
                   PlaceSourceCredit(data: place.visitingNotes),
                   if (place.source?.host == 'www.openstreetmap.org')
-                    const Text('© OpenStreetMap contributors · ODbL 1.0'),
+                    const Text(
+                      '© OpenStreetMap contributors · ODbL 1.0',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
                   if (place.source != null)
                     TextButton.icon(
                       onPressed: () => launchUrl(

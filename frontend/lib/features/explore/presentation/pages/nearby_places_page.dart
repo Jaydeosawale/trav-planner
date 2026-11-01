@@ -470,7 +470,15 @@ class _NearbyPlacesPageState extends ConsumerState<NearbyPlacesPage> {
               Uri.parse('https://www.openstreetmap.org/copyright'),
               mode: LaunchMode.externalApplication,
             ),
-            child: const Text('OpenStreetMap contributors · ODbL'),
+            style: TextButton.styleFrom(
+              alignment: Alignment.centerLeft,
+              padding: const EdgeInsets.symmetric(horizontal: 2),
+              minimumSize: const Size(0, 32),
+            ),
+            child: const Text(
+              'OpenStreetMap contributors · ODbL',
+              style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+            ),
           ),
           TextButton(
             onPressed: () => launchUrl(

@@ -155,6 +155,67 @@ class _HomePlacesSectionState extends ConsumerState<HomePlacesSection> {
         !_local.hasError) {
       return const SizedBox.shrink();
     }
+    if (widget.curated) {
+      final merged = <String, TravelPlace>{
+        for (final place in first.asData?.value.items ?? <TravelPlace>[])
+          place.id: place,
+        for (final place in _local.asData?.value ?? <TravelPlace>[])
+          place.id: place,
+      }.values.take(8).toList();
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  area == null ? 'Travel inspiration' : 'Around ${area.name}',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+              ),
+              TextButton(onPressed: _browse, child: const Text('See all')),
+            ],
+          ),
+          if (merged.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            LayoutBuilder(
+              builder: (context, constraints) => SizedBox(
+                height:
+                    290 + (MediaQuery.textScalerOf(context).scale(14) - 14) * 6,
+                child: ListView.separated(
+                  key: const ValueKey('home-inspiration-rail'),
+                  scrollDirection: Axis.horizontal,
+                  itemCount: merged.length,
+                  separatorBuilder: (_, _) => const SizedBox(width: 12),
+                  itemBuilder: (_, i) => SizedBox(
+                    width: constraints.maxWidth < 320
+                        ? constraints.maxWidth * .88
+                        : 270,
+                    child: PlaceCard(place: merged[i]),
+                  ),
+                ),
+              ),
+            ),
+            PlaceSourceCredit(
+              data: merged.map((p) => p.visitingNotes).toList(),
+            ),
+          ] else if (first.isLoading || _local.isLoading)
+            const SizedBox(
+              height: 100,
+              child: Center(child: CircularProgressIndicator()),
+            ),
+          if (first.hasError || _local.hasError)
+            TextButton(
+              onPressed: () {
+                ref.invalidate(placeCatalogueProvider(effectiveQuery));
+                _loadLocal();
+              },
+              child: const Text('Retry places'),
+            ),
+          const SizedBox(height: 8),
+        ],
+      );
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
