@@ -1,3 +1,4 @@
+import '../../../auth/presentation/pages/forgot_password_page.dart';
 import '../../../places/data/location_memory.dart';
 import '../../../places/data/place_area.dart';
 import '../../../places/data/nearby_origin.dart';
@@ -35,10 +36,10 @@ class ProfilePage extends ConsumerWidget {
         surfaceTintColor: Colors.transparent,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 10, 20, 40),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 800),
+            constraints: const BoxConstraints(maxWidth: 680),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -46,68 +47,13 @@ class ProfilePage extends ConsumerWidget {
                 // Profile Header
                 // ========================================================
 
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [
-                        AppColors.surfaceVariant,
-                        AppColors.surfaceVariant,
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(28),
-                  ),
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 34,
-                        backgroundColor: AppColors.surface,
-                        child: Text(
-                          _initials(user?.fullName ?? 'Guest traveler'),
-                          style: const TextStyle(
-                            color: AppColors.primary,
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(width: 18),
-
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              user?.fullName ?? 'Guest traveler',
-                              style: const TextStyle(
-                                color: AppColors.textPrimary,
-                                fontSize: 21,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-
-                            const SizedBox(height: 5),
-
-                            Text(
-                              user?.email ?? 'Sign in to save your plans',
-                              style: const TextStyle(
-                                color: AppColors.textSecondary,
-                                fontSize: 14,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+                _ProfileIdentity(
+                  name: user?.fullName ?? 'Guest traveler',
+                  email: user?.email ?? 'Sign in to save your plans',
+                  initials: _initials(user?.fullName ?? 'Guest traveler'),
                 ),
 
-                const SizedBox(height: 30),
+                const SizedBox(height: 22),
 
                 // ========================================================
                 // Account
@@ -115,7 +61,7 @@ class ProfilePage extends ConsumerWidget {
                 const Text(
                   'Account',
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 15,
                     fontWeight: FontWeight.w800,
                     color: AppColors.textPrimary,
                   ),
@@ -132,7 +78,22 @@ class ProfilePage extends ConsumerWidget {
                   ).push(MaterialPageRoute(builder: (_) => const SavedPage())),
                 ),
 
-                const SizedBox(height: 26),
+                if (user != null)
+                  _ProfileMenuItem(
+                    icon: Icons.lock_reset_rounded,
+                    color: AppColors.secondary,
+                    title: 'Reset password',
+                    subtitle: 'Send a secure reset link to your email',
+                    onTap: () =>
+                        Navigator.of(context, rootNavigator: true).push(
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                ForgotPasswordPage(initialEmail: user.email),
+                          ),
+                        ),
+                  ),
+
+                const SizedBox(height: 18),
 
                 // ========================================================
                 // Travel
@@ -140,7 +101,7 @@ class ProfilePage extends ConsumerWidget {
                 const Text(
                   'Travel',
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 15,
                     fontWeight: FontWeight.w800,
                     color: AppColors.textPrimary,
                   ),
@@ -150,8 +111,9 @@ class ProfilePage extends ConsumerWidget {
 
                 _ProfileMenuItem(
                   icon: Icons.travel_explore_rounded,
-                  title: 'Travel Preferences',
-                  subtitle: 'Customize your travel experience',
+                  color: AppColors.secondary,
+                  title: 'Travel preferences',
+                  subtitle: 'Interests, pace & travel style',
                   onTap: () async {
                     if (!await ensureSignedIn(context, ref) ||
                         !context.mounted) {
@@ -210,20 +172,28 @@ class ProfilePage extends ConsumerWidget {
                       ),
                     ),
                   ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Privacy & data',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 12),
                 _ProfileMenuItem(
                   icon: Icons.privacy_tip_outlined,
+                  color: AppColors.secondary,
                   title: 'Privacy policy',
                   subtitle: 'How Trav handles your data',
                   onTap: () => _openPolicy(context, 'privacy'),
                 ),
                 _ProfileMenuItem(
                   icon: Icons.person_remove_outlined,
+                  color: AppColors.error,
                   title: 'Delete account and data',
-                  subtitle: 'Request permanent removal of your account',
+                  subtitle: 'Request permanent account removal',
                   onTap: () => _openPolicy(context, 'delete-account'),
                 ),
 
-                const SizedBox(height: 30),
+                const SizedBox(height: 22),
 
                 // ========================================================
                 // Logout
@@ -371,12 +341,14 @@ class _ProfileMenuItem extends StatelessWidget {
   final String title;
   final String subtitle;
   final VoidCallback onTap;
+  final Color color;
 
   const _ProfileMenuItem({
     required this.icon,
     required this.title,
     required this.subtitle,
     required this.onTap,
+    this.color = AppColors.primary,
   });
 
   @override
@@ -393,21 +365,21 @@ class _ProfileMenuItem extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         child: ListTile(
           contentPadding: const EdgeInsets.symmetric(
-            horizontal: 18,
-            vertical: 5,
+            horizontal: 14,
+            vertical: 3,
           ),
           leading: Container(
-            width: 46,
-            height: 46,
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
-              color: AppColors.surfaceVariant,
-              borderRadius: BorderRadius.circular(14),
+              color: color.withValues(alpha: .09),
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: AppColors.primary),
+            child: Icon(icon, color: color, size: 21),
           ),
           title: Text(
             title,
-            style: const TextStyle(fontWeight: FontWeight.w700),
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
           ),
           subtitle: Text(
             subtitle,
@@ -419,4 +391,81 @@ class _ProfileMenuItem extends StatelessWidget {
       ),
     );
   }
+}
+
+class _ProfileIdentity extends StatelessWidget {
+  const _ProfileIdentity({
+    required this.name,
+    required this.email,
+    required this.initials,
+  });
+  final String name, email, initials;
+  @override
+  Widget build(BuildContext context) => Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(18),
+    decoration: BoxDecoration(
+      gradient: AppColors.oceanGradient,
+      borderRadius: BorderRadius.circular(22),
+    ),
+    child: LayoutBuilder(
+      builder: (context, constraints) {
+        final large = MediaQuery.textScalerOf(context).scale(14) > 20;
+        final avatar = Container(
+          padding: const EdgeInsets.all(3),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: const Color(0xFF7FC7C5)),
+          ),
+          child: CircleAvatar(
+            radius: 25,
+            backgroundColor: const Color(0xFFD5F1E8),
+            child: Text(
+              initials,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: AppColors.ocean,
+              ),
+            ),
+          ),
+        );
+        final identity = Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              name,
+              style: const TextStyle(
+                fontSize: 18,
+                height: 1.25,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 5),
+            Text(
+              email,
+              style: const TextStyle(
+                fontSize: 12,
+                height: 1.4,
+                color: Color(0xFFD1E8EA),
+              ),
+            ),
+          ],
+        );
+        return large
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [avatar, const SizedBox(height: 12), identity],
+              )
+            : Row(
+                children: [
+                  avatar,
+                  const SizedBox(width: 14),
+                  Expanded(child: identity),
+                ],
+              );
+      },
+    ),
+  );
 }

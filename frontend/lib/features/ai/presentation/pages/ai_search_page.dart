@@ -649,6 +649,7 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
                     child: TextField(
                       controller: _controller,
                       enabled: !_loading,
+                      style: const TextStyle(fontSize: 14, height: 1.45),
                       minLines: 1,
                       maxLines: 4,
                       textInputAction: TextInputAction.newline,
@@ -685,27 +686,43 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
                           borderRadius: BorderRadius.circular(18),
                           borderSide: BorderSide.none,
                         ),
-                        contentPadding: const EdgeInsets.all(18),
-                        suffixIcon: _loading
-                            ? const Padding(
-                                padding: EdgeInsets.all(14),
-                                child: SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 14,
+                        ),
+                        suffixIconConstraints: const BoxConstraints.tightFor(
+                          width: 56,
+                          height: 56,
+                        ),
+                        suffixIcon: Padding(
+                          padding: const EdgeInsets.all(4),
+                          child: _loading
+                              ? const Center(
+                                  child: SizedBox.square(
+                                    dimension: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
                                   ),
+                                )
+                              : IconButton(
+                                  tooltip: 'Send message',
+                                  iconSize: 22,
+                                  style: IconButton.styleFrom(
+                                    backgroundColor: AppColors.primary,
+                                    foregroundColor: Colors.white,
+                                    disabledBackgroundColor:
+                                        AppColors.surfaceVariant,
+                                    disabledForegroundColor:
+                                        AppColors.textSecondary,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                  ),
+                                  onPressed: _locating ? null : _askAI,
+                                  icon: const Icon(Icons.arrow_upward_rounded),
                                 ),
-                              )
-                            : IconButton(
-                                tooltip: 'Send message',
-                                style: IconButton.styleFrom(
-                                  backgroundColor: AppColors.primary,
-                                  foregroundColor: Colors.white,
-                                ),
-                                onPressed: _locating ? null : _askAI,
-                                icon: const Icon(Icons.arrow_upward_rounded),
-                              ),
+                        ),
                       ),
                       onSubmitted: (_) => _askAI(),
                     ),

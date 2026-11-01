@@ -1,3 +1,4 @@
+import '../../../../core/widgets/ocean_action_card.dart';
 import '../../../places/presentation/area_selector.dart';
 import '../../../places/data/nearby_origin.dart';
 import '../../../explore/presentation/pages/nearby_places_page.dart';
@@ -296,11 +297,25 @@ class HomeTravelHub extends ConsumerWidget {
               };
               return Material(
                 color: idea.$5,
+                elevation: 1,
+                shadowColor: ink.withValues(alpha: .14),
                 borderRadius: BorderRadius.circular(20),
                 child: InkWell(
                   borderRadius: BorderRadius.circular(20),
                   onTap: () => openDay(idea.$3),
-                  child: Padding(
+                  child: Ink(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: ink.withValues(alpha: .10)),
+                      gradient: LinearGradient(
+                        colors: [
+                          Color.lerp(idea.$5, Colors.white, .35)!,
+                          idea.$5,
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
                     padding: const EdgeInsets.all(14),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -358,16 +373,13 @@ class HomeTravelHub extends ConsumerWidget {
           },
         ),
         const SizedBox(height: 20),
-        Card(
-          child: ListTile(
-            leading: const Icon(Icons.flight_takeoff),
-            title: const Text('Compare travel options'),
-            subtitle: const Text('Flights, trains and stays on supplier sites'),
-            trailing: const Icon(Icons.open_in_new),
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => BookingLinksPage(destination: area?.name),
-              ),
+        OceanActionCard(
+          title: 'Compare travel options',
+          subtitle: 'Flights, trains & stays. Book with the supplier.',
+          icon: Icons.flight_takeoff_rounded,
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => BookingLinksPage(destination: area?.name),
             ),
           ),
         ),

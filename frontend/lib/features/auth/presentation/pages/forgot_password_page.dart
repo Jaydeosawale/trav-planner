@@ -4,14 +4,17 @@ import 'package:flutter/material.dart';
 import '../../data/repositories/auth_repository.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
-  const ForgotPasswordPage({super.key});
+  const ForgotPasswordPage({super.key, this.initialEmail});
+  final String? initialEmail;
 
   @override
   State<ForgotPasswordPage> createState() => _ForgotPasswordPageState();
 }
 
 class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
-  final _emailController = TextEditingController();
+  late final _emailController = TextEditingController(
+    text: widget.initialEmail ?? '',
+  );
 
   bool _submitted = false;
   bool _sending = false;
@@ -69,7 +72,13 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
               constraints: const BoxConstraints(maxWidth: 460),
               child: Column(
                 children: [
-                  const BrandLogo(size: 56),
+                  const SizedBox(
+                    width: double.infinity,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: BrandLogo(size: 56),
+                    ),
+                  ),
 
                   if (_error != null)
                     Padding(
@@ -138,7 +147,6 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
                     SizedBox(
                       width: double.infinity,
-                      height: 54,
                       child: FilledButton(
                         onPressed: _sending ? null : _sendResetLink,
                         style: FilledButton.styleFrom(
@@ -176,7 +184,6 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
                     SizedBox(
                       width: double.infinity,
-                      height: 54,
                       child: OutlinedButton(
                         onPressed: () {
                           setState(() {

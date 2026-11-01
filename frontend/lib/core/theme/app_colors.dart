@@ -10,6 +10,11 @@ class AppColors {
   static const sunset = Color(0xFFF27D42);
   static const background = Color(0xFFF4F7FA);
   static const selected = Color(0xFFDDEAFF);
+  static const oceanGradient = LinearGradient(
+    colors: [Color(0xFF123E46), Color(0xFF185C68)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
   static const ocean = Color(0xFF123E46);
   static const surface = Color(0xFFFFFFFF);
   static const surfaceVariant = Color(0xFFEDF3FA);
