@@ -166,6 +166,16 @@ class _DestinationDetailsPageState
     final places = ref.watch(cityPlacesProvider(widget.cityId));
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: AppColors.ocean,
+        foregroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Colors.white),
+        actionsIconTheme: const IconThemeData(color: Colors.white),
+        titleTextStyle: const TextStyle(
+          fontFamily: 'Inter',
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+          color: Colors.white,
+        ),
         title: Text(widget.name, maxLines: 1, overflow: TextOverflow.ellipsis),
       ),
       body: RefreshIndicator(

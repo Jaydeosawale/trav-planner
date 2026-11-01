@@ -205,16 +205,16 @@ class ProfilePage extends ConsumerWidget {
                           onPressed: () => ensureSignedIn(context, ref),
                           child: const Text('Sign in'),
                         )
-                      : OutlinedButton.icon(
+                      : FilledButton.icon(
                           onPressed: () => _logout(context, ref),
                           icon: const Icon(Icons.logout_rounded),
                           label: const Text(
                             'Logout',
                             style: TextStyle(fontWeight: FontWeight.w700),
                           ),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: AppColors.error,
-                            side: BorderSide(color: AppColors.errorContainer),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: AppColors.ocean,
+                            foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(18),
@@ -288,6 +288,17 @@ class ProfilePage extends ConsumerWidget {
       context: context,
       builder: (context) {
         return AlertDialog(
+          icon: const Icon(
+            Icons.logout_rounded,
+            size: 30,
+            color: AppColors.ocean,
+          ),
+          titleTextStyle: const TextStyle(
+            fontFamily: 'Inter',
+            fontSize: 20,
+            fontWeight: FontWeight.w700,
+            color: AppColors.ocean,
+          ),
           title: const Text('Logout?'),
           content: const Text('Are you sure you want to logout?'),
           actions: [
@@ -298,6 +309,7 @@ class ProfilePage extends ConsumerWidget {
               child: const Text('Cancel'),
             ),
             FilledButton(
+              style: FilledButton.styleFrom(backgroundColor: AppColors.ocean),
               onPressed: () {
                 Navigator.of(context).pop(true);
               },

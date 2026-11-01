@@ -1,3 +1,4 @@
+import '../../../../core/widgets/ocean_panel.dart';
 import '../../../places/data/current_location.dart';
 import '../../../places/data/nearby_origin.dart';
 import '../../../places/data/place_area.dart';
@@ -525,9 +526,19 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        backgroundColor: AppColors.ocean,
+        foregroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Colors.white),
+        actionsIconTheme: const IconThemeData(color: Colors.white),
+        titleTextStyle: const TextStyle(
+          fontFamily: 'Inter',
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+          color: Colors.white,
+        ),
         title: const Row(
           children: [
-            Icon(Icons.auto_awesome_rounded, color: AppColors.primary),
+            Icon(Icons.auto_awesome_rounded, color: Color(0xFFFFBF85)),
             SizedBox(width: 8),
             Flexible(
               child: Text(
@@ -629,7 +640,6 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
               ]
             : [],
         elevation: 0,
-        backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
       ),
       bottomNavigationBar: signedIn
@@ -709,7 +719,7 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
                                   tooltip: 'Send message',
                                   iconSize: 22,
                                   style: IconButton.styleFrom(
-                                    backgroundColor: AppColors.primary,
+                                    backgroundColor: AppColors.ocean,
                                     foregroundColor: Colors.white,
                                     disabledBackgroundColor:
                                         AppColors.surfaceVariant,
@@ -746,7 +756,7 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
                         const Icon(
                           Icons.auto_awesome_rounded,
                           size: 38,
-                          color: AppColors.primary,
+                          color: AppColors.ocean,
                         ),
                         const SizedBox(height: 18),
                         const Text(
@@ -768,6 +778,12 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
                           children: [
                             Expanded(
                               child: OutlinedButton.icon(
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: AppColors.ocean,
+                                  side: const BorderSide(
+                                    color: AppColors.ocean,
+                                  ),
+                                ),
                                 onPressed: () => _useSuggestion(
                                   ref.read(chosenPlaceAreaProvider) == null
                                       ? 'Help me plan a trip.'
@@ -780,6 +796,12 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
                             const SizedBox(width: 10),
                             Expanded(
                               child: OutlinedButton.icon(
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: AppColors.ocean,
+                                  side: const BorderSide(
+                                    color: AppColors.ocean,
+                                  ),
+                                ),
                                 onPressed: () => _useSuggestion(
                                   ref.read(chosenPlaceAreaProvider) == null
                                       ? 'Help me find places to visit.'
@@ -829,12 +851,15 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
                               color: turn['role'] == 'user'
-                                  ? AppColors.surfaceVariant
+                                  ? AppColors.ocean
                                   : AppColors.surface,
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: turn['role'] == 'user'
-                                ? Text(turn['content']!)
+                                ? Text(
+                                    turn['content']!,
+                                    style: const TextStyle(color: Colors.white),
+                                  )
                                 : TravelMarkdown(content: turn['content']!),
                           ),
                         ),
@@ -846,12 +871,15 @@ class _AISearchPageState extends ConsumerState<AISearchPage> {
                             constraints: const BoxConstraints(maxWidth: 520),
                             padding: const EdgeInsets.all(18),
                             decoration: BoxDecoration(
-                              color: AppColors.surfaceVariant,
+                              gradient: AppColors.oceanGradient,
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
                               _lastMessage!,
-                              style: const TextStyle(height: 1.5),
+                              style: const TextStyle(
+                                height: 1.5,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ),
@@ -1074,17 +1102,23 @@ class _ResponseCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              const Icon(Icons.auto_awesome_rounded, color: AppColors.primary),
-              const SizedBox(width: 10),
-              const Expanded(
-                child: Text(
-                  'Your AI travel companion',
-                  style: TextStyle(fontWeight: FontWeight.w800),
+          OceanPanel(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.auto_awesome_rounded,
+                  color: Color(0xFFFFBF85),
                 ),
-              ),
-            ],
+                const SizedBox(width: 10),
+                const Expanded(
+                  child: Text(
+                    'Your AI travel companion',
+                    style: TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                ),
+              ],
+            ),
           ),
 
           const SizedBox(height: 16),

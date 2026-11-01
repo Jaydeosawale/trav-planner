@@ -1,3 +1,4 @@
+import '../../../core/widgets/ocean_panel.dart';
 import 'place_trip_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -34,7 +35,17 @@ class PlaceDetailsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Place details')),
+    appBar: AppBar(
+      title: const Text('Place details'),
+      backgroundColor: AppColors.ocean,
+      foregroundColor: Colors.white,
+      titleTextStyle: const TextStyle(
+        fontFamily: 'Inter',
+        fontSize: 20,
+        fontWeight: FontWeight.w700,
+        color: Colors.white,
+      ),
+    ),
     body: ListView(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
       children: [
@@ -63,20 +74,29 @@ class PlaceDetailsPage extends StatelessWidget {
                     ),
                   ),
                 const SizedBox(height: 20),
-                Text(
-                  [
-                    placeTypeLabel(place.type),
-                    if (place.cityName?.isNotEmpty == true) place.cityName!,
-                  ].join(' · '),
-                  style: const TextStyle(
-                    color: AppColors.secondary,
-                    fontWeight: FontWeight.w600,
+                OceanPanel(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        [
+                          placeTypeLabel(place.type),
+                          if (place.cityName?.isNotEmpty == true)
+                            place.cityName!,
+                        ].join(' · '),
+                        style: const TextStyle(
+                          color: Color(0xFFBDE5DE),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        place.name,
+                        style: Theme.of(context).textTheme.headlineSmall
+                            ?.copyWith(color: Colors.white),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  place.name,
-                  style: Theme.of(context).textTheme.headlineSmall,
                 ),
                 const SizedBox(height: 16),
                 Wrap(
@@ -130,12 +150,7 @@ class PlaceDetailsPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
                 ],
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceVariant,
-                    borderRadius: BorderRadius.circular(22),
-                  ),
+                OceanPanel(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -152,6 +167,10 @@ class PlaceDetailsPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 14),
                       FilledButton.icon(
+                        style: FilledButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: AppColors.ocean,
+                        ),
                         onPressed: () => Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (_) => AISearchPage(

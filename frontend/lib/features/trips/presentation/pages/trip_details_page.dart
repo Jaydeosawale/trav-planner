@@ -1,3 +1,4 @@
+import '../../../../core/widgets/ocean_panel.dart';
 import 'trip_budget_page.dart';
 import '../../../booking/presentation/pages/booking_links_page.dart';
 import 'package:flutter/material.dart';
@@ -21,7 +22,17 @@ class TripDetailsPage extends ConsumerWidget {
   final String id;
   @override
   Widget build(BuildContext context, WidgetRef ref) => Scaffold(
-    appBar: AppBar(title: const Text('Your trip')),
+    appBar: AppBar(
+      title: const Text('Your trip'),
+      backgroundColor: AppColors.ocean,
+      foregroundColor: Colors.white,
+      titleTextStyle: const TextStyle(
+        fontFamily: 'Inter',
+        fontSize: 20,
+        fontWeight: FontWeight.w700,
+        color: Colors.white,
+      ),
+    ),
     body: ref
         .watch(tripDetailsProvider(id))
         .when(
@@ -49,14 +60,22 @@ class TripDetailsPage extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text(
-                        trip['title']?.toString() ?? 'Your trip',
-                        style: Theme.of(context).textTheme.headlineSmall,
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        '${trip['start_date']} — ${trip['end_date']}',
-                        style: const TextStyle(color: AppColors.textSecondary),
+                      OceanPanel(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              trip['title']?.toString() ?? 'Your trip',
+                              style: Theme.of(context).textTheme.headlineSmall
+                                  ?.copyWith(color: Colors.white),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              '${trip['start_date']} — ${trip['end_date']}',
+                              style: const TextStyle(color: Color(0xFFBDE5DE)),
+                            ),
+                          ],
+                        ),
                       ),
                       const SizedBox(height: 20),
                       Card(
@@ -97,6 +116,9 @@ class TripDetailsPage extends ConsumerWidget {
                         runSpacing: 12,
                         children: [
                           FilledButton.icon(
+                            style: FilledButton.styleFrom(
+                              backgroundColor: AppColors.ocean,
+                            ),
                             onPressed: () => Navigator.of(context).push(
                               MaterialPageRoute(
                                 builder: (_) => ItineraryPage(tripId: id),

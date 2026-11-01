@@ -1,3 +1,4 @@
+import '../../../../core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../explore/presentation/providers/explore_provider.dart';
@@ -20,6 +21,18 @@ class PlaceCategoryBar extends StatelessWidget {
       separatorBuilder: (_, _) => const SizedBox(width: 8),
       itemBuilder: (_, i) => ChoiceChip(
         showCheckmark: false,
+        selectedColor: AppColors.ocean,
+        labelStyle: TextStyle(
+          fontFamily: 'Inter',
+          color: query.type == placeCategories[i].$1
+              ? Colors.white
+              : AppColors.textPrimary,
+        ),
+        side: BorderSide(
+          color: query.type == placeCategories[i].$1
+              ? AppColors.ocean
+              : AppColors.border,
+        ),
         label: Text(placeCategories[i].$2),
         selected: query.type == placeCategories[i].$1,
         onSelected: (_) =>

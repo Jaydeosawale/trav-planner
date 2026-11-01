@@ -1,3 +1,4 @@
+import '../../../../core/widgets/ocean_panel.dart';
 import 'package:trav_planner/core/widgets/full_photo_frame.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -35,7 +36,17 @@ class MyTripsPage extends ConsumerWidget {
   const MyTripsPage({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) => Scaffold(
-    appBar: AppBar(title: const Text('My Trips')),
+    appBar: AppBar(
+      title: const Text('My Trips'),
+      backgroundColor: AppColors.ocean,
+      foregroundColor: Colors.white,
+      titleTextStyle: const TextStyle(
+        fontFamily: 'Inter',
+        fontSize: 20,
+        fontWeight: FontWeight.w700,
+        color: Colors.white,
+      ),
+    ),
     body: RefreshIndicator(
       onRefresh: () async {
         ref.invalidate(myTripsProvider);
@@ -52,12 +63,23 @@ class MyTripsPage extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
             physics: const AlwaysScrollableScrollPhysics(),
             children: [
-              const Text(
-                'Drafts, upcoming adventures and past trips.',
-                style: TextStyle(color: AppColors.textSecondary),
+              const OceanPanel(
+                child: Row(
+                  children: [
+                    Icon(Icons.luggage_outlined, size: 28),
+                    SizedBox(width: 14),
+                    Expanded(
+                      child: Text(
+                        'Drafts, upcoming adventures and past trips.',
+                        style: TextStyle(height: 1.5),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 16),
               FilledButton.icon(
+                style: FilledButton.styleFrom(backgroundColor: AppColors.ocean),
                 onPressed: () async {
                   final created = await Navigator.of(context)
                       .push<Map<String, dynamic>>(
@@ -128,6 +150,9 @@ class MyTripsPage extends ConsumerWidget {
                                   ),
                                   const SizedBox(height: 20),
                                   FilledButton(
+                                    style: FilledButton.styleFrom(
+                                      backgroundColor: AppColors.ocean,
+                                    ),
                                     onPressed: () => Navigator.of(context).push(
                                       MaterialPageRoute(
                                         builder: (_) => const AISearchPage(),
@@ -162,14 +187,14 @@ class MyTripsPage extends ConsumerWidget {
                                         leading: Container(
                                           padding: const EdgeInsets.all(14),
                                           decoration: BoxDecoration(
-                                            color: AppColors.surfaceVariant,
+                                            gradient: AppColors.oceanGradient,
                                             borderRadius: BorderRadius.circular(
                                               16,
                                             ),
                                           ),
                                           child: const Icon(
                                             Icons.luggage_outlined,
-                                            color: AppColors.primary,
+                                            color: Color(0xFFFFBF85),
                                           ),
                                         ),
                                         title: Text(

@@ -200,7 +200,17 @@ class _ItineraryPageState extends ConsumerState<ItineraryPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Day-by-day plan')),
+    appBar: AppBar(
+      title: const Text('Day-by-day plan'),
+      backgroundColor: AppColors.ocean,
+      foregroundColor: Colors.white,
+      titleTextStyle: const TextStyle(
+        fontFamily: 'Inter',
+        fontSize: 20,
+        fontWeight: FontWeight.w700,
+        color: Colors.white,
+      ),
+    ),
     body: ref
         .watch(tripDetailsProvider(widget.tripId))
         .when(

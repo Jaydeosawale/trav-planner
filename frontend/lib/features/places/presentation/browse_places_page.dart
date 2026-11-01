@@ -1,3 +1,4 @@
+import '../../../core/theme/app_colors.dart';
 import '../../auth/presentation/providers/auth_provider.dart';
 import '../../profile/presentation/pages/profile_page.dart';
 import '../../../app/router/navigation_actions.dart';
@@ -281,6 +282,16 @@ class _BrowsePlacesPageState extends ConsumerState<BrowsePlacesPage> {
     );
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: AppColors.ocean,
+        foregroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Colors.white),
+        actionsIconTheme: const IconThemeData(color: Colors.white),
+        titleTextStyle: const TextStyle(
+          fontFamily: 'Inter',
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+          color: Colors.white,
+        ),
         title: const Text('Explore'),
         actions: [
           IconButton(

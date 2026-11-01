@@ -66,7 +66,17 @@ class _TripBudgetPageState extends ConsumerState<TripBudgetPage> {
   Widget build(BuildContext context) {
     final travelers = (widget.trip['travelers'] as num?)?.toInt() ?? 1;
     return Scaffold(
-      appBar: AppBar(title: const Text('Trip budget')),
+      appBar: AppBar(
+        title: const Text('Trip budget'),
+        backgroundColor: AppColors.ocean,
+        foregroundColor: Colors.white,
+        titleTextStyle: const TextStyle(
+          fontFamily: 'Inter',
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+          color: Colors.white,
+        ),
+      ),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 680),
