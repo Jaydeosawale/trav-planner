@@ -100,3 +100,24 @@ sign in privately again if needed. With no flag, package ID and label remain
 `com.jaydeo.travplanner` / Trav for normal releases. Play in-app update checks are
 not available for this sideloaded preview. No Google Play update is authorized
 for 1.0.24 until the user finishes testing and requests publication again.
+
+
+## Update submitted — 1 November 2026
+
+User authorized making and pushing the Google Play build after local testing.
+Trav 1.0.24 / versionCode 42 was signed for the production package, uploaded to
+existing production release 4, validated, saved and sent for review. Publishing
+overview visibly shows **Changes in review**, with Google's quick checks running.
+Managed publishing remains off and rollout is 100% in the existing India targeting.
+This is submission, not confirmation that version 1.0.24 is publicly available.
+
+Source: f3cf577ae8382304176e01f5009f9f4c14086c8d. Signed AAB: 109,493,607 bytes,
+SHA-256 8048c779ad1601b60ec239fb2be020e3e58c405614ed1d313bd8fdbd58c8e4bf.
+Production package com.jaydeo.travplanner, SDK 24+, target SDK 36, all three ABIs.
+Play reports no lost supported devices, 57.4 MB new install and 2.13 MB estimated
+update. Privacy, deletion and public place search returned HTTP 200; reports
+returned HTTP 401 without authentication. Earlier app checks and the build-42
+three-test focused fix verification were reused; no full suite or fresh private
+AI-generation/email round trip was repeated in this submission turn.
+No review credentials, data-safety settings, service keys or country targeting
+were changed. Google controls approval and public availability.

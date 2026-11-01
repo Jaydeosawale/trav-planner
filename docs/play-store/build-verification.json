@@ -1,28 +1,41 @@
 {
   "package": "com.jaydeo.travplanner",
   "name": "Trav",
-  "versionName": "1.0.23",
-  "versionCode": 24,
+  "versionName": "1.0.24",
+  "versionCode": 42,
   "targetSdk": 36,
   "minSdk": 24,
   "country": "India",
-  "sourceCommit": "354ad155e22772d1c897a39bec3d41637f581e16",
+  "sourceCommit": "f3cf577ae8382304176e01f5009f9f4c14086c8d",
   "artifacts": {
-    "Trav-1.0.23-play-release.aab": {
-      "bytes": 124753399,
-      "sha256": "ef3e26d78789c50c3302a67834e32884eac3ced87caf298a1b542f25c8b1bbb8"
+    "Trav-1.0.24-build42-play.aab": {
+      "bytes": 109493607,
+      "sha256": "8048c779ad1601b60ec239fb2be020e3e58c405614ed1d313bd8fdbd58c8e4bf"
     }
   },
   "googleValidation": {
-    "status": "Available on Google Play",
-    "newInstallSize": "73 MB",
-    "estimatedUpdateSize": "2.26 MB",
+    "status": "Ready to release",
+    "newInstallSize": "57.4 MB",
+    "estimatedUpdateSize": "2.13 MB",
     "rolloutPercent": 100,
-    "releaseId": 3,
-    "releaseName": "Trav 1.0.23 - in-app updates",
-    "supportedDevices": 19443
+    "releaseId": 4,
+    "releaseName": "Trav 1.0.24 - Ocean Escape",
+    "supportedDevices": 19469,
+    "lostSupportedDevices": 0,
+    "abis": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "x86_64"
+    ]
   },
-  "submissionStatus": "Available on Google Play",
-  "submissionDate": "2026-10-30",
-  "managedPublishing": false
+  "submissionStatus": "Changes in review; quick checks running",
+  "submissionDate": "2026-11-01",
+  "managedPublishing": false,
+  "console": "https://play.google.com/console/u/0/developers/5552386934349390169/app/4972372695843640924/publishing",
+  "publicChecks": {
+    "privacy": 200,
+    "deletion": 200,
+    "public_places": 200,
+    "unauthenticated_content_reports": 401
+  }
 }
