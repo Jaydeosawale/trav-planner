@@ -14,7 +14,7 @@ import 'package:trav_planner/features/saved/presentation/saved_places_provider.d
 
 void main() {
   testWidgets(
-    'Pune local and catalogue places share one deduplicated Home rail',
+    'Home keeps independent previews without loading or crediting Geoapify',
     (tester) async {
       tester.view.physicalSize = const Size(320, 720);
       tester.view.devicePixelRatio = 1;
@@ -68,6 +68,12 @@ void main() {
                     type: 'park',
                     cityId: 'pune',
                   ),
+                  TravelPlace(
+                    id: 'sourced',
+                    name: 'Sourced coffee',
+                    type: 'cafe',
+                    visitingNotes: 'Powered by Geoapify',
+                  ),
                 ],
                 total: 1,
                 pages: 1,
@@ -94,13 +100,12 @@ void main() {
       expect(find.byType(ListView), findsOneWidget);
       expect(
         tester.widget<ListView>(rail).childrenDelegate.estimatedChildCount,
-        3,
+        1,
       );
       expect(find.text('Pune park'), findsOneWidget);
-      await tester.drag(rail, const Offset(-270, 0));
-      await tester.pumpAndSettle();
-      expect(find.text('Pune coffee'), findsOneWidget);
-      expect(find.text('Powered by Geoapify'), findsOneWidget);
+      expect(find.text('Sourced coffee'), findsNothing);
+      expect(find.text('Pune coffee'), findsNothing);
+      expect(find.text('Powered by Geoapify'), findsNothing);
       await captureScreen(tester, 'trav-pune-inspiration-320');
       expect(tester.takeException(), isNull);
     },

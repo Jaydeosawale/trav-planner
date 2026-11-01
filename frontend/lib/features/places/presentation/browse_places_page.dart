@@ -122,9 +122,13 @@ class _BrowsePlacesPageState extends ConsumerState<BrowsePlacesPage> {
       _query = incoming;
       _search.text = incoming.search;
       _page = 1;
-      _additional = [];
+      _additional = _areaResults['${incoming.cityId}:${incoming.type}'] ?? [];
       _discoveryNotice = null;
-      Future.microtask(_restoreAreaLabel);
+      Future.microtask(() {
+        if (!mounted) return;
+        _restoreAreaLabel();
+        _discoverSelectedArea();
+      });
     }
   }
 
@@ -150,15 +154,15 @@ class _BrowsePlacesPageState extends ConsumerState<BrowsePlacesPage> {
         ref.read(authProvider).user == null) {
       return;
     }
-    final key = '${_query.cityId}:${_query.type}';
-    if (_discovered.contains(key)) return;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    Future.microtask(() {
       if (!mounted ||
           _discovering ||
           _query.cityId == null ||
           _query.search.isNotEmpty) {
         return;
       }
+      final key = '${_query.cityId}:${_query.type}';
+      if (_discovered.contains(key)) return;
       _discovered.add(key);
       unawaited(_discover());
     });
@@ -497,12 +501,33 @@ class _BrowsePlacesPageState extends ConsumerState<BrowsePlacesPage> {
                 sliver: SliverToBoxAdapter(
                   child: Column(
                     children: [
+                      PlaceSourceCredit(
+                        data: [
+                          for (var page = 1; page <= _page; page++)
+                            ...?ref
+                                .read(
+                                  placeCatalogueProvider(
+                                    _query.copyWith(page: page),
+                                  ),
+                                )
+                                .asData
+                                ?.value
+                                .items
+                                .map((p) => p.visitingNotes),
+                          ..._visibleAdditional.map((p) => p.visitingNotes),
+                        ],
+                      ),
                       if (current.asData?.value case final result?) ...[
-                        Text(
-                          result.total == 1
-                              ? '1 place matches your filters'
-                              : '${result.total} places match your filters',
-                        ),
+                        if (!_discovering ||
+                            result.total > 0 ||
+                            _visibleAdditional.isNotEmpty)
+                          Text(
+                            _visibleAdditional.isNotEmpty
+                                ? '${_visibleAdditional.length} local ${_visibleAdditional.length == 1 ? 'place' : 'places'} loaded'
+                                : result.total == 1
+                                ? '1 place matches your filters'
+                                : '${result.total} places match your filters',
+                          ),
                         if (_page < result.pages)
                           TextButton.icon(
                             onPressed: () => setState(() => _page++),
@@ -511,7 +536,13 @@ class _BrowsePlacesPageState extends ConsumerState<BrowsePlacesPage> {
                           ),
                       ],
                       if (_query.cityId != null) ...[
-                        if (_discovering) const LinearProgressIndicator(),
+                        if (_discovering) ...[
+                          const LinearProgressIndicator(),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Finding ${placeTypeLabel(_query.type).toLowerCase()} places around ${area?.name ?? 'this area'}…',
+                          ),
+                        ],
                         TextButton.icon(
                           onPressed: _discovering ? null : _discover,
                           icon: const Icon(Icons.refresh),
@@ -584,7 +615,10 @@ class _BrowsePlacesPageState extends ConsumerState<BrowsePlacesPage> {
         ),
       ],
       data: (result) => [
-        if (result.items.isEmpty && page == 1 && _visibleAdditional.isEmpty)
+        if (result.items.isEmpty &&
+            page == 1 &&
+            _visibleAdditional.isEmpty &&
+            !_discovering)
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(28),
@@ -622,11 +656,6 @@ class _BrowsePlacesPageState extends ConsumerState<BrowsePlacesPage> {
               mainAxisSpacing: 18,
             ),
             itemBuilder: (_, i) => PlaceCard(place: result.items[i]),
-          ),
-        ),
-        SliverToBoxAdapter(
-          child: PlaceSourceCredit(
-            data: result.items.map((p) => p.visitingNotes).toList(),
           ),
         ),
       ],

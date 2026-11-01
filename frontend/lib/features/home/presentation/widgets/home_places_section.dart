@@ -34,7 +34,7 @@ class _HomePlacesSectionState extends ConsumerState<HomePlacesSection> {
   }
 
   Future<void> _loadLocal() async {
-    if (!mounted) return;
+    if (!mounted || widget.curated) return;
     final area = ref.read(chosenPlaceAreaProvider);
     if (area?.cityId == null || !ref.read(authProvider).isAuthenticated) {
       setState(() {
@@ -156,12 +156,25 @@ class _HomePlacesSectionState extends ConsumerState<HomePlacesSection> {
       return const SizedBox.shrink();
     }
     if (widget.curated) {
-      final merged = <String, TravelPlace>{
-        for (final place in first.asData?.value.items ?? <TravelPlace>[])
-          place.id: place,
-        for (final place in _local.asData?.value ?? <TravelPlace>[])
-          place.id: place,
-      }.values.take(8).toList();
+      final merged =
+          <String, TravelPlace>{
+                for (final place
+                    in first.asData?.value.items ?? <TravelPlace>[])
+                  place.id: place,
+                for (final place in _local.asData?.value ?? <TravelPlace>[])
+                  place.id: place,
+              }.values
+              .where((place) {
+                final notes = (place.visitingNotes ?? '').toLowerCase();
+                return !notes.contains('geoapify') &&
+                    !notes.contains('openstreetmap') &&
+                    place.source?.host != 'www.openstreetmap.org';
+              })
+              .take(8)
+              .toList();
+      if (merged.isEmpty && !first.isLoading && !first.hasError) {
+        return const SizedBox.shrink();
+      }
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -195,9 +208,6 @@ class _HomePlacesSectionState extends ConsumerState<HomePlacesSection> {
                   ),
                 ),
               ),
-            ),
-            PlaceSourceCredit(
-              data: merged.map((p) => p.visitingNotes).toList(),
             ),
           ] else if (first.isLoading || _local.isLoading)
             const SizedBox(
