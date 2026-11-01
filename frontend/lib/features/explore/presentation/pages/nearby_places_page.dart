@@ -465,21 +465,22 @@ class _NearbyPlacesPageState extends ConsumerState<NearbyPlacesPage> {
           ),
           const SizedBox(height: 12),
           PlaceSourceCredit(data: _items),
-          TextButton(
-            onPressed: () => launchUrl(
-              Uri.parse('https://www.openstreetmap.org/copyright'),
-              mode: LaunchMode.externalApplication,
+          if (!_items.toString().contains('Powered by Geoapify'))
+            TextButton(
+              onPressed: () => launchUrl(
+                Uri.parse('https://www.openstreetmap.org/copyright'),
+                mode: LaunchMode.externalApplication,
+              ),
+              style: TextButton.styleFrom(
+                alignment: Alignment.centerLeft,
+                padding: const EdgeInsets.symmetric(horizontal: 2),
+                minimumSize: const Size(0, 32),
+              ),
+              child: const Text(
+                'OpenStreetMap contributors · ODbL',
+                style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+              ),
             ),
-            style: TextButton.styleFrom(
-              alignment: Alignment.centerLeft,
-              padding: const EdgeInsets.symmetric(horizontal: 2),
-              minimumSize: const Size(0, 32),
-            ),
-            child: const Text(
-              'OpenStreetMap contributors · ODbL',
-              style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
-            ),
-          ),
           TextButton(
             onPressed: () => launchUrl(
               Uri.parse('https://overpass.kumi.systems/'),

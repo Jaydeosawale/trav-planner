@@ -15,6 +15,7 @@ class PlaceSourceCredit extends StatelessWidget {
     final style = TextButton.styleFrom(
       foregroundColor: AppColors.textSecondary,
       textStyle: const TextStyle(
+        fontFamily: 'Inter',
         fontSize: 11,
         height: 1.3,
         fontWeight: FontWeight.w400,

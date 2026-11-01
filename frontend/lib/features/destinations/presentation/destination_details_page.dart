@@ -801,7 +801,10 @@ class _DestinationDetailsPageState
                       style: TextStyle(color: AppColors.textSecondary),
                     ),
                   PlaceSourceCredit(data: place.visitingNotes),
-                  if (place.source?.host == 'www.openstreetmap.org')
+                  if (place.source?.host == 'www.openstreetmap.org' &&
+                      !place.visitingNotes.toString().contains(
+                        'Powered by Geoapify',
+                      ))
                     const Text(
                       '© OpenStreetMap contributors · ODbL 1.0',
                       style: TextStyle(

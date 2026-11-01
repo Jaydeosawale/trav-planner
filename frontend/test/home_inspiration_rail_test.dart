@@ -33,13 +33,13 @@ void main() {
                       {
                         'id': 'one',
                         'name': 'Pune park',
-                        'type': 'park',
+                        'place_type': 'park',
                         'city_id': 'pune',
                       },
                       {
                         'id': 'two',
                         'name': 'Pune coffee',
-                        'type': 'cafe',
+                        'place_type': 'cafe',
                         'city_id': 'pune',
                         'visiting_notes': 'Powered by Geoapify',
                       },
